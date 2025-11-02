@@ -1,0 +1,115 @@
+# =======================================================================
+# ROTBOND ROTATION PARAMETERS FILE
+# =======================================================================
+# This is a template file with examples of all available features.
+# Edit this file to specify your rotation parameters, then run rotbond again.
+#
+# For detailed help: rotbond --help input
+# =======================================================================
+
+# -----------------------------------------------------------------------
+# CONFIGURATION PARAMETERS (Optional)
+# -----------------------------------------------------------------------
+# Adjust these values to control bond detection and validation
+
+bond_factor = 1.1
+# - Multiplier for covalent radius threshold (default: 1.0)
+# - Higher values detect more bonds, lower values detect fewer
+# - Recommended: 1.0-1.2 for organic molecules, 1.2-1.5 for metal complexes
+
+skip_factor = 0.7
+# - Minimum distance validation threshold (default: 0.7)
+# - Filters conformers with steric clashes
+# - Lower values = more lenient, higher values = stricter
+# - Recommended: 0.6-0.8 for most molecules
+
+# -----------------------------------------------------------------------
+# MANUAL BOND DEFINITIONS (Optional)
+# -----------------------------------------------------------------------
+# Force or remove bonds that automatic detection might miss or incorrectly identify
+
+# Force a bond (useful for metal-ligand bonds, weak interactions)
+# 8-12 bond
+# 15-23 bond
+
+# Remove a false positive bond (atoms close but not bonded)
+# 22-45 nobond
+
+# -----------------------------------------------------------------------
+# ROTATION SPECIFICATIONS (Required)
+# -----------------------------------------------------------------------
+# Define which bonds to rotate and their angle sets
+# Uncomment and modify the examples below for your molecule
+
+# STEP-BASED ROTATIONS (generates evenly spaced angles)
+# Format: atom1-atom2 e<step_angle>
+# Examples:
+# 1-6 e60        # 6 states: 0°, 60°, 120°, 180°, 240°, 300°
+# 2-5 e30        # 12 states: 0°, 30°, 60°, 90°, 120°, 150°, 180°, 210°, 240°, 270°, 300°, 330°
+# 3-7 e90        # 4 states: 0°, 90°, 180°, 270°
+# 4-8 e120       # 3 states: 0°, 120°, 240°
+
+# EXPLICIT ANGLE ROTATIONS (specify exact angles)
+# Format: atom1-atom2 angle1 angle2 angle3 ...
+# Examples:
+# 1-6 0 60 120 180                    # 4 specific angles
+# 2-5 -120 -60 0 60 120               # 5 angles including negatives
+# 3-7 30 45 60 90 120 150 180         # 7 custom angles
+
+# SYNCHRONOUS ROTATIONS (coordinate with other bonds)
+# Format: atom1-atom2 syn <reference_bond_number>
+# Examples:
+# 3-7 syn 1      # Bond 3 rotates with bond 1 (same direction)
+# 5-9 syn 2      # Bond 5 rotates with bond 2 (same direction)
+# 4-8 syn -1     # Bond 4 rotates opposite to bond 1
+# 6-10 syn -2    # Bond 6 rotates opposite to bond 2
+
+# -----------------------------------------------------------------------
+# EXAMPLE CONFIGURATIONS FOR COMMON MOLECULES
+# -----------------------------------------------------------------------
+
+# ETHANE (simple single bond rotation)
+# 1-2 e60
+
+# BUTANE (multiple independent bonds)
+# 1-2 e120       # C1-C2 bond
+# 2-3 e60        # C2-C3 bond  
+# 3-4 e180       # C3-C4 bond
+
+# TOLUENE (aromatic + methyl rotation)
+# 7-8 e60        # Methyl group rotation
+
+# P-XYLENE (coordinated methyl rotations)
+# 1-7 e60        # First methyl (independent)
+# 8-9 syn 1      # Second methyl (same as first)
+# 10-11 syn -1   # Third methyl (opposite to first)
+
+# METAL COMPLEX (with manual bonds)
+# 1-25 bond      # Force metal-ligand bond
+# 1-30 bond      # Force another metal-ligand bond
+# 15-20 nobond   # Remove false positive
+# 2-3 e90        # Ligand rotation
+# 4-5 syn 1      # Coordinated ligand rotation
+
+# -----------------------------------------------------------------------
+# NOTES
+# -----------------------------------------------------------------------
+# - Atom indices are 1-based (first atom is 1, not 0)
+# - Use dashes (-) not hyphens or em-dashes in bond specifications
+# - Angles are in degrees, range: -360° to +360°
+# - Comments start with '#' and continue to end of line
+# - Empty lines are ignored
+# - Parameters can be in any order
+# - For large molecules, start with fewer bonds and larger step sizes
+
+# -----------------------------------------------------------------------
+# QUICK START
+# -----------------------------------------------------------------------
+# 1. Identify rotatable bonds in your molecule
+# 2. Uncomment and modify examples above
+# 3. Start with e60 or e90 for initial exploration
+# 4. Run: rotbond <molecule_name>
+# 5. Check success rate and adjust parameters if needed
+
+# DELETE THIS LINE AND ADD YOUR ROTATION SPECIFICATIONS BELOW:
+# (The program requires at least one rotation specification to run)

@@ -1,0 +1,1106 @@
+//! # Book Recommendation System
+//!
+//! This module contains a curated list of 500 classic and popular books
+//! that are displayed randomly at the end of each program run to
+//! provide users with reading recommendations.
+
+use rand::Rng;
+
+/// Represents a book with title, author, and summary information.
+#[derive(Debug, Clone)]
+pub struct Book {
+    /// The title of the book
+    pub title: &'static str,
+    /// The author of the book
+    pub author: &'static str,
+    /// A brief summary or description of the book
+    pub summary: &'static str,
+}
+
+/// Returns a curated list of 500 classic and popular books.
+/// 
+/// This collection includes literature from various genres, time periods,
+/// and cultures to provide diverse reading recommendations.
+pub fn get_book_list() -> Vec<Book> {
+    vec![
+    Book { title: r#"Don Quixote"#, author: r#"Miguel de Cervantes"#, summary: r#"Don Quixote has become so entranced reading tales of chivalry that he decides to turn knight errant himself. In the company of his faithful squire, Sancho Panza, these exploits blossom in all sorts of wonderful ways. While Quixote's fancy often leads him astray—he tilts at windmills, imagining them ..."# },
+  /* 2. */
+    Book { title: r#"Alice's Adventures in Wonderland"#, author: r#"Lewis Carroll"#, summary: r#"Alice sits on a riverbank on a warm summer day, drowsily reading over her sister’s shoulder, when she catches sight of a White Rabbit in a waistcoat running by her. The White Rabbit pulls out a pocket watch, exclaims that he is late, and pops down a rabbit hole. Alice follows the White Rabbit down the hole and comes upon a great hallway lined with doors. She finds a small door that she opens using a key she discovers on a nearby table. Through the door, she sees a beautiful garden,..."# },
+  /* 3. */
+    Book { title: r#"The Adventures of Huckleberry Finn"#, author: r#"Mark Twain"#, summary: r#"The adventures of a boy traveling down the Mississippi River with an escaped slave."# },
+  /* 4. */
+    Book { title: r#"The Adventures of Tom Sawyer"#, author: r#"Mark Twain"#, summary: r#"This is Mark Twain's first novel about Tom Sawyer and Huckleberry Finn, and it has become one of the world's best-loved books. It is a fond reminiscence of life in Hannibal, Missouri, an evocation of Mark Twain's own boyhood along the banks of the Mississippi during the 1840s. "Most of the adventure..."# },
+  /* 5. */
+    Book { title: r#"Treasure Island"#, author: r#"Robert Louis Stevenson"#, summary: r#"While going through the possessions of a deceased guest who owed them money, the mistress of the inn and her son find a treasure map that leads them to a pirate's fortune."# },
+  /* 6. */
+    Book { title: r#"Pride and Prejudice"#, author: r#"Jane Austen"#, summary: r#"Elizabeth Bennet is Austen’s most liberated and unambiguously appealing heroine, and Pride and Prejudice has remained over most of the past two centuries Austen’s most popular novel. The story turns on the marriage prospects of the five daughters of Mr. and Mrs. Bennet: Elizabeth forms a prejudice a..."# },
+  /* 7. */
+    Book { title: r#"Wuthering Heights"#, author: r#"Emily Bronte«"#, summary: r#"Wuthering Heights" is a novel by English writer Emily Brontë, published in 1847 under the pseudonym "Ellis Bell". It is her only finished novel and remains a classic of English literature. The book explores themes of passionate love, revenge, social class, and the destructive nature of obsession through the story of Catherine Earnshaw and Heathcliff..."# },
+  /* 8. */
+    Book { title: r#"Jane Eyre"#, author: r#"Charlotte Bronte«"#, summary: r#"Jane Eyre is a young orphan being raised by Mrs. Reed, her cruel, wealthy aunt. A servant named Bessie provides Jane with some of the few kindnesses she receives, telling her stories and singing songs to her. One day, as punishment for fighting with her bullying cousin John Reed, Jane’s aunt imprisons Jane in the red-room, the room in which Jane’s Uncle Reed died. While locked in, Jane, believing that she sees her uncle’s ghost, screams and faints. She wakes to find herself in the care of Bessie and the kindly apothecary Mr. Lloyd, who suggests to Mrs. Reed that Jane be sent away to school. To Jane’s delight, Mrs. Reed concurs..."# },
+  /* 9. */
+    Book { title: r#"Moby Dick"#, author: r#"Herman Melville"#, summary: r#"The story begins with the narrator, Ishmael, traveling to New Bedford, Massachusetts, to find work on a whaling ship. There, he befriends Queequeg, a tattooed Polynesian harpooneer, and they both sign on to the Pequod, a Nantucket whaling vessel. The ship is captained by the enigmatic and..."# },
+  /* 10. */
+    Book { title: r#"The Scarlet Letter"#, author: r#"Nathaniel Hawthorne"#, summary: r#"Introduction by Kathryn Harrison Commentary by Nathaniel Hawthorne, W. D. Howells, and Carl Van Doren A stark tale of adultery, guilt, and social repression in Puritan New England, The Scarlet Letter is a foundational work of American literature. Nathaniel Hawthorne’s exploration of the dichotomy be..."# },
+  /* 11. */
+    Book { title: r#"Gulliver's Travels"#, author: r#"Jonathan Swift"#, summary: r#"Jonathan Swift's masterpiece is the finest satire in the English language. Lemuel Gulliver's adventures with the tiny inhabitants of Lilliput and the giants of Brobdingnag are familiar from modern abridged adaptations, but the scientists and philosophers of Laputa, the intelligent, horsel..."# },
+  /* 12. */
+    Book { title: r#"The Pilgrim's Progress"#, author: r#"John Bunyan"#, summary: r#"The Pilgrim's Progress" is a Christian allegory by John Bunyan, chronicling the journey of a man namedChristian from the "City of Destruction" (earthly life) to the "Celestial City" (Heaven).Guided by faith, Christian navigates a treacherous path filled with physical and spiritual obstacles, meeting allegorical characters and locations like the Slough of Despond, Vanity Fair, and Doubting Castle. He battles demons, loses companions to martyrdom, and ultimately reaches salvation by crossing the River of Death..."# },
+  /* 13. */
+    Book { title: r#"A Christmas Carol"#, author: r#"Charles Dickens"#, summary: r#"An abridgment of the classic story with all the characters depicted as animals."# },
+  /* 14. */
+    Book { title: r#"David Copperfield"#, author: r#"Charles Dickens"#, summary: r#"Hugely admired by Tolstoy, David Copperfield is the novel that draws most closely from Charles Dickens's own life. Its eponymous hero, orphaned as a boy, grows up to discover love and happiness, heartbreak and sorrow amid a cast of eccentrics, innocents, and villains. Praising Dickens's power of inv..."# },
+  /* 15. */
+    Book { title: r#"A Tale of Two Cities"#, author: r#"Charles Dickens"#, summary: r#"Charles Dickens' story "A Tale of Two Cities" has been adapted in the following ways: Prefaced with historical context Events leading up to the French Revolution are analyzed within the novel, showcasing their representation. Events include: The Fall of Bastille, The September Massacres, King Louis ..."# },
+  /* 16. */
+    Book { title: r#"Little Women"#, author: r#"Louisa May Alcott"#, summary: r#"Louisa May Alcott's iconic novel-the beloved portrait of a nineteenth-century New England family in wartime The classic story of the March family, Little Women has been adored for generations. Now in a vibrant new deluxe edition with an introduction by Jane Smiley and a cover by Julie Doucet, the no..."# },
+  /* 17. */
+    Book { title: r#"Great Expectations"#, author: r#"Charles Dickens"#, summary: r#"The orphaned boy Pip's life takes an unexpected turn when, during his apprenticeship with a blacksmith, he receives a large sum of money from an anonymous benefactor. From having rather bleak prospects, the possibility of a life of prosperity opens up. However, the path is filled with difficulties, ..."# },
+  /* 18. */
+    Book { title: r#"The Hobbit, or, There and Back Again"#, author: r#"J.R.R. Tolkien"#, summary: r#"'The Hobbit' is a tale of high adventure, undertaken by a company of dwarves in search of dragon-guarded gold. A reluctant partner in this perilous quest is Bilbo Baggins, a comfort-loving, unambitious hobbit."# },
+  /* 19. */
+    Book { title: r#"Frankenstein, or, the Modern Prometheus"#, author: r#"Mary Shelley"#, summary: r#"Originally published: London: Printed for G. and W.B. Whittaker, 1823. In 2 vols."# },
+  /* 20. */
+    Book { title: r#"Oliver Twist"#, author: r#"Charles Dickens"#, summary: r#"Bring The Classics To Life Series. These novels have been adapted into 10 short chapters that will excite the reluctant reader as well as the enthusiastic one. Let the Classics introduce Kipling, Stevenson, and H.G. Wells. Readers will embrace the notion of Crusoe's lonely reflections, the psycholog..."# },
+  /* 21. */
+    Book { title: r#"Uncle Tom's Cabin"#, author: r#"Harriet Beecher Stowe"#, summary: r#"This book charts the paths from slavery to freedom of fugitives who escape the chains of American chattel slavery and of a martyr who transcends all earthly ties, and locates the issues of race and the role of women."# },
+  /* 22. */
+    Book { title: r#"Crime and Punishment"#, author: r#"Fyodor Dostoyevsky"#, summary: r#"Could an ordinary person, with no hint of malice and no motive but discovering what it feels like to do it, plot to kill and then actually murder a total stranger? What if the stranger were a thoroughly unlikable person hated by everyone who came into contact with her? One of the great novels of wor..."# },
+  /* 23. */
+    Book { title: r#"Madame Bovary: Patterns of Provincial life"#, author: r#"Gustave Flaubert"#, summary: r#"Described by Henry James as 'one of the first of the classics' and so regarded ever since, MADAME BOVARY has touched generations of readers and moulded generations of writers. The story of a little woman in a provincial town who dreams of happiness and then perishes by her own hand is worked up by F..."# },
+  /* 24. */
+    Book { title: r#"The Return of the King"#, author: r#"J.R.R. Tolkien"#, summary: r#"As the evil of Sauron swarms out to take over Middle-earth, Frodo Baggins and Sam travel deep into Mordor still trying to get the Ring of Power to Mount Doom where it can be destroyed."# },
+  /* 25. */
+    Book { title: r#"Dracula"#, author: r#"Bram Stoker"#, summary: r#"In 1897, Bram Stoker published what has now become one of the most revered horror stories of its time. Dracula has inspired the gothic genre for generations, continuing to this day to frighten and delight its readers for anyone brave enough to face the world of blood thirsty vampires in search of th..."# },
+  /* 26. */
+    Book { title: r#"The Three Musketeers"#, author: r#"Alexandre Dumas"#, summary: r#"The Three Musketeers (Les Trois Mousquetaires) is a novel by Alexandre Dumas, père. It recounts the adventures of a young man named d'Artagnan after he leaves home to become a musketeer. D'Artagnan is not one of the musketeers of the title; those are his friends Athos, Porthos, and Aramisinseparable..."# },
+  /* 27. */
+    Book { title: r#"Brave New World"#, author: r#"Aldous Huxley"#, summary: r#"Welcome to New London. Everybody is happy here. Our perfect society achieved peace and stability through the prohibition of monogamy, privacy, money, family and history itself. Now everyone belongs. You can be happy too. All you need to do is take your Soma pills. Discover the brave new world of Ald..."# },
+  /* 28. */
+    Book { title: r#"War and Peace"#, author: r#"Leo Tolstoy"#, summary: r#"From Richard Pevear and Larissa Volokhonsky, the best-selling, award-winning translators of Anna Karenina and The Brothers Karamazov, comes a brilliant, engaging, and eminently readable translation of Leo Tolstoy’s master epic. • Nominated as one of America’s best-loved novels by PBS’s The Great Ame..."# },
+  /* 29. */
+    Book { title: r#"To Kill a Mockingbird"#, author: r#"Harper Lee"#, summary: r#"The explosion of racial hate and violence in a small Alabama town is viewed by a little girl whose father defends a Black man accused of rape"# },
+  /* 30. */
+    Book { title: r#"The Wizard of Oz"#, author: r#"L. Frank Baum"#, summary: r#"Baum's story of Dorothy, carried by a cyclone from a Kansas farm to the land of the Tin Woodman, Scarecrow, and Cowardly Lion, was published in May 1900. By the following January, 100,000 copies had been sold, and the book has ever since been an undisputed favorite. The original illustrations by Den..."# },
+  /* 31. */
+    Book { title: r#"Les MisÃ©rables"#, author: r#"Victor Hugo"#, summary: r#"This is a reproduction of a book published before 1923. This book may have occasional imperfections such as missing or blurred pages, poor pictures, errant marks, etc. that were either part of the original artifact, or were introduced by the scanning process. We believe this work is culturally impor..."# },
+  /* 32. */
+    Book { title: r#"The Secret Garden"#, author: r#"Frances Hodgson Burnett"#, summary: r#"When orphaned Mary Lennox, lonely and sad, comes to live at her uncle's great house on the Yorkshire moors, she finds it full of secrets. At night, she hears the sound of crying down one of the long corridors. Outside, she meets Dickon, a magical boy who can charm and talk to animals. Then, one day,..."# },
+  /* 33. */
+    Book { title: r#"Animal Farm"#, author: r#"George Orwell"#, summary: r#"George Orwell’s celebrated novella, Animal Farm, is a biting, allegorical, political satire on totalitarianism in general and Stalinism in particular. One of the most famous works in modern English literature, it is a telling comment on Soviet Russia under Stalin’s brutal dictatorship based on a cul..."# },
+  /* 34. */
+    Book { title: r#"The Great Gatsby"#, author: r#"F. Scott Fitzgerald"#, summary: r#"Classical portrayal of love and violence during the Twenties."# },
+  /* 35. */
+    Book { title: r#"The Little Prince"#, author: r#"Antoine de Saint-ExupÃ©ry"#, summary: r#"No summary available."# },
+  /* 36. */
+    Book { title: r#"The Call of the Wild"#, author: r#"Jack London"#, summary: r#"Tor Classics are affordably-priced editions designed to attract the young reader. Original dynamic cover art enthusiastically represents the excitement of each story. Appropriate "reader friendly" type sizes have been chosen for each title—offering clear, accurate, and readable text. All editions ar..."# },
+  /* 37. */
+    Book { title: r#"20,000 Leagues Under the Sea"#, author: r#"Jules Verne"#, summary: r#"More than a marvelously thrilling drama, this classic science fiction novel from 1870 foretells the inventions and advanced technology of the twentieth century and has become a literary stepping-stone for generations of science fiction writers. The scholarly Professor Aronnax, loyal Conseil, and adv..."# },
+  /* 38. */
+    Book { title: r#"Anna Karenina"#, author: r#"Leo Tolstoy"#, summary: r#"A famous legend surrounding the creation of "Anna Karenina" tells us that Tolstoy began writing a cautionary tale about adultery and ended up falling in love with his magnificent heroine. It is rare to find a reader of the book who doesn't experience the same kind of emotional upheaval. Anna Karenin..."# },
+  /* 39. */
+    Book { title: r#"The Wind in the Willows"#, author: r#"Kenneth Grahame"#, summary: r#"Meet Mole, Rat Known as ""Ratty"" to his friends, Mr. Toad, Mr. Badger, Otter, portly, the Weasels, Pan, The Wayfarer and squirrels and rabbits. Journey with them on their amazing light-hearted adventures of folly, mysticism, friendship, forgiveness, and morality. The Wind in the Willows by author K..."# },
+  /* 40. */
+    Book { title: r#"The Picture of Dorian Gray"#, author: r#"Oscar Wilde"#, summary: r#"Oscar Wilde’s classic, alluring novel of a man so obsessed with his appearance that he sacrifices his soul for eternal youth—with an introduction by Jeffrey Eugenides Now a critically acclaimed Broadway play starring Sarah Snook! Nominated as one of America’s best-loved novels by PBS’s The Great Ame..."# },
+  /* 41. */
+    Book { title: r#"The Grapes of Wrath"#, author: r#"John Steinbeck"#, summary: r#"Set against he background of Dust Bowl Oklahoma and Californian migrant life, it tells of the Joad family, who are forced to travel west insearch of work - First published in 1939."# },
+  /* 42. */
+    Book { title: r#"Sense and Sensibility"#, author: r#"Jane Austen"#, summary: r#"Jane Austen's first published work, meticulously constructed and sparkling with her unique wit Marianne Dashwood wears her heart on her sleeve, and when she falls in love with the dashing but unsuitable John Willoughby she ignores her sister Elinor's warning that her impulsive behaviour leaves her o..."# },
+  /* 43. */
+    Book { title: r#"The Last of the Mohicans"#, author: r#"James Fenimore Cooper"#, summary: r#"It is the late 1750s, and the French and Indian War grips the wild forest frontier of western New York. The French army is attacking Fort William Henry, a British outpost commanded by Colonel Munro. Munro’s daughters Alice and Cora set out from Fort Edward to visit their father, escorted through the dangerous forest by Major Duncan Heyward and guided by an Indian named Magua. Soon they are joined by David Gamut, a singing master and religious follower of Calvinism. Traveling cautiously, the group encounters the white scout Natty Bumppo, who goes by the name Hawkeye, and his two Indian companions, Chingachgook and Uncas, Chingachgook’s son, the only surviving members of the once great Mohican tribe. Hawkeye says that Magua, a Huron, has betrayed the group by leading them in the wrong direction. The Mohicans attempt to capture the traitorous Huron, but he escapes..."# },
+  /* 44. */
+    Book { title: r#"Tess of the d'Urbervilles"#, author: r#"Thomas Hardy"#, summary: r#"An intimate portrait of a woman, one of literature's most admirable and tragic heroines... Tess Durbeyfield knows what it is to work hard and expect little. But her life is about to veer from the path trod by her mother and grandmother. When her ne’er-do-well father learns that his family is the las..."# },
+  /* 45. */
+    Book { title: r#"Harry Potter and the Sorcerer's Stone"#, author: r#"J.K. Rowling"#, summary: r#"Turning the envelope over, his hand trembling, Harry saw a purple wax seal bearing a coat of arms; a lion, an eagle, a badger and a snake surrounding a large letter 'H'. Harry Potter has never even heard of Hogwarts when the letters start dropping on the doormat at number four, Privet Drive. Address..."# },
+  /* 46. */
+    Book { title: r#"Heidi"#, author: r#"Johanna Spyri"#, summary: r#"Heidi is a poignant exploration of childhood innocence, resilience, and the transformative power of nature and kindness. Johanna Spyri depicts the journey of a young orphan who, amidst the breathtaking landscapes of the Swiss Alps, discovers the warmth of familial bonds and the strength of the human..."# },
+  /* 47. */
+    Book { title: r#"Ulysses"#, author: r#"James Joyce"#, summary: r#"Loosely based on the Odyssey, this landmark of modern literature follows ordinary Dubliners through an entire day in 1904. Captivating experimental techniques range from interior monologues to exuberant wordplay and earthy humor."# },
+  /* 48. */
+    Book { title: r#"The Complete Sherlock Holmes"#, author: r#"Arthur Conan Doyle"#, summary: r#"No home library is complete without the classics! The Complete Sherlock Holmes Collection brings together the essential works from Arthur Conan Doyle There is one literary detective who stands above all others, whose powers of deduction are known the world over, whose influence can still be felt in ..."# },
+  /* 49. */
+    Book { title: r#"The Count of Monte Cristo"#, author: r#"Alexandre Dumas"#, summary: r#""The Count of Monte Cristo" - a sizeable adventure novel by Alexandre Dumas - with a huge cast of characters, all revolving around the young sailor Edmond Dantès. Thrown in prison for a crime he has not committed, Edmond Dantes is confined to the grim fortress of the island prison, Chateau d'If. He ..."# },
+  /* 50. */
+    Book { title: r#"The Old Man and the Sea"#, author: r#"Ernest Hemingway"#, summary: r#"Ernest Hemingway’s most beloved and popular novel ever, with millions of copies sold—now featuring early drafts and supplementary material as well as a personal foreword by the only living son of the author, Patrick Hemingway, and an introduction by the author’s grandson Seán Hemingway. The last nov..."# },
+  /* 51. */
+    Book { title: r#"The Lion, the Witch, and the Wardrobe"#, author: r#"C.S. Lewis"#, summary: r#"There are a thousand stories in the land of Narnia, and the first is about to be told in an extraordinary motion picture, The Chronicles of Narnia: The Lion, the Witch and the Wardrobe, from Walt Disney Pictures and Walden Media. This is the companion book to that movie. Here is a bold and striking ..."# },
+  /* 52. */
+    Book { title: r#"The Hunchback of Notre Dame"#, author: r#"Victor Hugo"#, summary: r#"Set in medieval Paris, Victor Hugo’s powerful historical romance The Hunchback of Notre-Dame has resonated with succeeding generations ever since its publication in 1837. It tells the story of the beautiful gypsy Esmeralda, condemned as a witch by the tormented archdeacon Claude Frollo, who lusts af..."# },
+  /* 53. */
+    Book { title: r#"Pinocchio"#, author: r#"Carlo Collodi"#, summary: r#""The Adventures of Pinocchio" by Carlo Collodi is a beloved classic of children's literature that tells the enchanting tale of a wooden puppet who longs to become a real boy. This timeless story has captivated readers of all ages for generations. The narrative follows the adventures of Pinocchio, a ..."# },
+  /* 54. */
+    Book { title: r#"One Hundred Years of Solitude"#, author: r#"Gabriel GarcÃ­a MÃ¡rquez"#, summary: r#"The rise and fall, birth and death, of the mythical town of Macondo through the history of the Buendia family."# },
+  /* 55. */
+    Book { title: r#"Ivanhoe"#, author: r#"Walter Scott"#, summary: r#"Hailed by Victor Hugo as "the real epic of our age," Ivanhoe was an immensely popular bestseller when first published in 1819. The book inspired literary imitations as well as paintings, dramatizations, and even operas. Now Sir Walter Scott's sweeping romance of medieval England has prompted a lavis..."# },
+  /* 56. */
+    Book { title: r#"The Red Badge of Courage"#, author: r#"Stephen Crane"#, summary: r#"This powerful, emotionally compelling novel set the pattern for the treatment of war in modern fiction. The Civil War tale established Crane as a major author and remains a landmark of American literature."# },
+  /* 57. */
+    Book { title: r#"Anne of Green Gables"#, author: r#"L.M. Montgomery"#, summary: r#"Anne of Green Gables is a 1908 novel by Canadian author Lucy Maud Montgomery. Written for all ages, it has been considered a classic children’s novel since the mid-20th century. Set in the late 19th century, the novel recounts the adventures of Anne Shirley, an 11-year-old orphan girl, who is mistak..."# },
+  /* 58. */
+    Book { title: r#"Black Beauty"#, author: r#"Anna Sewell"#, summary: r#"A horse in nineteenth-century England recounts his experiences with both good and bad masters."# },
+  /* 59. */
+    Book { title: r#"Peter Pan"#, author: r#"J.M. Barrie"#, summary: r#"The story begins in the nursery of Darling home, where Mrs. Darling is "sorting through her children’s minds" at bedtime. She is surprised to find that all the children have been thinking of someone named Peter Pan. When Mrs. Darling asks about this mysterious boy, Wendy explains that Peter sometimes visits them when they’re asleep. One night, when she is resting in the nursery, Mrs. Darling wakes up to find that Peter Pan has indeed come to visit. When Peter notices an adult in the room, he jumps out the window, but the children's canine nanny, Nana, traps his shadow inside the room..."# },
+  /* 60. */
+    Book { title: r#"A Farewell to Arms"#, author: r#"Ernest Hemingway"#, summary: r#"Ernest Hemingway’s classic novel of love during wartime. Written when Ernest Hemingway was thirty years old and lauded as the best American novel to emerge from World War I, A Farewell to Arms is the unforgettable story of an American ambulance driver on the Italian front and his passion for a beaut..."# },
+  /* 61. */
+    Book { title: r#"The House of the Seven Gables"#, author: r#"Nathaniel Hawthorne"#, summary: r#"First published in 1851, The House of the Seven Gables is one of Hawthorne's defining works, a vivid depiction of American life and values replete with brilliantly etched characters. The tale of a cursed house with a " mysterious and terrible past" and the generations linked to it, Hawthorne's chron..."# },
+  /* 62. */
+    Book { title: r#"Lord of the Flies"#, author: r#"William Golding"#, summary: r#"TheLiterature Made Easy Series is more than just plot summaries. Each book describes a classic novel and drama by explaining themes, elaborating on characters, and discussing each author's unique literary style, use of language, and point of view. Extensive illustrations and imaginative, enlightenin..."# },
+  /* 63. */
+    Book { title: r#"The Prince and the Pauper"#, author: r#"Mark Twain"#, summary: r#"Tom Canty and Edward Tudor could have been identical twins. Their birthdays match, their faces match, but there the likeness stops. For Edward is a prince, heir to King Henry VIII, whilst Tom is a miserable pauper. But when fate intervenes, Edward is thrown out of the palace in rags, leaving ignoran..."# },
+  /* 64. */
+    Book { title: r#"A Portrait of the Artist as a Young Man"#, author: r#"James Joyce"#, summary: r#"First Published in 1993. Routledge is an imprint of Taylor & Francis, an informa company."# },
+  /* 65. */
+    Book { title: r#"Lord Jim"#, author: r#"Joseph Conrad"#, summary: r#"Lord Jim is a classic story of one man's tragic failure and eventual redemption, told under the circumstances of high adventure at the margins of the known world which made Conrad's work so immediately popular. But it is also the book in which its author, through a brilliant adaptation of his stylistic apparatus to his obsessive moral, psychological and political concerns, laid the groundwork for the modern novel as we know it."# },
+  /* 66. */
+    Book { title: r#"Harry Potter and the Chamber of Secrets"#, author: r#"J.K. Rowling"#, summary: r#"'There is a plot, Harry Potter. A plot to make most terrible things happen at Hogwarts School of Witchcraft and Wizardry this year.' Harry Potter's summer has included the worst birthday ever, doomy warnings from a house-elf called Dobby, and rescue from the Dursleys by his friend Ron Weasley in a m..."# },
+  /* 67. */
+    Book { title: r#"The Red & the Black"#, author: r#"Stendhal"#, summary: r#"Handsome and ambitious, Julien Sorel is determined to rise above his humble peasant origins and make something of his life-by adopting the code of hypocrisy by which his society operates. Julien ultimately commits a crime-out of passion, principle, or insanity-that will bring about his downfall. The..."# },
+  /* 68. */
+    Book { title: r#"The Stranger"#, author: r#"Albert Camus"#, summary: r#"With the intrigue of a psychological thriller, The Stranger—Camus's masterpiece—gives us the story of an ordinary man unwittingly drawn into a senseless murder on an Algerian beach. With an Introduction by Peter Dunwoodie; translated by Matthew Ward. Behind the subterfuge, Camus explores what he ter..."# },
+  /* 69. */
+    Book { title: r#"The Trial"#, author: r#"Franz Kafka"#, summary: r#""The Trial" (original German title: "Der Process", later "Der Prozess", "Der Proceß" and "Der Prozeß") is a novel written by Franz Kafka in 1914 and 1915 but not published until 1925. One of Kafka's best-known works, it tells the story of a man arrested and prosecuted by a remote, inaccessible autho..."# },
+  /* 70. */
+    Book { title: r#"Lady Chatterley's Lover"#, author: r#"D.H. Lawrence"#, summary: r#"Lyric and sensual, D.H. Lawrence’s scandalous novel explores the emotions of a lonely woman trapped in a sterile marriage and her growing love for the robust gamekeeper of her husband’s estate—with an introduction by Kathryn Harrison. The basis for the major motion picture starring The Crown’s Emma ..."# },
+  /* 71. */
+    Book { title: r#"Kidnapped: The Adventures of David Balfour"#, author: r#"Robert Louis Stevenson"#, summary: r#""being memoirs of the adventures of David Balfour in the year 1751: how he was kidnapped and cast away; his sufferings in a desert isle; his journey in the wild Highlands; his acquaintance with Alan Breck Stewart and other notorious Highland Jacobites; with all that he suffered at the hands of his u..."# },
+  /* 72. */
+    Book { title: r#"The Catcher in the Rye"#, author: r#"J.D. Salinger"#, summary: r#"Anyone who has read J. D. Salinger's New Yorker stories - particularly A Perfect Day for Bananafish, Uncle Wiggily in Connecticut, The Laughing Man, and For Esme - With Love and Squalor, will not be surprised by the fact that his first novel is full of children. The hero-narrator of The Catcher in t..."# },
+  /* 73. */
+    Book { title: r#"Fahrenheit 451"#, author: r#"Ray Bradbury"#, summary: r#"Fahrenheit 451 is a dystopian novel by American writer Ray Bradbury. Fahrenheit 451 is the temperature at which book paper spontaneously catches fire and burns. It is a futuristic novel describing a time when the government has ordered that all books be burned. This may seem to be ridiculous and cou..."# },
+  /* 74. */
+    Book { title: r#"A Journey to the Center of the Earth"#, author: r#"Jules Verne"#, summary: r#"From the discovery of a strange parchment in an old bookseller’s shop to the fantastic descent through a dormant volcano into a subterranean world of danger and beauty, A Journey to the Center of the Earth is as wonderfully entertaining today as when it was first published. One of Jules Verne’s fine..."# },
+  /* 75. */
+    Book { title: r#"Vanity Fair"#, author: r#"William Makepeace Thackeray"#, summary: r#"Essentially a commentary on hypocrisy and those ethical principles to which society pays lip-service, VANITY FAIR (1847-8) is a classic epic extending from urban and rural England to Waterloo and the continental haunts of exiles. Considered one of the greatest social-satirical novels in English, thi..."# },
+  /* 76. */
+    Book { title: r#"All Quiet on the Western Front"#, author: r#"Erich Maria Remarque"#, summary: r#""All Quiet on the Western Front" by Erich Maria Remarque is a powerful and poignant novel that explores the harrowing experiences of soldiers during World War I. First published in 1929, the book is narrated by Paul Bäumer, a young German soldier who enlists in the army with his classmates, driven b..."# },
+  /* 77. */
+    Book { title: r#"Gone with the Wind"#, author: r#"Margaret Mitchell"#, summary: r#"This is the tale of Scarlett O’Hara, the spoiled, light-minded, flirtatious daughter of a wealthy plantation owner in the South, who arrives at young womanhood just in time to see the Civil War forever change her life. In spite of a huge popularity around men, she only loves Ashley Wilkes. But one d..."# },
+  /* 78. */
+    Book { title: r#"My Ãntonia"#, author: r#"Willa Cather"#, summary: r#"No summary available."# },
+  /* 79. */
+    Book { title: r#"Of Mice and Men"#, author: r#"John Steinbeck"#, summary: r#""Of Mice and Men" is a novella written by John Steinbeck, first published in 1937. Set during the Great Depression in California, it tells the story of two displaced migrant ranch workers, George Milton and Lennie Small, who are trying to make a living during tough economic times. George is a small,..."# },
+  /* 80. */
+    Book { title: r#"The Vicar of Wakefield"#, author: r#"Oliver Goldsmith"#, summary: r#"No summary available."# },
+  /* 81. */
+    Book { title: r#"A Connecticut Yankee in King Arthur's Court"#, author: r#"Mark Twain"#, summary: r#"When Connecticut mechanic and foreman Hank Morgan is knocked unconscious, he wakes not to the familiar scenes of nineteenth-century America but to the bewildering sights and sounds of sixth-century Camelot. Although confused at first and quickly imprisoned, he soon realises that his knowledge of the..."# },
+  /* 82. */
+    Book { title: r#"White Fang"#, author: r#"Jack London"#, summary: r#"A beloved Jack London classic novel reissued for contemporary readers. Rediscover Jack London’s beloved classic in this unique hardbound edition. First published as a serial in Outing magazine in 1906, White Fang has been called “one of London’s most interesting and ambitious works.” Follow the wolf..."# },
+  /* 83. */
+    Book { title: r#"Fathers and Sons"#, author: r#"Ivan Sergeevich Turgenev"#, summary: r#"When a young graduate returns home he is accompanied, much to his father and uncle's discomfort, by a strange friend "who doesn't acknowledge any authorities, who doesn't accept a single principle on faith." Turgenev's masterpiece of generational conflict shocked Russian society when it waspublished..."# },
+  /* 84. */
+    Book { title: r#"Doctor Zhivago"#, author: r#"Boris Leonidovich Pasternak"#, summary: r#"An epic novel of Russia before and during the Revolution."# },
+  /* 85. */
+    Book { title: r#"The Decameron"#, author: r#"Giovanni Boccaccio"#, summary: r#"No summary available."# },
+  /* 86. */
+    Book { title: r#"Nineteen Eighty-Four"#, author: r#"George Orwell"#, summary: r#"75th ANNIVERSARY EDITION “Orwell saw, to his credit, that the act of falsifying reality is only secondarily a way of changing perceptions. It is, above all, a way of asserting power.”—The New Yorker In 1984, London is a grim city in the totalitarian state of Oceania where Big Brother is always watch..."# },
+  /* 87. */
+    Book { title: r#"The Jungle"#, author: r#"Upton Sinclair"#, summary: r#"The classic protest novel that exposed harsh working conditions and unsanitary practices in the meatpacking industry A slaughterhouse worker from Lithuania, Jurgis Rudkus immigrated to turn-of-the-century Chicago believing that he would find freedom and prosperity. Instead, meager wages and a filthy..."# },
+  /* 88. */
+    Book { title: r#"The Da Vinci Code"#, author: r#"Dan Brown"#, summary: r#"THE #1 WORLDWIDE BESTSELLING PHENOMENON, WITH MORE THAN 85 MILLION COPIES SOLD “Blockbuster perfection . . . a gleefully erudite suspense novel.” —The New York Times “A pulse-quickening, brain-teasing adventure.” —People While in Paris, Harvard symbologist Robert Langdon is awakened by a phone call ..."# },
+  /* 89. */
+    Book { title: r#"Persuasion"#, author: r#"Jane Austen"#, summary: r#"What happens when we listen to others instead of our heart? That is the subject of Jane Austen's final novel, and her most mature work. After Anne Elliot heeds the advice of her dearest friend and breaks off her engagement to Frederick Wentworth, happiness eludes her. Eight years later, Anne remains..."# },
+  /* 90. */
+    Book { title: r#"Mansfield Park"#, author: r#"Jane Austen"#, summary: r#"Mansfield Park is Jane Austen’s darkest, and most complex novel. In contrast to the confident and vivacious heroines of Emma and Pride and Prejudice, its central character, Fanny Price, is a shy and vulnerable poor relation who finds the courage to stand up for her principles and desires. Fanny come..."# },
+  /* 91. */
+    Book { title: r#"Candide"#, author: r#"Voltaire"#, summary: r#"Voltaire's Candide is political satire that has endured for centuries. Required reading in many high school AP courses and college English courses, Candide tells the story of a starry-eyed young man who struggles to reunite with his lost love. Eschewing mystical optimism for a more philosophy, Candi..."# },
+  /* 92. */
+    Book { title: r#"For Whom the Bell Tolls"#, author: r#"Ernest Hemingway"#, summary: r#"For Whom the Bell Tolls is a novel by Ernest Hemingway. It tells the story of Robert Jordan,and the Spanish Civil War."# },
+  /* 93. */
+    Book { title: r#"Far from the Madding Crowd"#, author: r#"Thomas Hardy"#, summary: r#"This updated authoritative edition of the classic Hardy novel, which was published anonymously and first attributed to George Eliot, is set from Hardy's revised, unedited final draft of 1912 and features a new Introduction and Afterword. There is in England no more real or typical district than Thom..."# },
+  /* 94. */
+    Book { title: r#"The Fellowship of the Ring"#, author: r#"J.R.R. Tolkien"#, summary: r#"Begin your journey into Middle-earth... The inspiration for the upcoming original series on Prime Video, The Lord of the Rings: The Rings of Power. The Fellowship of the Ring is the first part of J.R.R. Tolkien’s epic adventure The Lord of the Rings. One Ring to rule them all, One Ring to find them,..."# },
+  /* 95. */
+    Book { title: r#"The Return of the Native"#, author: r#"Thomas Hardy"#, summary: r#"The Return of the Native is Thomas Hardy's sixth published novel. It first appeared in the magazine Belgravia, a publication known for its sensationalism, and was presented in twelve monthly installments from January to December 1878. Because of the novel's controversial themes, Hardy had some diffi..."# },
+  /* 96. */
+    Book { title: r#"Sons and Lovers"#, author: r#"D.H. Lawrence"#, summary: r#"D.H. Lawrence's third novel and one of his most beloved, Sons and Lovers is considered the author's most autobiographical book, following the life of Paul Morel. Paul is an emerging young artist born to a mother who married for passion and came to regret it. Both Paul and his brother William are in ..."# },
+  /* 97. */
+    Book { title: r#"Charlotte's Web"#, author: r#"E.B. White"#, summary: r#"Sixty years ago, on October 15, 1952, E.B. White's Charlotte's Web was published. It's gone on to become one of the most beloved children's books of all time. To celebrate this milestone, the renowned Newbery Medalist Kate DiCamillo has written a heartfelt and poignant tribute to the book that is it..."# },
+  /* 98. */
+    Book { title: r#"The Swiss Family Robinson"#, author: r#"Johann David Wyss"#, summary: r#"Presents the classic novel about a Swiss family who are shipwrecked on an uncharted island in the nineteenth century and their story of adventure and survival."# },
+  /* 99. */
+    Book { title: r#"Bleak House"#, author: r#"Charles Dickens"#, summary: r#"A classic novel about the Chancery court and its cases while dwelling upon the romanic side of familiar things."# },
+  /* 100. */
+    Book { title: r#"PÃ¨re Goriot"#, author: r#"HonorÃ© de Balzac"#, summary: r#"Through parental love Goriot is willingly reduced to poverty so that he may satisfy the demands of his well-married but debt-ridden daughters."# },
+  /* 101. */
+    Book { title: r#"Utopia"#, author: r#"Thomas More"#, summary: r#"'It remains astonishingly radical ... one of Utopia's most striking aspects is its contemporaniety' Terry Eagleton In Utopia, Thomas More gives us a traveller's account of a newly-discovered island where the inhabitants enjoy a social order based on natural reason and justice, and human fulfilment i..."# },
+  /* 102. */
+    Book { title: r#"The History of Tom Jones, a Foundling"#, author: r#"Henry Fielding"#, summary: r#"No summary available."# },
+  /* 103. */
+    Book { title: r#"Harry Potter and the Prisoner of Azkaban"#, author: r#"J.K. Rowling"#, summary: r#"No summary available."# },
+  /* 104. */
+    Book { title: r#"Kim"#, author: r#"Rudyard Kipling"#, summary: r#"No summary available."# },
+  /* 105. */
+    Book { title: r#"The Sound and the Fury"#, author: r#"William Faulkner"#, summary: r#"No summary available."# },
+  /* 106. */
+    Book { title: r#"Harry Potter and the Goblet of Fire"#, author: r#"J.K. Rowling"#, summary: r#"Get ready for adventure with this dazzling edition of Harry Potter and the Goblet of Fire! J.K. Rowling's complete and unabridged text is accompanied by stunning, full-colour illustrations throughout and eight paper-engineered interactive elements. Readers will love looking inside the Weasleys' magi..."# },
+  /* 107. */
+    Book { title: r#"The Mill on the Floss"#, author: r#"George Eliot"#, summary: r#"George Eliot's novel The Mill on the Floss, orginally published in 1860 as three volumes, tells of the lives of brother and sister Tom and Maggie Tulliver as they grow up upon the River Floss."# },
+  /* 108. */
+    Book { title: r#"A Wrinkle in Time"#, author: r#"Madeleine L'Engle"#, summary: r#"No summary available."# },
+  /* 109. */
+    Book { title: r#"The Hound of the Baskervilles"#, author: r#"Arthur Conan Doyle"#, summary: r#"No summary available."# },
+  /* 110. */
+    Book { title: r#"The Two Towers"#, author: r#"J.R.R. Tolkien"#, summary: r#"No summary available."# },
+  /* 111. */
+    Book { title: r#"The War of the Worlds"#, author: r#"H.G. Wells"#, summary: r#"No summary available."# },
+  /* 112. */
+    Book { title: r#"Middlemarch"#, author: r#"George Eliot"#, summary: r#"No summary available."# },
+  /* 113. */
+    Book { title: r#"The Age of Innocence"#, author: r#"Edith Wharton"#, summary: r#"No summary available."# },
+  /* 114. */
+    Book { title: r#"The Color Purple"#, author: r#"Alice Walker"#, summary: r#"No summary available."# },
+  /* 115. */
+    Book { title: r#"Northanger Abbey"#, author: r#"Jane Austen"#, summary: r#"Jane Austen’s first novel, Northanger Abbey—published posthumously in 1818—tells the story of Catherine Morland and her dangerously sweet nature, innocence, and sometime self-delusion. Though Austen’s fallible heroine is repeatedly drawn into scrapes while vacationing at Bath and during her subseque..."# },
+  /* 116. */
+    Book { title: r#"East of Eden"#, author: r#"John Steinbeck"#, summary: r#"No summary available."# },
+  /* 117. */
+    Book { title: r#"On the Road"#, author: r#"Jack Kerouac"#, summary: r#"Chronciles Kerouac's years traveling the North American continent, from the East Coast to West Coast to Mexico, with his friend Neal Cassady, "a sideburned hero of the snowy West." The two roam the country in a quest for self-knowledge and experience."# },
+  /* 118. */
+    Book { title: r#"Catch-22"#, author: r#"Joseph Heller"#, summary: r#"No summary available."# },
+  /* 119. */
+    Book { title: r#"Around the World in Eighty Days"#, author: r#"Jules Verne"#, summary: r#"No summary available."# },
+  /* 120. */
+    Book { title: r#"Hard Times"#, author: r#"Charles Dickens"#, summary: r#"No summary available."# },
+  /* 121. */
+    Book { title: r#"Beloved"#, author: r#"Toni Morrison"#, summary: r#"No summary available."# },
+  /* 122. */
+    Book { title: r#"Mrs. Dalloway"#, author: r#"Virginia Woolf"#, summary: r#"No summary available."# },
+  /* 123. */
+    Book { title: r#"To the Lighthouse"#, author: r#"Virginia Woolf"#, summary: r#"'I am making up "To the Lighthouse" - the sea is to be heard all through it' Inspired by the lost bliss of her childhood summers in Cornwall, Virginia Woolf produced one of the masterworks of English literature in To the Lighthouse. It concerns the Ramsay family and their summer guests on the Isle o..."# },
+  /* 124. */
+    Book { title: r#"The Magician's Nephew"#, author: r#"C.S. Lewis"#, summary: r#"DigiCat Publishing presents to you this special edition of "The Magician's Nephew" by C. S. Lewis. DigiCat Publishing considers every written word to be a legacy of humankind. Every DigiCat book has been carefully reproduced for republishing in a new modern format. The books are available in print, ..."# },
+  /* 125. */
+    Book { title: r#"Harry Potter and the Order of the Phoenix"#, author: r#"J.K. Rowling"#, summary: r#"When the government of the magic world and authorities at Hogwarts School of Witchcraft and Wizardry refuse to believe in the growing threat of a freshly revived Lord Voldemort, fifteen-year-old Harry Potter finds support from his loyal friends in facing the evil wizard and other new terrors.As Harr..."# },
+  /* 126. */
+    Book { title: r#"The Sun Also Rises"#, author: r#"Ernest Hemingway"#, summary: r#"A Contemporary Classics hardcover edition of Nobel Prize–winner Ernest Hemingway’s landmark first novel—both a tragic love story and a searing group portrait of hapless American expatriates drinking, dancing, and chasing their illusions in post–World War I Europe. The Sun Also Rises tracks the Lost ..."# },
+  /* 127. */
+    Book { title: r#"The Good Earth"#, author: r#"Pearl S. Buck"#, summary: r#"The Pulitzer Prize–winning, New York Times–bestselling novel about a peasant farmer and his family in early twentieth-century China. The Good Earth is Buck’s classic story of Wang Lung, a Chinese peasant farmer, and his wife, O-lan, a former slave. With luck and hard work, the couple’s fortunes impr..."# },
+  /* 128. */
+    Book { title: r#"Silas Marner"#, author: r#"George Eliot"#, summary: r#"A gentle linen weaver in a small English town is wrongly accused of a theft goes into seclusion and finds redemption in his unselfish love for an abandoned child who mysteriously appears at his cottage."# },
+  /* 129. */
+    Book { title: r#"Love in the Time of Cholera"#, author: r#"Gabriel GarcÃ­a MÃ¡rquez"#, summary: r#"No summary available."# },
+  /* 130. */
+    Book { title: r#"Rebecca"#, author: r#"Daphne Du Maurier"#, summary: r#"Rebecca adalah istri pertama Maxim de Winter, kecantikan dan kematiannya yang misterius meninggalkan kenangan muram yang menghantui Manderley, rumah megah tempat dia dulu tinggal. Ketika Maxim menikah lagi dengan seorang wanita muda yang lugu, bayang-bayang Rebecca menghantui Nyonya de Winter yang b..."# },
+  /* 131. */
+    Book { title: r#"Jude the Obscure"#, author: r#"Thomas Hardy"#, summary: r#"No summary available."# },
+  /* 132. */
+    Book { title: r#"Twilight"#, author: r#"Stephenie Meyer"#, summary: r#"The book that inspired the global film phenomenon, starring Kristin Stewart and Robert Pattinson. Fall in love with the addictive, suspenseful love story between and teenage girl and a vampire that redefined romance for a generation, from #1 New York Times bestselling author Stephenie Meyer. Isabell..."# },
+  /* 133. */
+    Book { title: r#"A Passage to India"#, author: r#"E.M. Forster"#, summary: r#"The setting of A Passage to India is the British Raj, at a time of racial tension heightened by the burgeoning Indian independence movement. Adela Quested, a young British subject, is visiting India to decide whether to marry a suitor who works there as a city magistrate. During her visit, a local p..."# },
+  /* 134. */
+    Book { title: r#"The Plague"#, author: r#"Albert Camus"#, summary: r#"“We can finally read the work as Camus meant it to be read. Laura Marris’s new translation of The Plague is, quite simply, the translation we need to have.” —Los Angeles Review of Books The first new translation of The Plague to be published in the United States in more than seventy years, bringing ..."# },
+  /* 135. */
+    Book { title: r#"Nicholas Nickleby"#, author: r#"Charles Dickens"#, summary: r#"A young man fights to save his mother and sister—and a group of abused schoolboys—in this novel of hardship and heroism from the great Victorian writer. Suddenly fatherless and penniless, young Nicholas Nickleby can find no help for himself and his family. His uncle Ralph may be rich, but he is neit..."# },
+  /* 136. */
+    Book { title: r#"The Pearl"#, author: r#"John Steinbeck"#, summary: r#"“There it lay, the great pearl, perfect as the moon.” Like his father and grandfather before him, Kino is a poor diver, gathering pearls from the gulf beds that once brought great wealth to the Kings of Spain and now provide Kino, Juana, and their infant son with meager subsistence. Then, on a day l..."# },
+  /* 137. */
+    Book { title: r#"Ethan Frome"#, author: r#"Edith Wharton"#, summary: r#"No summary available."# },
+  /* 138. */
+    Book { title: r#"The Tale of Genji"#, author: r#"Murasaki Shikibu"#, summary: r#"In the eleventh century Murasaki Shikibu, a lady in the Heian court of Japan, wrote the world's first novel. But The Tale of Genji is no mere artifact. It is, rather, a lively and astonishingly nuanced portrait of a refined society where every dalliance is an act of political consequence, a play of ..."# },
+  /* 139. */
+    Book { title: r#"The Giver"#, author: r#"Lois Lowry"#, summary: r#"No summary available."# },
+  /* 140. */
+    Book { title: r#"The Alchemist"#, author: r#"Paulo Coelho"#, summary: r#""My heart is afraid that it will have to suffer," the boy told the alchemist one night as they looked up at the moonless sky." Tell your heart that the fear of suffering is worse than the suffering itself. And that no heart has ever suffered when it goes in search of its dreams." Every few decades a..."# },
+  /* 141. */
+    Book { title: r#"The Strange Case of Dr. Jekyll and Mr. Hyde"#, author: r#"Robert Louis Stevenson"#, summary: r#"Dr Jekyll is a well-respected, curious scientist who tries to separate his good characteristics from his evil impulses. Dr Jekyll uses science to explore his alter ego Mr Hyde and attempts to control Mr Hyde's evil urges, even as they grow in intensity."# },
+  /* 142. */
+    Book { title: r#"Robinson Crusoe"#, author: r#"Daniel Defoe"#, summary: r#"Daniel Defoe relates the tale of an English sailor marooned on a desert island for nearly three decades. An ordinary man struggling to survive in extraordinary circumstances, Robinson Crusoe wrestles with fate and the nature of God. This edition features maps."# },
+  /* 143. */
+    Book { title: r#"Tender is the Night"#, author: r#"F. Scott Fitzgerald"#, summary: r#"An idealist confronted by a doomed marriage."# },
+  /* 144. */
+    Book { title: r#"The Idiot"#, author: r#"Fyodor Dostoyevsky"#, summary: r#"This is one of the most influential works by Dostoyevsky. The story revolves around Prince Lev Nikolayevich Myshkin, who upon his return to Russia finds himself in a very complicated situation."# },
+  /* 145. */
+    Book { title: r#"Hatchet"#, author: r#"Gary Paulsen"#, summary: r#"Haunted by his parents' divorce and the secret that caused it, young Brian Robeson, the sole survivor of a plane crash in the Canadian wilderness, must draw on untested skills and strength to survive."# },
+  /* 146. */
+    Book { title: r#"The Kite Runner"#, author: r#"Khaled Hosseini"#, summary: r#"The #1 New York Times bestselling novel beloved by millions of readers the world over. New York Times Readers Pick: 100 Best Books of the 21st Century “A vivid and engaging story that reminds us how long his people [of Afghanistan] have been struggling to triumph over the forces of violence—forces t..."# },
+  /* 147. */
+    Book { title: r#"One Flew Over the Cuckoo's Nest"#, author: r#"Ken Kesey"#, summary: r#"Tyrannical Nurse Ratched rules her ward in an Oregon State mental hospital with a strict and unbending routine, unopposed by her patients, who remain cowed by mind-numbing medication and the threat of electric shock therapy. But her regime is disrupted by the arrival of McMurphy - the swaggering, fu..."# },
+  /* 148. */
+    Book { title: r#"The Portrait of a Lady"#, author: r#"Henry James"#, summary: r#"A young American travels to Europe where her naivete — and recent inheritance — attracts many suitors. James's masterpiece examines the themes of freedom, sexuality, and betrayal."# },
+  /* 149. */
+    Book { title: r#"The Outsiders"#, author: r#"S.E. Hinton"#, summary: r#"Over 50 years of an iconic classic! This international bestseller and inspiration for a beloved movie is a heroic story of friendship and belonging. No one ever said life was easy. But Ponyboy is pretty sure that he's got things figured out. He knows that he can count on his brothers, Darry and Soda..."# },
+  /* 150. */
+    Book { title: r#"Ben-Hur"#, author: r#"Lew Wallace"#, summary: r#"In "Ben-Hur: A Tale of the Christ," Lew Wallace masterfully intertwines a gripping narrative of betrayal, redemption, and faith set against the backdrop of ancient Rome. Wallace employs a rich, descriptive literary style that captures the tumultuous atmosphere of the era, while the novel's structure..."# },
+  /* 151. */
+    Book { title: r#"The Mayor of Casterbridge"#, author: r#"Thomas Hardy"#, summary: r#"Michael Henchard gets drunk at a fair and sells his wife and child for five guineas to a sailor. Henchard proves to be violent, selfish, greedy and crude, yet at the same time he is magnanimous and humble."# },
+  /* 152. */
+    Book { title: r#"Cry, The Beloved Country"#, author: r#"Alan Paton"#, summary: r#"Paton's deeply moving story of Zulu pastor Stephen Kumalo and his son Absalom, set against the backdrop of a land and people riven by racial inequality and injustice, remains the most famous and important novel in South Africa's history. Published to coincide with the Miramax film release in Decembe..."# },
+  /* 153. */
+    Book { title: r#"The Last Battle"#, author: r#"C.S. Lewis"#, summary: r#"The Last Battle chronicles the end of the world of Narnia. During the last days of Narnia, the land faces its fiercest challenge—not an invader from without but an enemy from within. Lies and treachery have taken root in Narnia. Jill and Eustace return to save Narnia. Together with the King Tirian a..."# },
+  /* 154. */
+    Book { title: r#"Captains Courageous"#, author: r#"Rudyard Kipling"#, summary: r#"The weather door of the smoking-room had been left open to the North Atlantic fog, as the big liner rolled and lifted, whistling to warn the fishing-fleet. "That Cheyne boy's the biggest nuisance aboard," said a man in a frieze overcoat, shutting the door with a bang. "He isn't wanted here. He's too..."# },
+  /* 155. */
+    Book { title: r#"The Castle"#, author: r#"Franz Kafka"#, summary: r#"Kafka's story about a man seeking acceptance and access to the mysterious castle is among the central works of modern literature. This translation follows the German critical text and includes a detailed introduction and notes to this famously enigmatic novel."# },
+  /* 156. */
+    Book { title: r#"The Metamorphosis"#, author: r#"Franz Kafka"#, summary: r#"An allegorical story about a man who awakens one morning to find himself changed into a large insect. Together with selected letters, diary extracts, and critical essays."# },
+  /* 157. */
+    Book { title: r#"The Magic Mountain (Der Zauberberg)"#, author: r#"Thomas Mann"#, summary: r#"No summary available."# },
+  /* 158. */
+    Book { title: r#"James and the Giant Peach"#, author: r#"Roald Dahl"#, summary: r#"From the World's No. 1 Storyteller, James and the Giant Peach is a children's classic that has captured young reader's imaginations for generations. One of TIME MAGAZINE’s 100 Best Fantasy Books of All Time After James Henry Trotter's parents are tragically eaten by a rhinoceros, he goes to live wit..."# },
+  /* 159. */
+    Book { title: r#"The Horse and His Boy"#, author: r#"C.S. Lewis"#, summary: r#"An orphaned boy and a kidnapped horse gallop for Narnia . . . and freedom."# },
+  /* 160. */
+    Book { title: r#"Angels & Demons"#, author: r#"Dan Brown"#, summary: r#"No summary available."# },
+  /* 161. */
+    Book { title: r#"The Voyage of the Dawn Treader"#, author: r#"C.S. Lewis"#, summary: r#"In "The Voyage of the Dawn Treader," C.S. Lewis continues the beloved Chronicles of Narnia series, blending imaginative storytelling with rich allegorical themes. This installment takes readers on a fantastical maritime adventure alongside Lucy and Edmund Pevensie, and their insistent cousin Eustace..."# },
+  /* 162. */
+    Book { title: r#"The Bell Jar"#, author: r#"Sylvia Plath"#, summary: r#"Esther Greenwood begins the summer with an internship at a popular women’s magazine, but her hopes for a career as a writer are dashed when she returns home to Massachusetts to discover she’s been rejected from a prestigious writing seminar. Listless and suffering from the onset of depression, Esthe..."# },
+  /* 163. */
+    Book { title: r#"Women in Love"#, author: r#"D.H. Lawrence"#, summary: r#"In 1910s England, sisters Ursula and Gudrun meet the intellectual school inspector Rupert Birkin and Gerald Crich, heir to a coal mine. The four become friends and soon enter into relationships with each other. Ursula and Rupert's well-balanced relationship contrasts with Gudrun and Gerald's tumultu..."# },
+  /* 164. */
+    Book { title: r#"The Yearling"#, author: r#"Marjorie Kinnan Rawlings"#, summary: r#"Relive the wonder of this childhood favorite and Pulitzer Prize-winning novel that has been capturing the hearts of readers for more than half a century. An instant bestseller when it was released in 1938, this beloved tale has been read and loved by school-age children across the nation for more th..."# },
+  /* 165. */
+    Book { title: r#"O Pioneers!"#, author: r#"Willa Cather"#, summary: r#"Alexandra, daughter of a Swedish immigrant farmer in Nebraska, inherits the family farm and finds love with an old friend."# },
+  /* 166. */
+    Book { title: r#"The Handmaid's Tale"#, author: r#"Margaret Atwood"#, summary: r#"An instant classic and eerily prescient cultural phenomenon, from “the patron saint of feminist dystopian fiction” (New York Times). Now an award-winning Hulu series starring Elizabeth Moss. In this multi-award-winning, bestselling novel, Margaret Atwood has created a stunning Orwellian vision of th..."# },
+  /* 167. */
+    Book { title: r#"The Moonstone"#, author: r#"Wilkie Collins"#, summary: r#"Intrigue, investigations, thievery, drugs and murder all make an appearance in Collins’s classic who-done-it, The Moonstone. Published in serial form in 1868, it was inspired in part by a spectacular murder case widely reported in the early 1860s. Collins’s story revolves around a diamond stolen fro..."# },
+  /* 168. */
+    Book { title: r#"The Old Curiosity Shop"#, author: r#"Charles Dickens"#, summary: r#"It is impossible to overstate the importance of British novelist CHARLES DICKENS (1812-1870) not only to literature in the English language, but to Western civilization on the whole. He is arguably the first fiction writer to have become an international celebrity. He popularized episodic fiction an..."# },
+  /* 169. */
+    Book { title: r#"Little Dorrit"#, author: r#"Charles Dickens"#, summary: r#"No summary available."# },
+  /* 170. */
+    Book { title: r#"Prince Caspian: The Return to Narnia"#, author: r#"C.S. Lewis"#, summary: r#"In "Prince Caspian: The Return to Narnia," C. S. Lewis continues the enchanting saga of Narnia, where the themes of bravery, rightful kingship, and the enduring struggle between good and evil thrive. Written with a mix of whimsy and deep allegorical insights, the narrative unfolds as the Pevensie si..."# },
+  /* 171. */
+    Book { title: r#"Sister Carrie"#, author: r#"Theodore Dreiser"#, summary: r#"Why buy our paperbacks? Printed in USA on High Quality Paper Standard Font size of 10 for all books Fulfilled by Amazon Expedited shipping 30 Days Money Back Guarantee Unabridged (100% Original content) BEWARE OF LOW-QUALITY SELLERS Don't buy cheap paperbacks just to save a few dollars. Most of them..."# },
+  /* 172. */
+    Book { title: r#"The Silver Chair"#, author: r#"C.S. Lewis"#, summary: r#"No summary available."# },
+  /* 173. */
+    Book { title: r#"The Hunger Games"#, author: r#"Suzanne Collins"#, summary: r#"This Special Edition of The Hunger Games includes the most extensive interview Suzanne Collins has given since the publication of The Hunger Games; an absorbing behind-the-scenes look at the creation of the series; and an engaging archival conversation between Suzanne Collins and YA legend Walter De..."# },
+  /* 174. */
+    Book { title: r#"This Side of Paradise"#, author: r#"F. Scott Fitzgerald"#, summary: r#"THE ACCOMPLISHED AND HEARTBREAKING FIRST NOVEL THAT CATAPULTED F. SCOTT FITZGERALD TO LITERARY FAME AT THE AGE OF TWENTY-THREE Considered scandalous (and brilliant) when it was published in 1920, This Side of Paradise describes the intellectual, spiritual, and sexual education of young Amory Blaine ..."# },
+  /* 175. */
+    Book { title: r#"EugÃ©nie Grandet"#, author: r#"HonorÃ© de Balzac"#, summary: r#"Eug nie Grandet is an 1833 novel by French author Honor  de Balzac, about miserliness and how it is bequeathed from the father to the daughter, Eug nie, through her unsatisfying love attachment with her cousin. As is usual with Balzac, all the characters in the novel are fully realized. Balzac conce..."# },
+  /* 176. */
+    Book { title: r#"Of Human Bondage"#, author: r#"W. Somerset Maugham"#, summary: r#"Selected by the Modern Library as one of the 100 best novels of all time "It is very difficult for a writer of my generation, if he is honest, to pretend indifference to the work of Somerset Maugham," wrote Gore Vidal. "He was always so entirely there." Originally published in 1915, Of Human Bondage..."# },
+  /* 177. */
+    Book { title: r#"Dream of the Red Chamber"#, author: r#"Cao Xueqin"#, summary: r#"The Dream of the Red Chamber is one of the "Four Great Classical Novels of Chinese Literature." It is renowned for its huge scope, large cast of characters, and telling observations about the life and social structures of 18th century China. Many consider it to be the pinnacle of the classical Chine..."# },
+  /* 178. */
+    Book { title: r#"Life of Pi"#, author: r#"Yann Martel"#, summary: r#"Winner of the 2022 Olivier Award for Best New Play "Life of Pi will make you believe in the power of theatre" - The Times After a cargo ship sinks in the middle of the vast Pacific Ocean, there are five survivors stranded on a lifeboat - a hyena, a zebra, an orangutan, a Royal Bengal tiger, and a si..."# },
+  /* 179. */
+    Book { title: r#"Harry Potter and the Deathly Hallows"#, author: r#"J.K. Rowling"#, summary: r#"'Give me Harry Potter,' said Voldemort's voice, 'and none shall be harmed. Give me Harry Potter, and I shall leave the school untouched. Give me Harry Potter, and you will be rewarded.' As he climbs into the sidecar of Hagrid's motorbike and takes to the skies, leaving Privet Drive for the last time..."# },
+  /* 180. */
+    Book { title: r#"Invisible Man"#, author: r#"Ralph Ellison"#, summary: r#"NATIONAL BOOK AWARD WINNER • NATIONAL BESTSELLER • In this deeply compelling novel and epic milestone of American literature, a nameless narrator tells his story from the basement lair of the Invisible Man he imagines himself to be. One of The Atlantic’s Great American Novels of the Past 100 Years H..."# },
+  /* 181. */
+    Book { title: r#"Steppenwolf"#, author: r#"Hermann Hesse"#, summary: r#"Nobel Prize winner Hermann Hesse’s iconic countercultural novel about the search for authenticity in an inauthentic world, in a new translation A Penguin Classic At first glance, Harry Haller seems like a respectable, educated man. In reality, he is the Steppenwolf: wild, strange, alienated from soc..."# },
+  /* 182. */
+    Book { title: r#"The Sorrows of Young Werther"#, author: r#"Johann Wolfgang von Goethe"#, summary: r#"The 1774 publication of the epistolary novel The Sorrows of Young Werther transformed its 24-year-old author, Johann Wolfgang von Goethe, into a world-renowned literary sensation virtually overnight. The story centers on Werther, a highly sensitive artist who has channeled his passionate temperate i..."# },
+  /* 183. */
+    Book { title: r#"Bridge to Terabithia"#, author: r#"Katherine Paterson"#, summary: r#"Jess Aarons' greatest ambition is to be the fastest runner in his grade. He's been practicing all summer and can't wait to see his classmates' faces when he beats them all. But on the first day of school, a new girl boldly crosses over to the boys' side and outruns everyone. That's not a very promis..."# },
+  /* 184. */
+    Book { title: r#"The Invisible Man"#, author: r#"H.G. Wells"#, summary: r#"Spine-tingling and entertaining, The Invisible Man is a science fiction classic-and a penetrating, unflinching look into the heart of human nature. To its author, H. G. Wells, the novel was as compelling as "a good gripping dream." But to generations of readers, the terrible and evil experiment of t..."# },
+  /* 185. */
+    Book { title: r#"Holes"#, author: r#"Louis Sachar"#, summary: r#"A New York Times BestsellerAdapted into the movie HolesInterest Level: Middle/High School Reading Grade Level: 3rd & 4th Lexile Level: 660L Theme: Belonging/Sense of SelfAn Accelerated Reader(r) title"# },
+  /* 186. */
+    Book { title: r#"Siddhartha"#, author: r#"Hermann Hesse"#, summary: r#"Siddhartha, a young man, leaves his family for a contemplative life but soon becomes restless and discards it for pleasures of the flesh. He is quickly bored and sickened by the unending lust and greed, moves on again. Near despair, he comes to a river where he hears a unique sound. This sound signa..."# },
+  /* 187. */
+    Book { title: r#"A Tree Grows in Brooklyn"#, author: r#"Betty Smith"#, summary: r#"A Tree Grows in Brooklyn is a semi-autobiographical novel by Betty Smith that follows the coming-of-age story of Francie Nolan as she grows up in the poverty of early 20th-century Brooklyn. The book explores themes of poverty, family, resilience, and the immigrant experience through Francie's eyes as she finds hope and a way to rise above her circumstances through education and literature..."# },
+  /* 188. */
+    Book { title: r#"Through the Looking-Glass, and What Alice Found There"#, author: r#"Lewis Carroll"#, summary: r#"Through the Looking-Glass, and What Alice Found There is a 1871 children's novel by Lewis Carroll, the sequel to Alice's Adventures in Wonderland. In it, Alice enters a fantasy world by stepping through a mirror, where she experiences a world with reversed logic and finds herself as a pawn in a giant chessboard game. The book is known for its whimsical characters like Humpty Dumpty, Tweedledum and Tweedledee, and famous poems such as "Jabberwocky"..."# },
+  /* 189. */
+    Book { title: r#"In Cold Blood"#, author: r#"Truman Capote"#, summary: r#"Selected by the Modern Library as one of the 100 best nonfiction books of all time From the Modern Library’s new set of beautifully repackaged hardcover classics by Truman Capote—also available are Breakfast at Tiffany’s and Other Voices, Other Rooms (in one volume), Portraits and Observations, and ..."# },
+  /* 190. */
+    Book { title: r#"The House of the Spirits"#, author: r#"Isabel Allende"#, summary: r#"Soon to be an original series on Prime Video! This “spectacular…absorbing and distinguished work…is a unique achievement, both personal witness and possible allegory of the past, present, and future of Latin America” (The New York Times Book Review). The House of the Spirits, which introduced Isabel..."# },
+  /* 191. */
+    Book { title: r#"Adam Bede"#, author: r#"George Eliot"#, summary: r#"Adam Bede is a novel by George Eliot, first published in 1859, that follows the lives of several characters in a fictional rural English community. The story centers on the love quadrilateral between the virtuous carpenter Adam Bede, his love interest and beautiful but self-absorbed cousin Hetty Sorrel, the charming squire Arthur Donnithorne who seduces Hetty, and the devout Methodist preacher Dinah Morris, who is also Hetty's cousin. The novel explores themes of love, morality, social responsibility, and character development through suffering and joy..."# },
+  /* 192. */
+    Book { title: r#"The Betrothed"#, author: r#"Alessandro Manzoni"#, summary: r#"The Betrothed is a historical novel by Alessandro Manzoni about two young lovers, Renzo and Lucia, in 17th-century Lombardy whose marriage is thwarted by a local tyrant, Don Rodrigo. The story follows their turbulent journey through exile, famine, plague, and captivity as they struggle against oppression and fight for their love, with the backdrop of a major historical event—the Italian plague of 1629–1631—and a critique of social injustice. Considered a masterpiece of world literature and the first modern Italian novel, it is renowned for its rich characters and enduring themes of faith, resilience, and the human spirit..."# },
+  /* 193. */
+    Book { title: r#"The Book Thief"#, author: r#"Markus Zusak"#, summary: r#"The Book Thief by Markus Zusak is a historical fiction novel set in Nazi Germany that follows a young girl named Liesel Meminger as she steals books and finds solace in words amidst the horrors of World War II. Narrated by Death, the story chronicles Liesel's life with her foster parents, Hans and Rosa Hubermann, and her secret friendship with a Jewish man named Max, who is hidden in their basement. The book explores themes of the power of words, the resilience of the human spirit, and the capacity for both cruelty and love during wartime..."# },
+  /* 194. */
+    Book { title: r#"Their Eyes Were Watching God"#, author: r#"Zora Neale Hurston"#, summary: r#"Welcome to the vibrant world of "Their Eyes Were Watching God" by Zora Neale Hurston, a timeless masterpiece of American literature that delves into the complexities of love, identity, and empowerment in the face of societal expectations. Prepare to be transported to the lush landscapes of the Ameri..."# },
+  /* 195. */
+    Book { title: r#"One Day in the Life of Ivan Denisovich"#, author: r#"Aleksandr Isaevich Solzhenitsyn"#, summary: r#"One Day in the Life of Ivan Denisovich is a 1962 novel by Aleksandr Isaevich Solzhenitsyn that chronicles a single day for a prisoner in a Siberian "gulag," or Soviet labor camp. The book provides a stark portrayal of totalitarianism and the daily struggle for survival under brutal and unjust conditions, portraying Ivan Denisovich Shukhov's unwavering spirit to endure his ten-year sentence for false charges."# },
+  /* 196. */
+    Book { title: r#"The Sea Wolf"#, author: r#"Jack London"#, summary: r#"Uniquely packaged to appeal to the young reader with bright, colorful cover art and great cover copy, here is the Tor Classics edition of Jack London's Sea Wolf. A shipwrecked gentleman scholar is "rescued" by a brutal crew and their murderous captain. Unabridged."# },
+  /* 197. */
+    Book { title: r#"Catching Fire"#, author: r#"Suzanne Collins"#, summary: r#"The second book in Suzanne Collins's phenomenal and worldwide bestselling Hunger Games trilogy. Against all odds, Katniss Everdeen has won the annual Hunger Games with fellow district tribute Peeta Mellark. But it was a victory won by defiance of the Capitol and their harsh rules. Katniss and Peeta ..."# },
+  /* 198. */
+    Book { title: r#"Roll of Thunder, Hear My Cry"#, author: r#"Mildred D. Taylor"#, summary: r#"Winner of the Newbery Medal, this remarkably moving novel has impressed the hearts and minds of millions of readers. Set in Mississippi at the height of the Depression, this is the story of one family's struggle to maintain their integrity, pride, and independence in the face of racism and social in..."# },
+  /* 199. */
+    Book { title: r#"Death Comes for the Archbishop"#, author: r#"Willa Cather"#, summary: r#"No summary available."# },
+  /* 200. */
+    Book { title: r#"The House of Mirth"#, author: r#"Edith Wharton"#, summary: r#"An immensely popular bestseller upon its publication in 1905, The House of Mirth was Edith Wharton’s first great novel. Set among the elegant brownstones of New York City and opulent country houses like gracious Bellomont on the Hudson, the novel creates a satiric portrayal of what Wharton herself c..."# },
+  /* 201. */
+    Book { title: r#"Light in August"#, author: r#"William Faulkner"#, summary: r#"Selected by the Modern Library as one of the 100 best novels of all time From the Modern Library’s new set of beautifully repackaged hardcover classics by William Faulkner—also available are Snopes, As I Lay Dying, The Sound and the Fury, Absalom, Absalom!, and Selected Short Stories One of William ..."# },
+  /* 202. */
+    Book { title: r#"The Pickwick Papers"#, author: r#"Charles Dickens"#, summary: r#"No summary available."# },
+  /* 203. */
+    Book { title: r#"Remembrance of Things Past"#, author: r#"Marcel Proust"#, summary: r#"The first part of Marcel Proust's Remembrance of Things Past. His most prominent work, it is popularly known for its considerable length and the notion of involuntary memory, the most famous example being the "episode of the madeleine.""# },
+  /* 204. */
+    Book { title: r#"Barchester Towers and the Warden"#, author: r#"Anthony Trollope"#, summary: r#"No summary available."# },
+  /* 205. */
+    Book { title: r#"The Bridge of San Luis Rey"#, author: r#"Thornton Wilder"#, summary: r#"A tiny footbridge in Peru breaks, and five people hurtle to their deaths. For Brother Juniper, a humble monk who witnesses the catastrophe, the question is: Why those five?"# },
+  /* 206. */
+    Book { title: r#"The Help"#, author: r#"Kathryn Stockett"#, summary: r#"The #1 New York Times bestselling novel and basis for the Academy Award-winning film—a timeless and universal story about the lines we abide by, and the ones we don’t—nominated as one of America’s best-loved novels by PBS’s The Great American Read. Aibileen is a black maid in 1962 Jackson, Mississip..."# },
+  /* 207. */
+    Book { title: r#"Murder on the Orient Express"#, author: r#"Agatha Christie"#, summary: r#"A luxurious journey aboard the Orient Express turns into a race against time when a murder is committed. Detective Hercule Poirot interrogates the suspects during a long stop in the mountains of Yugoslavia."# },
+  /* 208. */
+    Book { title: r#"The Lovely Bones"#, author: r#"Alice Sebold"#, summary: r#"Susie Salmon is just like any other young American girl. She wants to be beautiful, adores her charm bracelet and has a crush on a boy from school. There's one big difference though – Susie is dead. Add: Now she can only observe while her family manage their grief in their different ways. Susie is d..."# },
+  /* 209. */
+    Book { title: r#"The Appeal"#, author: r#"John Grisham"#, summary: r#"Politics has always been a dirty game. Now justice is, too.In a crowded courtroom in Mississippi, a jury returns a shocking verdict against a chemical company accused of dumping toxic waste into a small town’s water supply, causing the worst “cancer cluster” in history. The company appeals to the Mi..."# },
+  /* 210. */
+    Book { title: r#"Dombey And Son"#, author: r#"Charles Dickens"#, summary: r#"Charles Dickens' Dombey and Son tells the story of the wealthy owner of a shipping company, Paul Dombey, who dreams of having a son to carry on the family business. It deals with themes such as marriage for financial gain, cruelty towards children, family relationships, pride, arrogance, betrayal an..."# },
+  /* 211. */
+    Book { title: r#"Slaughterhouse-Five"#, author: r#"Kurt Vonnegut"#, summary: r#"With Kurt Vonnegut’s seminal anti-war story, Slaughterhouse-Five, Eisner Award-winning writer Ryan North (Unbeatable Squirrel Girl) and Eisner Award-nominated artist Albert Monteys (Universe!) translate a literary classic into comic book form in the tradition of A Wrinkle in Time and Fight Club 2. B..."# },
+  /* 212. */
+    Book { title: r#"An American Tragedy"#, author: r#"Theodore Dreiser"#, summary: r#"In "An American Tragedy," Theodore Dreiser weaves a compelling narrative that delves deeply into the themes of aspiration, morality, and the harsh realities of the American Dream. The novel follows the plight of Clyde Griffiths, a young man torn between his desires for wealth and status and the mora..."# },
+  /* 213. */
+    Book { title: r#"The Bluest Eye"#, author: r#"Toni Morrison"#, summary: r#"The Bluest Eye (1970) is the first novel written by Toni Morrison. It is the story of eleven-year-old Pecola Breedlove--a black girl in an America whose love for its blond, blue-eyed children can devastate all others--who prays for her eyes to turn blue: so that she will be beautiful, so that people..."# },
+  /* 214. */
+    Book { title: r#"Little House In the Big Woods"#, author: r#"Laura Ingalls Wilder"#, summary: r#"Classic tales by Laura Ingalls Wilder about life on the frontier and America's best-loved pioneer family. Inside the little house in the Big Woods live the Ingalls family: Ma, Pa, Mary, Laura and baby Carrie. Outside the little house are the wild animals: the bears and the bees, the deer and the wol..."# },
+  /* 215. */
+    Book { title: r#"Pippi Longstocking"#, author: r#"Astrid Lindgren"#, summary: r#"The beloved story of a spunky young girl and her hilarious escapades. Tommy and his sister Annika have a new neighbor, and her name is Pippi Longstocking. She has red pigtails, no parents to tell her what to do, a horse that lives on her porch, and a pet monkey named Mr. Nilsson. Whether Pippi's scr..."# },
+  /* 216. */
+    Book { title: r#"Germinal"#, author: r#"Ãmile Zola"#, summary: r#"The thirteenth novel in Émile Zola’s great Rougon-Macquart sequence, Germinal expresses outrage at the exploitation of the many by the few, but also shows humanity’s capacity for compassion and hope. Etienne Lantier, an unemployed railway worker, is a clever but uneducated young man with a dangerous..."# },
+  /* 217. */
+    Book { title: r#"The Heart Is a Lonely Hunter"#, author: r#"Carson McCullers"#, summary: r#"Carson McCullers' seminal work, The Heart Is a Lonely Hunter, unfolds in a decaying Southern town during the Great Depression, serving as a poignant exploration of human isolation and the profound longing for connection. Utilizing a lyrical and deeply introspective narrative style, McCullers interwe..."# },
+  /* 218. */
+    Book { title: r#"The Woman In White"#, author: r#"Wilkie Collins"#, summary: r#"Wilkie Collins's classic thriller took the world by storm on its first appearance in 1859, with everything from dances to perfumes to dresses named in honor of the "woman in white." The novel's continuing fascination stems in part from a distinctive blend of melodrama, comedy, and realism; and in pa..."# },
+  /* 219. */
+    Book { title: r#"Absalom, Absalom!"#, author: r#"William Faulkner"#, summary: r#"William Faulkner's "Absalom, Absalom!" is a multi-layered narrative that intricately weaves themes of Southern identity, historical memory, and the complexities of family ties. Set in the antebellum South, the novel employs a stream-of-consciousness style and fragmentary structure, compelling the re..."# },
+  /* 220. */
+    Book { title: r#"A Painted House"#, author: r#"John Grisham"#, summary: r#"Racial tension, a forbidden love affair, and murder are seen through the eyes of a seven-year-old boy in a 1950s Southern cotton-farming community"# },
+  /* 221. */
+    Book { title: r#"The Girl With the Dragon Tattoo"#, author: r#"Stieg Larsson"#, summary: r#"ONE OF TIME MAGAZINE'S 100 BEST MYSTERY AND THRILLER BOOKS OF ALL TIME • #1 NATIONAL BESTSELLER • The thrilling first book in the Girl with the Dragon Tattoo series featuring Lisbeth Salander: “Combine the chilly Swedish backdrop and moody psychodrama of a Bergman movie with the grisly pyrotechnics ..."# },
+  /* 222. */
+    Book { title: r#"A Room With a View"#, author: r#"E.M. Forster"#, summary: r#"This is a tale of repression, prejudice, and above all, romance between two unlikely individuals: the sophisticated, upper-class Lucy Honeychurch and the boyish George Emerson. Taking place during the Edwardian era, the story follows Lucy as she vacations in Italy, dying to get away from her restric..."# },
+  /* 223. */
+    Book { title: r#"Watership Down"#, author: r#"Richard Adams"#, summary: r#"Now with a new introduction by Madeline Miller, the New York Times bestselling author of The Song of Achilles and Circe. The 50th anniversary edition of Richard Adam’s timeless classic, the tale of a band of wild rabbits struggling to hold onto their place in the world—“a classic yarn of discovery a..."# },
+  /* 224. */
+    Book { title: r#"Memoirs of a Geisha"#, author: r#"Arthur Golden"#, summary: r#"Memoirs of a Geisha is a fictional novel by Arthur Golden about a young girl named Chiyo from a poor fishing village who is sold into a geisha house in Kyoto. Renamed Sayuri, she undergoes rigorous training to become a successful geisha, navigating a world of rivalry and tradition while harboring a secret love for a wealthy man. The story, which spans from the 1930s through World War II, explores themes of identity, love, and resilience as Sayuri rises to prominence but faces challenges from a treacherous rival..."# },
+  /* 225. */
+    Book { title: r#"Our Mutual Friend"#, author: r#"Charles Dickens"#, summary: r#""Our Mutual Friend" is Charles Dickens's final completed novel, published between 1864 and 1865, that satirizes society by focusing on the corrupting influence of money. The plot revolves around the immense fortune of the deceased John Harmon, which initially passes to his son on the condition that he marries the mercenary Bella Wilfer. However, after the son is presumed dead, the money goes to his former servants, the Boffins, setting in motion a complex story of mistaken identity, social climbers, and moral change."# },
+  /* 226. */
+    Book { title: r#"Babbitt"#, author: r#"Sinclair Lewis"#, summary: r#"Babbitt by Sinclair Lewis is a 1922 satirical novel that critiques the conformity and superficiality of the American middle class in the 1920s. The story follows George F. Babbitt, a real estate broker in the fictional city of Zenith, as he experiences a midlife crisis, leading him to temporarily rebel against societal expectations before ultimately returning to the status quo. The term "Babbitt" has since become a common noun for someone who unthinkingly conforms to middle-class ideals..."# },
+  /* 227. */
+    Book { title: r#"The Red Pony"#, author: r#"John Steinbeck"#, summary: r#"Raised on a ranch in northern California, Jody is well-schooled in the hard work and demands of a rancher's life. He is used to the way of horses, too; but nothing has prepared him for the special connection he will forge with Gabilan, the hot-tempered pony his father gives him. With Billy Buck, the..."# },
+  /* 228. */
+    Book { title: r#"All the King's Men"#, author: r#"Robert Penn Warren"#, summary: r#"A dynamic backwoods lawyer batters his way into the governor's mansion, where he uses his unprincipled charm to become a brutal dictator."# },
+  /* 229. */
+    Book { title: r#"Things Fall Apart"#, author: r#"Chinua Achebe"#, summary: r#"Things Fall Apart by Chinua Achebe is a novel that chronicles the life of a proud Igbo warrior named Okonkwo in late 19th-century Nigeria, focusing on the destruction of his traditional Igbo society due to the arrival of British colonialists. As European missionaries and government officials impose their culture, religion, and laws, the novel depicts the resulting disintegration of the Igbo way of life and Okonkwo's personal struggle to resist the changes, which ultimately leads to his despair and suicide..."# },
+  /* 230. */
+    Book { title: r#"Lorna Doone"#, author: r#"R.D. Blackmore"#, summary: r#""The classic book has always read again and again.""What is the classic book?""""Why is the classic book?""READ READ READ.. then you'll know it's excellence.""# },
+  /* 231. */
+    Book { title: r#"Johnny Tremain"#, author: r#"Esther Forbes"#, summary: r#"A teenager in colonial Boston becomes deeply involved in the Revolutionary cause."# },
+  /* 232. */
+    Book { title: r#"Anne of Avonlea"#, author: r#"L.M. Montgomery"#, summary: r#"Anne of Avonlea is the sequel to Anne of Green Gables by L.M. Montgomery, following Anne Shirley as she leaves her childhood at Green Gables to become the new schoolteacher in Avonlea. The book details her experiences with her students and her community, her growing maturity, and her relationship with the twins Davy and Dora, whom Marilla and Anne take in to help at the farm. It's a coming-of-age story that shows Anne navigating the challenges of growing up while still maintaining her imaginative spirit.."# },
+  /* 233. */
+    Book { title: r#"Tuck Everlasting"#, author: r#"Natalie Babbitt"#, summary: r#"Tuck Everlasting by Natalie Babbitt is about a young girl named Winnie Foster who discovers a family, the Tucks, who are immortal because they drank from a magical spring in the woods. The story follows Winnie as she learns about their immortal life, which is both a gift and a burden, and she must decide whether to keep their secret and drink from the spring or choose the natural cycle of life and death..."# },
+  /* 234. */
+    Book { title: r#"The BFG"#, author: r#"Roald Dahl"#, summary: r#""Well, first of all," said the BFG, "human beans is not really believing in giants, is they? Human beans is not thinking we exist." Sophie discovers that giants not only exist, but that there are a great many of them who like to guzzle and swallomp nice little chiddlers. But not the Big Friendly Gia..."# },
+  /* 235. */
+    Book { title: r#"Cannery Row"#, author: r#"John Steinbeck"#, summary: r#"It all begins with a letter. Fall in love with Penguin Drop Caps, a new series of twenty-six collectible and hardcover editions, each with a type cover showcasing a gorgeously illustrated letter of the alphabet. In a design collaboration between Jessica Hische and Penguin Art Director Paul Buckley, ..."# },
+  /* 236. */
+    Book { title: r#"The Joy Luck Club"#, author: r#"Amy Tan"#, summary: r#"The Joy Luck Clubis a 1989 novel by Amy Tan that explores the complex relationships between four Chinese immigrant mothers and their American-born daughters. Through interwoven narratives, the book delves into themes of cultural identity, generational conflict, and the immigrant experience, as the mothers' struggles in China and the daughters' struggles in America are revealed. The story centers on a mahjong club formed by the mothers, which serves as a symbol of their bond and a space for them to share stories and find happiness."# },
+  /* 237. */
+    Book { title: r#"The Silmarillion"#, author: r#"J.R.R. Tolkien"#, summary: r#"The forerunner to The Lord of the Rings, The Silmarillion tells the earlier history of Middle-earth, recounting the events of the First and Second Ages, and introducing some of the key characters, such as Galadriel, Elrond, Elendil and the Dark Lord, Sauron."# },
+  /* 238. */
+    Book { title: r#"Roots"#, author: r#"Alex Haley"#, summary: r#"Rootsis a 1976 novel by Alex Haley that chronicles his family's history, tracing their lineage from the 18th-century Mandinka warrior Kunta Kinte, who was captured in West Africa and sold into slavery in America, through seven generations of his descendants. The book explores themes of identity, resilience, and the legacy of slavery, and was adapted into a popular 1977 television miniseries that significantly impacted public understanding of African American history and sparked widespread interest in genealogy..."# },
+  /* 239. */
+    Book { title: r#"Little House on the Prairie"#, author: r#"Laura Ingalls Wilder"#, summary: r#"No summary available."# },
+  /* 240. */
+    Book { title: r#"Native Son"#, author: r#"Richard Wright"#, summary: r#"Native Son is a 1940 novel by Richard Wright about Bigger Thomas, a young Black man in 1930s Chicago who, after accidentally killing a white woman, is caught in a cycle of violence and despair shaped by systemic racism and poverty. The novel is a powerful social protest, depicting how a society built on racial inequality creates the conditions for the protagonist's violent actions and tragic downfall..."# },
+  /* 241. */
+    Book { title: r#"Stuart Little"#, author: r#"E.B. White"#, summary: r#"Stuart Little is a children's novel by E.B. White about a courageous mouse-like boy named Stuart who is born to a human family in New York City. The story follows Stuart's whimsical adventures, including his quest to find his friend, a little bird named Margalo. The book is known for its themes of adventure, loyalty, and growing up..."# },
+  /* 242. */
+    Book { title: r#"Cross Fire"#, author: r#"James Patterson"#, summary: r#""Cross Fire" is a 2010 novel by James Patterson, part of the Alex Cross series, where the detective must put his wedding plans on hold to stop a mysterious assassin targeting politicians in Washington, D.C. The investigation becomes personal when the killer threatens Alex and his family, leading to a high-stakes confrontation..."# },
+  /* 243. */
+    Book { title: r#"The Power and the Glory"#, author: r#"Graham Greene"#, summary: r#"The Power and the Glory is a 1940 novel by Graham Greene about a "whisky priest" on the run from the police during the persecution of the Catholic Church in 1930s Mexico. The priest is a flawed but compassionate fugitive who must flee his home, while being pursued by a ruthless, idealistic lieutenant. The novel explores themes of faith, duty, sin, redemption, and the conflict between religious and socialist ideologies..."# },
+  /* 244. */
+    Book { title: r#"A Clockwork Orange"#, author: r#"Anthony Burgess"#, summary: r#"A frightening story of good and evil. A fifteen year old boy named Alex, who is in trouble with the authorities. The state wants to reform him."# },
+  /* 245. */
+    Book { title: r#"The Phantom of the Opera"#, author: r#"Gaston Leroux"#, summary: r#"Under the Paris Opera House lives a disfigured musical genius who uses music to win the love of a beautiful opera singer."# },
+  /* 246. */
+    Book { title: r#"The Martian Chronicles"#, author: r#"Ray Bradbury"#, summary: r#"No summary available."# },
+  /* 247. */
+    Book { title: r#"The Road"#, author: r#"Cormac McCarthy"#, summary: r#"In a novel set in an indefinite, futuristic, post-apocalyptic world, a father and his young son make their way through the ruins of a devastated American landscape, struggling to survive and preserve the last remnants of their own humanity"# },
+  /* 248. */
+    Book { title: r#"The Way of All Flesh"#, author: r#"Samuel Butler"#, summary: r#"No summary available."# },
+  /* 249. */
+    Book { title: r#"Diary of a Wimpy Kid: The Long Haul"#, author: r#"Jeff Kinney"#, summary: r#"The Heffley family road trip starts off full of promise, then quickly takes several wrong turns--with everything from a fender bender to crazed seagulls--but even the worst road trip can turn into an adventure, and this is one the Heffleys will not soon forget."# },
+  /* 250. */
+    Book { title: r#"Villette"#, author: r#"Charlotte BrontÃ«"#, summary: r#"How is this book unique? Font adjustments & biography included Unabridged (100% Original content) Illustrated About Villette by Charlotte Bronte Villette is an 1853 novel by Charlotte Bront . After an unspecified family disaster, the protagonist Lucy Snowe travels from England to the fictional Frenc..."# },
+  /* 251. */
+    Book { title: r#"The Curious Incident of the Dog In the Night-Time"#, author: r#"Mark Haddon"#, summary: r#"Despite his overwhelming fear of interacting with people, Christopher, a mathematically-gifted, autistic, fifteen-year-old boy, decides to investigate the murder of a neighbor's dog and uncovers secret information about his mother."# },
+  /* 252. */
+    Book { title: r#"The Mysterious Island"#, author: r#"Jules Verne"#, summary: r#"At a time when Verne is making a comeback in the US as a mainstream literary figure, Wesleyan is pleased to publish a new translation of one of his best-known novels, The Mysterious Island. Although several editions under the same title are in print, most reproduce a bowdlerized nineteenth-century t..."# },
+  /* 253. */
+    Book { title: r#"Song of Solomon"#, author: r#"Toni Morrison"#, summary: r#"NEW YORK TIMES BESTSELLER • An official Oprah Winfrey’s “The Books That Help Me Through” selection • The acclaimed Nobel Prize winner transfigures the coming-of-age story with this brilliantly imagined novel. Includes a new foreword by the author. One of The Atlantic’s Great American Novels of the P..."# },
+  /* 254. */
+    Book { title: r#"Nana"#, author: r#"Ãmile Zola"#, summary: r#"Prompted by his theories of heredity and environment, Zola set out to show Nana, "the golden fly," rising out of the underworld to feed on society—a predetermined product of her origins. Nana's latent destructiveness is mirrored in the Empire's, and they reflect each others' disintegration and final..."# },
+  /* 255. */
+    Book { title: r#"Quo Vadis"#, author: r#"Henryk Sienkiewicz"#, summary: r#""An epic saga of love, courage and devotion in Nero's time, Quo Vadis portrays the degenerate days leading to the fall of the Roman empire and the glory and the agony of early Christianity. Set at a turning point in history (A.D. 54-68), as Christianity replaces the era of corruption and gluttony th..."# },
+  /* 256. */
+    Book { title: r#"Main Street"#, author: r#"Sinclair Lewis"#, summary: r#"The first of Sinclair Lewis’s great successes, Main Street shattered the sentimental American myth of happy small-town life with its satire of narrow-minded provincialism. Reflecting his own unhappy childhood in Sauk Centre, Minnesota, Lewis’s sixth novel attacked the conformity and dullness he saw ..."# },
+  /* 257. */
+    Book { title: r#"Matilda"#, author: r#"Roald Dahl"#, summary: r#"The classic story from Roald Dahl, about an exceptional young girl with extraordinary powers. Adapted into a Tony Award-winning Broadway musical and a Netflix film! Matilda is a sweet, exceptional young girl, but her parents think she's just a nuisance. She expects school to be different but there s..."# },
+  /* 258. */
+    Book { title: r#"Lolita"#, author: r#"Vladimir Vladimirovich Nabokov"#, summary: r#"(Book Jacket Status: Jacketed)When it was published in 1955, "Lolita" immediately became a cause célèbre because of the freedom and sophistication with which it handled the unusual erotic predilections of its protagonist. But Vladimir Nabokov's wise, ironic, elegant masterpiece owes its stature as o..."# },
+  /* 259. */
+    Book { title: r#"Paper Towns"#, author: r#"John Green"#, summary: r#"No summary available."# },
+  /* 260. */
+    Book { title: r#"Sounder"#, author: r#"William H. Armstrong"#, summary: r#"The Powerful Newbery Award-Winning Classic A landmark in children's literature, winner of the 1970 Newbery Medal, and the basis of an acclaimed film, Sounder traces the keen sorrow and the abiding faith of a poor African-American boy in the 19th-century South. The boy's father isa sharecropper, stru..."# },
+  /* 261. */
+    Book { title: r#"Are You There God? It's Me, Margaret"#, author: r#"Judy Blume"#, summary: r#"A twelve-year-old talks to God about her ardent desire to be grown up."# },
+  /* 262. */
+    Book { title: r#"The Notebook"#, author: r#"Nicholas Sparks"#, summary: r#"The unforgettable, heartbreaking love story from a New York Times bestselling author about a young socialite and the boy who once stole her heart—now an iconic motion picture starring Ryan Gosling and Rachel McAdams. At thirty-one, Noah Calhoun, back in coastal North Carolina after World War II, is ..."# },
+  /* 263. */
+    Book { title: r#"From the Mixed-Up Files of Mrs. Basil E. Frankweiler"#, author: r#"E.L. Konigsburg"#, summary: r#"Claudia and her brother Jamie run away from home and find a place to live in the New York Metropolitan Museum of Art, then find that they still have a couple of problems to deal with."# },
+  /* 264. */
+    Book { title: r#"Atlas Shrugged"#, author: r#"Ayn Rand"#, summary: r#"Peopled by larger-than-life heroes and villains, charged with towering questions of good and evil, Atlas Shrugged is Ayn Rand’s magnum opus: a philosophical revolution told in the form of an action thriller—nominated as one of America’s best-loved novels by PBS’s The Great American Read. Who is John..."# },
+  /* 265. */
+    Book { title: r#"The Fountainhead"#, author: r#"Ayn Rand"#, summary: r#"This centennial edition of "The Fountainhead," celebrating the controversial and enduring legacy of its author, features an afterword by Rand's literary executor, Leonard Peikoff, offering some of Ayn Rand's personal notes on the development of her masterwork, and a Reader's Guide to her writings an..."# },
+  /* 266. */
+    Book { title: r#"Number the Stars"#, author: r#"Lois Lowry"#, summary: r#"The unforgettable Newbery Medal–winning novel from Lois Lowry. As the German troops begin their campaign to "relocate" all the Jews of Denmark, Annemarie Johansen’s family takes in Annemarie’s best friend, Ellen Rosen, and conceals her as part of the family. Through the eyes of ten-year-old Annemari..."# },
+  /* 267. */
+    Book { title: r#"The Firm"#, author: r#"John Grisham"#, summary: r#"#1 WORLDWIDE BESTSELLER • The iconic legal thriller that launched the career of America’s favorite storyteller, hailed as “an absolute master” (The Washington Post) “[An] ingenious man-in-the-middle thriller.”—Entertainment Weekly Mitch McDeere has worked hard to get where he is: third in his class ..."# },
+  /* 268. */
+    Book { title: r#"Swann's Way"#, author: r#"Marcel Proust"#, summary: r#"From the French novelist, essayist, critic, and one of the greatest writers of the twentieth century: the first volume of his monumental masterpiece, one of the most sensitive renderings of childhood in fiction and a brilliant meditation on the recreation of the past through memory and art. In C. K...."# },
+  /* 269. */
+    Book { title: r#"Ender's Game"#, author: r#"Orson Scott Card"#, summary: r#"Child-hero Ender Wiggin must fight a desperate battle against a deadly alien race if mankind is to survive."# },
+  /* 270. */
+    Book { title: r#"The Name of the Rose"#, author: r#"Umberto Eco"#, summary: r#"One after the other, half a dozen monks are found murdered in the most bizarre of ways. A learned Franciscan who is sent to solve the mysteries finds himself involved in the frightening events."# },
+  /* 271. */
+    Book { title: r#"A Time to Kill"#, author: r#"John Grisham"#, summary: r#"A Time to Kill is John Grisham's 1989 debut legal thriller about a Black father in Mississippi who kills the two white men who raped his young daughter, and the subsequent trial defended by a young lawyer named Jake Brigance. The novel explores themes of racism, justice, and vigilante action as the community is engulfed by racial tension, and the lawyer must defend his client against the backdrop of a hostile environment and a racist district attorney..."# },
+  /* 272. */
+    Book { title: r#"Water for Elephants"#, author: r#"Sara Gruen"#, summary: r#"Over 10 million copies sold worldwide! * Now A Broadway Musical Starring Grant Gustin and Isabella McCalla #1 New York Times Bestseller * A Los Angeles Times, Wall Street Journal, & USA Today Bestseller "This colorful headlong tale of a Depression-era circus simply can't be beat." —Stephen King A Ma..."# },
+  /* 273. */
+    Book { title: r#"The Time Machine"#, author: r#"H.G. Wells"#, summary: r#"'So, in the end, above ground you must have the Haves, pursuing pleasure and comfort and beauty, and below ground the Have-nots, the Workers...' At a Victorian dinner party, in Richmond, London, the Time Traveller returns to tell his extraordinary tale of mankind's future in the year 802,701 AD. It ..."# },
+  /* 274. */
+    Book { title: r#"Eragon"#, author: r#"Christopher Paolini"#, summary: r#"In Aagaesia, a fifteen-year-old boy of unknown lineage called Eragon finds a mysterious stone that weaves his life into an intricate tapestry of destiny, magic, and power, peopled with dragons, elves, and monsters."# },
+  /* 275. */
+    Book { title: r#"The Hitchhiker's Guide to the Galaxy"#, author: r#"Douglas Adams"#, summary: r#"Just before the Earth is demolished to make way for a new hyperspatial expressway, Arthur Dent is plucked off the planet by his friend Ford Prefect from the planet Betelgeuse and begins his hitch-hiking misadventures throughout the universe."# },
+  /* 276. */
+    Book { title: r#"Buddenbrooks"#, author: r#"Thomas Mann"#, summary: r#"A Major Literary Event: a brilliant new translation of Thomas Mann's first great novel, one of the two for which he was awarded the Nobel Prize in literature in 1929. Buddenbrooks, first published in Germany in 1900, when Mann was only twenty-five, has become a classic of modem literature -- the sto..."# },
+  /* 277. */
+    Book { title: r#"A Thousand Splendid Suns"#, author: r#"Khaled Hosseini"#, summary: r#"A riveting and powerful story of an unforgiving time, an unlikely friendship and an indestructible love"# },
+  /* 278. */
+    Book { title: r#"The Witch of Blackbird Pond"#, author: r#"Elizabeth George Speare"#, summary: r#"In 1687 in Connecticut, Kit Tyler, feeling out of place in the Puritan household of her aunt, befriends an old woman considered a witch by the community and suddenly finds herself standing trial for witchcraft."# },
+  /* 279. */
+    Book { title: r#"And Then There Were None"#, author: r#"Agatha Christie"#, summary: r#"First, there were ten—a curious assortment of strangers summoned as weekend guests to a little private island off the coast of Devon. Their host, an eccentric millionaire unknown to all of them, is nowhere to be found. All that the guests have in common is a wicked past they're unwilling to reveal—a..."# },
+  /* 280. */
+    Book { title: r#"A Separate Peace"#, author: r#"John Knowles"#, summary: r#"Gene Forrester looks back fifteen years to a World War II year in which he and his best friend were roommates in a New hampshire boarding school."# },
+  /* 281. */
+    Book { title: r#"Breaking Dawn"#, author: r#"Stephenie Meyer"#, summary: r#"In the explosive fourth book in the epic romantic saga, Bella has one final choice to make. Should she stay mortal and strengthen her connection to the werewolves—or leave it all behind to become a vampire? When you loved the one who was killing you, it left you no options. How could you run, how co..."# },
+  /* 282. */
+    Book { title: r#"As I Lay Dying"#, author: r#"William Faulkner"#, summary: r#"Set in Yoknapatawpha County, Mississippi, As I Lay Dying tells the story of the dysfunctional Bundren family as they set out to fulfill Addie Bundren’s dying wish. Told by fifteen narrators, including Jewel, Cash, Darl and Dewey Dell, As I Lay Dying uses stream of consciousness to unveil each charac..."# },
+  /* 283. */
+    Book { title: r#"The Girl Who Played With Fire"#, author: r#"Stieg Larsson"#, summary: r#"#1 NATIONAL BESTSELLER • Lisbeth Salander returns in the next installment of the Girl with the Dragon Tattoo series: Part blistering espionage thriller, part riveting police procedural, and part piercing exposé on social injustice, this is a “gripping, stay-up-all-night read” (Entertainment Weekly)...."# },
+  /* 284. */
+    Book { title: r#"Where the Red Fern Grows"#, author: r#"Wilson Rawls"#, summary: r#"Read the beloved classic that captures the powerful bond between man and man’s best friend. This edition also includes a special note to readers from Newbery Medal winner and Printz Honor winner Clare Vanderpool. Billy has long dreamt of owning not one, but two, dogs. So when he’s finally able to sa..."# },
+  /* 285. */
+    Book { title: r#"Le Morte D'Arthur"#, author: r#"Thomas Malory"#, summary: r#"Sir Thomas Malory's original Le Morte d'Arthur remains the most exciting interpretation of the legend of King Arthur and the Knights of the Round Table. The next elegant edition in the Knickerbocker Classic series, Le Morte d'Arthur is unabridged and complete. Originally published in 1485 by William..."# },
+  /* 286. */
+    Book { title: r#"Mockingjay"#, author: r#"Suzanne Collins"#, summary: r#"The greatly anticipated final book in the New York Times bestselling Hunger Games trilogy by Suzanne Collins. The greatly anticipated final book in the New York Times bestselling Hunger Games trilogy by Suzanne Collins.The Capitol is angry. The Capitol wants revenge. Who do they think should pay for..."# },
+  /* 287. */
+    Book { title: r#"The Pillars of the Earth"#, author: r#"Ken Follett"#, summary: r#"#1 New York Times Bestseller Oprah's Book Club Selection The “extraordinary . . . monumental masterpiece” (Booklist) that changed the course of Ken Follett’s already phenomenal career—and begins where its prequel, The Evening and the Morning, ended. “Follett risks all and comes out a clear winner,” ..."# },
+  /* 288. */
+    Book { title: r#"Persian Letters"#, author: r#"Montesquieu"#, summary: r#"Persian Letters is a 1721 satirical novel by Montesquieu that critiques European society through the letters of two Persian travelers, Rica and Usbek, as they observe and comment on French customs and institutions from their unique outsider perspective. The work uses humor and irony to explore themes of religion, politics, reason, and cultural differences, contrasting "exotic" Persian and Ottoman values with those of 18th-century France..."# },
+  /* 289. */
+    Book { title: r#"The Client"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • A white-knuckle legal thriller that begins in a weedy lot on the outskirts of Memphis, when two boys watch a shiny Lincoln pull up to the curb. . . . “The desire to find out what happens next keeps the reader turning the pages. Grisham is an absolute master of the chas..."# },
+  /* 290. */
+    Book { title: r#"Sula"#, author: r#"Toni Morrison"#, summary: r#"Sula and Nel are born in the Bottom—a small town at the top of a hill. Sula is wild, and daring; she does what she wants, while Nel is well-mannered, a mamma’s girl with a questioning heart. Growing up they forge a bond stronger than anything, stronger even than the dark secret they have to bear. St..."# },
+  /* 291. */
+    Book { title: r#"Tales of a Fourth Grade Nothing"#, author: r#"Judy Blume"#, summary: r#"The #1 New York Times bestselling author's first book in her classic Fudge series. "As a kid, Judy Blume was my favorite author, and Tales of a Fourth Grade Nothing was my favorite book."—Jeff Kinney, author of the bestselling Wimpy Kid series “Each [Fudge book] is packed with wacky earthy disasters..."# },
+  /* 292. */
+    Book { title: r#"The Merry Adventures of Robin Hood of Great Renown In Nottinghamshire"#, author: r#"Howard Pyle"#, summary: r#"Reprint of the original, first published in 1883."# },
+  /* 293. */
+    Book { title: r#"Tortilla Flat"#, author: r#"John Steinbeck"#, summary: r#"Adopting the structure and themes of the Arthurian legend, John Steinbeck created a “Camelot” on a shabby hillside above the town of Monterey, California, and peopled it with a colorful band of knights. At the center of the tale is Danny, whose house, like Arthur’s castle, becomes a gathering place ..."# },
+  /* 294. */
+    Book { title: r#"Look Homeward, Angel"#, author: r#"Thomas Wolfe"#, summary: r#"Embark on an unforgettable literary journey with "Look Homeward, Angel" by Thomas Wolfe, a timeless masterpiece that delves into the complexities of family, identity, and the search for belonging. Follow the compelling story of Eugene Gant as he navigates the tumultuous landscape of early 20th-centu..."# },
+  /* 295. */
+    Book { title: r#"The Mystery of Edwin Drood"#, author: r#"Charles Dickens"#, summary: r#"The biggest mystery of The Mystery of Edwin Drood is how it ends. It began as a serial, as nearly all of Dickens' novels did, but only six installments were published before the author's death in 1870. What we know about Edwin Drood is this: he is betrothed to a young woman named Rosa Bud; they are ..."# },
+  /* 296. */
+    Book { title: r#"Brideshead Revisited"#, author: r#"Evelyn Waugh"#, summary: r#"Brideshead Revisited is a 1945 novel by Evelyn Waugh that chronicles the life of Charles Ryder as he becomes entangled with the wealthy, aristocratic, and Catholic Flyte family, particularly the charismatic Sebastian Flyte. The story explores themes of nostalgia for a lost aristocratic era, the conflict between duty and desire, faith, and the decline of the old social order. It begins with Ryder, now a soldier, encountering his old home, Brideshead Castle, and is told in a series of flashbacks..."# },
+  /* 297. */
+    Book { title: r#"The Pelican Brief"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • The classic legal thriller that inspired the blockbuster film starring Julia Roberts and Denzel Washington “There is a propulsiveness to [Grisham’s] narrative that keeps the pages turning briskly.”—People In suburban Georgetown, a killer’s Reeboks whisper on the floor ..."# },
+  /* 298. */
+    Book { title: r#"Atonement"#, author: r#"Ian McEwan"#, summary: r#"Atonementis a 2001 novel by Ian McEwan about the long-lasting consequences of a 13-year-old girl's false accusation that ruins several lives. The story spans from a hot summer day in 1935 England through World War II and the present day, exploring themes of guilt, redemption, class prejudice, and the nature of storytelling itself through different narrative perspectives. The novel is structured with a metafictional layer, as an elderly Briony Tallis, the protagonist, reflects on the events and ultimately reveals herself to be the author of the story the reader has just finished..."# },
+  /* 299. */
+    Book { title: r#"Washington Square"#, author: r#"Henry James"#, summary: r#"Washington Square, published in 1881, is an unusual novel for Henry James in that he located its setting in the United States. By that time, James rarely made trips back to the land of his birth, but he had yet to forsake it completely, as he did prior to his death by becoming a British subject. The..."# },
+  /* 300. */
+    Book { title: r#"Like Water for Chocolate"#, author: r#"Laura Esquivel"#, summary: r#"Like Water for Chocolateby Laura Esquivel is a magical realist novel set in early 20th-century Mexico, following Tita de la Garza, who is forbidden to marry the man she loves, Pedro, due to her family's tradition that the youngest daughter care for her mother until she dies. The story is framed by a series of recipes at the start of each monthly chapter, through which Tita expresses her emotions, and her cooking magically influences the lives of those who eat it. The narrative explores themes of love, family, and female repression, using food as a central element for both a mother-daughter power struggle and Tita's personal expression and rebellion..."# },
+  /* 301. */
+    Book { title: r#"The Golden Compass"#, author: r#"Philip Pullman"#, summary: r#"The Golden Compassis a fantasy novel by Philip Pullman, the first book in the His Dark Materials trilogy, which follows Lyra Belacqua on a journey to the Arctic to rescue her friend and investigate a mysterious substance called "Dust". In this parallel universe, every human has an animal soul-counterpart called a daemon, and Lyra is given a magical alethiometer to help her find the truth. She embarks on a quest with a cowboy named Lee Scoresby and an armored bear named Iorek Byrnison, encountering a sinister organization known as the Gobblers who are kidnapping children..."# },
+  /* 302. */
+    Book { title: r#"The Secret Life of Bees"#, author: r#"Sue Monk Kidd"#, summary: r#"Now in paperback comes the intoxicating debut novel of "one motherless daughter's discovery of ... the strange and wondrous places we find love" ("The Washington Post"). Sue Monk Kidd's ravishing work is set in South Carolina in 1964."# },
+  /* 303. */
+    Book { title: r#"The Fault In Our Stars"#, author: r#"John Green"#, summary: r#"Insightful, bold, irreverent, and raw, The Fault in Our Stars is award-winning author John Green's most ambitious and heartbreaking work yet, brilliantly exploring the funny, thrilling, and tragic business of being alive and in love. Despite the tumour-shrinking medical miracle that has bought her a..."# },
+  /* 304. */
+    Book { title: r#"Nostromo"#, author: r#"Joseph Conrad"#, summary: r#"Originally published as a serial, Nostromo is set in a fictional South American country where the outbreak of civil war puts the mining town of Sulaco in turmoil. Giovanni Battista Fidanza, known as Nostromo, is given the task of smuggling out a large amount of silver to keep it from the revolutiona..."# },
+  /* 305. */
+    Book { title: r#"Finnegans Wake"#, author: r#"James Joyce"#, summary: r#"Finnegans Wake by James Joyce is a highly experimental novel that uses a dreamlike narrative and a unique, multilingual language to explore themes of family, guilt, and the cyclical nature of history and human experience. The story, based on the ballad of Tim Finnegan, focuses on the Earwicker family and features a cyclical structure, ending with the first half of the novel's first sentence. The book blends myth, history, and fantasy, and its fluid language is a deliberate attempt to mimic the unconscious mind during sleep..."# },
+  /* 306. */
+    Book { title: r#"The Brethren"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • They call themselves the Brethren: three disgraced former judges doing time in a Florida federal prison. One was sent up for tax evasion. Another, for skimming bingo profits. The third for a career-ending drunken joyride. Meeting daily in the prison law library, taking..."# },
+  /* 307. */
+    Book { title: r#"Coraline"#, author: r#"Neil Gaiman"#, summary: r#"There is something strange about Coraline's new home. It's not the mist, or the cat that always seems to be watching her, nor the signs of danger that Miss Spink and Miss Forcible, her new neighbours, read in the tea leaves. It's the other house - the one behind the old door in the drawing room. Ano..."# },
+  /* 308. */
+    Book { title: r#"Heart of Darkness"#, author: r#"Joseph Conrad"#, summary: r#"Exam board: EdexcelLevel & Subject: AS and A Level English LiteratureFirst teaching: September 2015First examination: June 2017"# },
+  /* 309. */
+    Book { title: r#"On the Banks of Plum Creek"#, author: r#"Laura Ingalls Wilder"#, summary: r#"Laura and her family move to Minnesota where they live in a dugout until a new house is built and face misfortunes caused by flood, blizzard, and grasshoppers."# },
+  /* 310. */
+    Book { title: r#"Rebecca of Sunnybrook Farm"#, author: r#"Kate Douglas Smith Wiggin"#, summary: r#"In Kate Douglas Smith Wiggin's novel 'Rebecca of Sunnybrook Farm', readers are taken on a journey through the life of Rebecca Randall as she navigates the challenges of growing up in a rural town. Wiggin's writing style is characterized by its charm and whimsy, making the story both heartwarming and..."# },
+  /* 311. */
+    Book { title: r#"The Ambassadors"#, author: r#"Henry James"#, summary: r#"This complex tale of self-discovery -- considered by the author to be his best work -- traces the path of an aging idealist, Lambert Strether. Arriving in Paris with the intention of persuading his young charge to abandon an obsession with a French woman and return home, Strether reaches unexpected ..."# },
+  /* 312. */
+    Book { title: r#"The Secret Agent"#, author: r#"Joseph Conrad"#, summary: r#"Originally published in 1907, this classic novel is an exploration of terrorism and anarchism in late nineteenth-century London."# },
+  /* 313. */
+    Book { title: r#"The House on Mango Street"#, author: r#"Sandra Cisneros"#, summary: r#"A TODAY SHOW #ReadWithJenna BOOK CLUB PICK NATIONAL BESTSELLER • A coming-of-age classic about a young girl growing up in Chicago • Acclaimed by critics, beloved by readers of all ages, taught in schools and universities alike, and translated around the world—from the winner of the 2025 Ivan Sandrof..."# },
+  /* 314. */
+    Book { title: r#"Go Tell It on the Mountain"#, author: r#"James Baldwin"#, summary: r#"One of the most brilliant and provocative American writers of the twentieth century chronicles a fourteen-year-old boy's spiritual, sexual, and moral struggle of self-invention in this “truly extraordinary” novel (Chicago Sun-Times). Baldwin's classic novel opened new possibilities in the American l..."# },
+  /* 315. */
+    Book { title: r#"The Testament"#, author: r#"John Grisham"#, summary: r#"Heart of darkness... In a plush Virginia office, a rich, angry old man is furiously rewriting his will. With his death just hours away, Troy Phelan wants to send a message to his children, his ex-wives, and his minions, a message that will touch off a vicious legal battle and transform dozens of liv..."# },
+  /* 316. */
+    Book { title: r#"The Clan of the Cave Bear"#, author: r#"Jean M. Auel"#, summary: r#"This enhanced eBook includes: • Eight never-before-seen video interviews with Jean M. Auel where she discusses The Clan of the Cave Bear and the Earth’s Children® series: “You Must Be Able to Change in Order to Survive,” “Jondalar and Ayla,” “On Language," “Cro-Magnons and Neanderthals: The Crossbre..."# },
+  /* 317. */
+    Book { title: r#"Cranford"#, author: r#"Elizabeth Cleghorn Gaskell"#, summary: r#"Cranford Elizabeth Cleghorn Gaskell - Cranford by Elizabeth Cleghorn Gaskell Cranford is the best-known novel of the 19th century English writer Elizabeth Gaskell. It was first published in 1851 as a serial in the magazine Household Words, which was edited by Charles Dickens. The fictional town of C..."# },
+  /* 318. */
+    Book { title: r#"Because of Winn-Dixie"#, author: r#"Kate DiCamillo"#, summary: r#"A classic tale by Newbery Medalist Kate DiCamillo, America's beloved storyteller. One summer’s day, ten-year-old India Opal Buloni goes down to the local supermarket for some groceries – and comes home with a dog. But Winn-Dixie is no ordinary dog. It’s because of Winn-Dixie that Opal begins to make..."# },
+  /* 319. */
+    Book { title: r#"My Side of the Mountain"#, author: r#"Jean Craighead George"#, summary: r#""Should appeal to all rugged individualists who dream of escape to the forest."—The New York Times Book Review Sam Gribley is terribly unhappy living in New York City with his family, so he runs away to the Catskill Mountains to live in the woods—all by himself. With only a penknife, a ball of cord,..."# },
+  /* 320. */
+    Book { title: r#"The Runaway Jury"#, author: r#"John Grisham"#, summary: r#"The Runaway Juryis a John Grisham legal thriller about a landmark tobacco trial in Biloxi, Mississippi, where a juror, Nicholas Easter, and his girlfriend, Marlee, take control of the jury and sell the verdict to the highest bidder. As the trial progresses, they manipulate the proceedings to their advantage against the tobacco company's jury consultant, the ruthless Rankin Fitch, and the idealistic plaintiff's attorney, Wendell Rohr. The plot explores themes of manipulation, corporate power, and the jury's role in the justice system..."# },
+  /* 321. */
+    Book { title: r#"The Mouse and the Motorcycle"#, author: r#"Beverly Cleary"#, summary: r#""Boy!" said Ralph to himself, his whiskers quivering with excitement. "Boy, oh boy!" Feeling that this was an important moment in his life, he took hold of the handgrips. They felt good and solid beneath his paws. Yes, this motorcycle was a good machine all right. Ralph the mouse ventures out from b..."# },
+  /* 322. */
+    Book { title: r#"The Lost Symbol"#, author: r#"Dan Brown"#, summary: r#"Robert Langdon, while at the U.S. Capital Building, finds an object encoded with five symbols, which is an ancient invitation to usher its recipient into a long-lost world of esoteric wisdom. When Langdon's belived mentor, Peter Solomon, is kidnapped, he realizes his only hope of saving Peter is to ..."# },
+  /* 323. */
+    Book { title: r#"The Forsyte Saga"#, author: r#"John Galsworthy"#, summary: r#"The three novels which make up The Forsyte Saga chronicle the ebbing social power of the commerical upper-middle class Forsyte family between 1886 and 1920. Soames Forsyte is the brilliantly portrayed central figure, a Victorian who outlives the age, and whose baffled passion for his beautiful but u..."# },
+  /* 324. */
+    Book { title: r#"Gone Girl"#, author: r#"Gillian Flynn"#, summary: r#"Gone Girl is a psychological thriller by Gillian Flynn about a marriage that unravels when the wife, Amy Dunne, disappears on their fifth wedding anniversary, making her husband, Nick Dunne, the prime suspect. As the police investigate and the media turns Nick into a public figure of suspicion, the story alternates between Nick's perspective and Amy's diary, revealing shocking secrets, lies, and the dark, manipulative nature of their relationship..."# },
+  /* 325. */
+    Book { title: r#"The Lightning Thief"#, author: r#"Rick Riordan"#, summary: r#"The first book in the New York Times best-selling saga with a cover image and an 8-page photo insert from the Disney+ series! Read the book that launched Percy Jackson into the stratosphere before the Disney+ series comes out! Lately, mythological monsters and the Olympian gods seem to be walking st..."# },
+  /* 326. */
+    Book { title: r#"The Last Days of Pompeii"#, author: r#"Edward Bulwer Lytton"#, summary: r#"The Last Days of Pompeii by Edward Bulwer-Lytton is a 19th-century historical novel set in the ancient Roman city of Pompeii just before its destruction by the eruption of Mount Vesuvius in 79 AD. The story follows several characters, including the Greek couple Glaucus and Ione, the blind slave girl Nydia, and the Christian convert Olinthus, as they navigate a world of Roman decadence, religious conflict, and supernatural evil, ultimately culminating in the terrifying eruption..."# },
+  /* 327. */
+    Book { title: r#"The Reader"#, author: r#"Bernhard Schlink"#, summary: r#"INTERNATIONAL BESTSELLER • Hailed for its coiled eroticism and the moral claims it makes upon the reader, this mesmerizing novel is a story of love and secrets, horror and compassion, unfolding against the haunted landscape of postwar Germany. "A formally beautiful, disturbing and finally morally de..."# },
+  /* 328. */
+    Book { title: r#"Caddie Woodlawn"#, author: r#"Carol Ryrie Brink"#, summary: r#"An illustrated edition of the Newberry Medal–winning Caddie Woodlawn, which has been captivating young readers since 1935. Caddie Woodlawn is a real adventurer. She'd rather hunt than sew and plow than bake, and tries to beat her brother's dares every chance she gets. Caddie is friends with Indians,..."# },
+  /* 329. */
+    Book { title: r#"The Tale of Despereaux"#, author: r#"Kate DiCamillo"#, summary: r#"The adventures of Desperaux Tilling, a small mouse of unusual talents, the princess that he loves, the servant girl who longs to be a princess, and a devious rat determined to bring them all to ruin."# },
+  /* 330. */
+    Book { title: r#"The Girl Who Kicked the Hornet's Nest"#, author: r#"Stieg Larsson"#, summary: r#"Salander & Blomkvist harus bekerja sama memadukan keahlian mereka, hacking dan investigasi, untuk mengungkap konspirasi dalam pemerintahan Swedia. [Mizan, Qanita, Terjemahan, Klasik, Indonesia]"# },
+  /* 331. */
+    Book { title: r#"Dear Mr. Henshaw"#, author: r#"Beverly Cleary"#, summary: r#"Newbery Medal Winner * Teachers’ Top 100 Books for Children * ALA Notable Children’s Book Beverly Cleary’s timeless Newbery Medal-winning book explores difficult topics like divorce, insecurity, and bullying through the thoughts and emotions of a sixth-grade boy as he writes to his favorite author, ..."# },
+  /* 332. */
+    Book { title: r#"The Killer Angels"#, author: r#"Michael Shaara"#, summary: r#"PULITZER PRIZE WINNER • NEW YORK TIMES BESTSELLER • The “remarkable” (Ken Burns), “utterly absorbing” (Forbes) Civil War classic that inspired the film Gettysburg, with more than three million copies in print—now in a 50th anniversary edition featuring a new introduction by Jeff Shaara “My favorite ..."# },
+  /* 333. */
+    Book { title: r#"Chronicle of a Death Foretold"#, author: r#"Gabriel GarcÃ­a MÃ¡rquez"#, summary: r#"No summary available."# },
+  /* 334. */
+    Book { title: r#"The Five People You Meet In Heaven"#, author: r#"Mitch Albom"#, summary: r#"From the bestselling author of Tuesdays with Morrie, a war veteran encounters the true significance of life after death in this touching modern classic. On his 83rd birthday, Eddie dies in a tragic amusement park ride accident in an attempt to save a little girl’s life. He awakens in the afterlife, ..."# },
+  /* 335. */
+    Book { title: r#"The Master and Margarita"#, author: r#"Mikhail Bulgakov"#, summary: r#"No Marketing Blurb"# },
+  /* 336. */
+    Book { title: r#"Winesburg, Ohio"#, author: r#"Sherwood Anderson"#, summary: r#"Published in 1919, Winesburg, Ohio is Sherwood Anderson’s masterpiece, a work in which he achieved the goal to which he believed all true writers should aspire: to see and feel “all of life within.” In a perfectly imagined world, an archetypal small American town, he reveals the hidden passions that..."# },
+  /* 337. */
+    Book { title: r#""P" Is for Peril"#, author: r#"Sue Grafton"#, summary: r#"Kinsey Millhone trusts her life to her instincts as her investigation into the disappearance of a renowned physician takes her into a dark and dangerous world of duplicity, betrayal, and double-dealing, in the noir-influenced novel by the author of fifteen mysteries spanning the first two-thirds of ..."# },
+  /* 338. */
+    Book { title: r#"My Sister's Keeper"#, author: r#"Jodi Picoult"#, summary: r#"Written with grace, wisdom, and sensitivity, this novel is about a teen who was conceived as a bone marrow match for her sister Kate, and what happens when she begins to question who she really is."# },
+  /* 339. */
+    Book { title: r#"Barnaby Rudge"#, author: r#"Charles Dickens"#, summary: r#"Penguin Classics e-books give you the best possible editions of Charles Dickens's novels, including all the original illustrations, useful and informative introductions, the definitive, accurate text as it was meant to be published, a chronology of Dickens's life and notes that fill in the backgroun..."# },
+  /* 340. */
+    Book { title: r#"Howards End"#, author: r#"E.M. Forster"#, summary: r#"First published in 1910, Howards End is the novel that earned E. M. Forster recognition as a major writer. Soon to be a limited series on Starz. At its heart lie two families—the wealthy and business-minded Wilcoxes and the cultured and idealistic Schlegels. When the beautiful and independent Helen ..."# },
+  /* 341. */
+    Book { title: r#"The Broker"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • In his final hours in the Oval Office, the outgoing President grants a controversial last-minute pardon to Joel Backman, a notorious Washington power broker who has spent the last six years hidden away in a federal prison. What no one knows is that the President issues..."# },
+  /* 342. */
+    Book { title: r#"The Camel Club"#, author: r#"David Baldacci"#, summary: r#"After witnessing a shocking murder, four conspiracy theorists team up with a Secret Service agent to uncover the government corruption that threatens to cause an international terrorism crisis in this New York Times bestselling thriller. Welcome to THE CAMEL CLUB. Existing at the fringes of Washingt..."# },
+  /* 343. */
+    Book { title: r#"The Rainbow"#, author: r#"D.H. Lawrence"#, summary: r#"Selected by the Modern Library as one of the 100 best novels of all time Pronounced obscene when it was first published in 1915, The Rainbow is the epic story of three generations of the Brangwens, a Midlands family. A visionary novel, considered to be one of Lawrence’s finest, it explores the compl..."# },
+  /* 344. */
+    Book { title: r#"The Man In the Iron Mask"#, author: r#"Alexandre Dumas"#, summary: r#"The Man in the Iron Mask by Alexandre Dumas: "The Man in the Iron Mask" by Alexandre Dumas is a historical adventure novel that is part of the famous "d'Artagnan Romances" series. The story explores the mystery of a prisoner in an iron mask and the adventures of the musketeers. Key Aspects of the Bo..."# },
+  /* 345. */
+    Book { title: r#"Mary Poppins"#, author: r#"P.L. Travers"#, summary: r#"Mary Poppins is the first book in the 1934 series by author P.L. Travers, which tells the story of a magical nanny who arrives in Edwardian London to care for the Banks children, Jane and Michael. Using a combination of magic and common sense, she teaches the children and their busy parents the importance of family and finding joy in everyday life. The book is a collection of episodic adventures that features the mysterious nanny, her young charges, and their friend Bert, the street artist..."# },
+  /* 346. */
+    Book { title: r#"Artemis Fowl"#, author: r#"Eoin Colfer"#, summary: r#"Twelve-year-old Artemis is a millionaire, a genius-and above all, a criminal mastermind. But Artemis doesn't know what he's taken on when he kidnaps a fairy, Captain Holly Short of the LEPrecon Unit. These aren't the fairies of the bedtime stories-they're dangerous!"# },
+  /* 347. */
+    Book { title: r#"Dear John"#, author: r#"Nicholas Sparks"#, summary: r#"From the New York Times bestselling author of The Notebook, a soldier must face an impossible choice when a national tragedy threatens his relationship with the girl of his dreams. Now a motion picture starring Channing Tatum and Amanda Seyfried. Rebellious John drops out of school and enlists in th..."# },
+  /* 348. */
+    Book { title: r#"Cold Mountain"#, author: r#"Charles Frazier"#, summary: r#"No summary available."# },
+  /* 349. */
+    Book { title: r#"Flowers for Algernon"#, author: r#"Daniel Keyes"#, summary: r#"A mentally retarded adult has a brain operation that turns him into a genius."# },
+  /* 350. */
+    Book { title: r#"The Dark Is Rising"#, author: r#"Susan Cooper"#, summary: r#"No summary available."# },
+  /* 351. */
+    Book { title: r#"Resurrection"#, author: r#"Leo Tolstoy"#, summary: r#"Why buy our paperbacks? Printed in USA on High Quality Paper Standard Font size of 10 for all books Fulfilled by Amazon Expedited shipping 30 Days Money Back Guarantee Unabridged (100% Original content) BEWARE OF LOW-QUALITY SELLERS Don't buy cheap paperbacks just to save a few dollars. Most of them..."# },
+  /* 352. */
+    Book { title: r#"Fearless Fourteen"#, author: r#"Janet Evanovich"#, summary: r#"Personal vendettas, hidden treasure, and a monkey named Carl will send bounty hunter Stephanie Plum on her most explosive adventure yet. The Crime: Armed robbery to the tune of nine million dollars Dom Rizzi robbed a bank, stashed the money, and did the time. His family couldn't be more proud. He al..."# },
+  /* 353. */
+    Book { title: r#"A Sentimental Journey Through France and Italy"#, author: r#"Laurence Sterne"#, summary: r#"No summary available."# },
+  /* 354. */
+    Book { title: r#"The King of Torts"#, author: r#"John Grisham"#, summary: r#"The author presents his latest novel of courtroom and legal suspense."# },
+  /* 355. */
+    Book { title: r#"The Graveyard Book"#, author: r#"Neil Gaiman"#, summary: r#"No summary available."# },
+  /* 356. */
+    Book { title: r#"The Quiet American"#, author: r#"Graham Greene"#, summary: r#"The story of Fowler, the world-weary British journalist, and Pyle, the idealistic and naive "quiet American" who blindly applies his academic theories to a political situation in Vietnam which he doesn't quite grasp."# },
+  /* 357. */
+    Book { title: r#"The Chamber"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • “A dark and thoughtful tale pulsing with moral uncertainties . . . Grisham is at his best.”—People In Chicago’s top law firm, a young lawyer stands on the brink of a brilliant career. Now twenty-six-year-old Adam Hall is risking it all for a death-row killer and an imp..."# },
+  /* 358. */
+    Book { title: r#"The English Patient"#, author: r#"Michael Ondaatje"#, summary: r#"With ravishing beauty and unsettling intelligence, Michael Ondaatje's Booker Prize-winning novel traces the intersection of four damaged lives in an Italian villa at the end of World War II. Hana, the exhausted nurse; the maimed thief, Caravaggio; the wary sapper, Kip: each is haunted by the riddle ..."# },
+  /* 359. */
+    Book { title: r#"Snow Falling on Cedars"#, author: r#"David Guterson"#, summary: r#"No summary available."# },
+  /* 360. */
+    Book { title: r#"The Long Winter"#, author: r#"Laura Ingalls Wilder"#, summary: r#"The adventures of Laura Ingalls and her family continue as Pa, Ma, Laura, Mary, Carrie, and little Grace bravely face the hard winter of 1880-81 in their little house in the Dakota Territory. Blizzards cover the little town with snow, cutting off all supplies from the outside. Soon there is almost n..."# },
+  /* 361. */
+    Book { title: r#"Sarah, Plain and Tall"#, author: r#"Patricia MacLachlan"#, summary: r#""Did Mama sing every day?" Caleb asks his sister Anna."Every-single-day," she answers. "Papa too.""# },
+  /* 362. */
+    Book { title: r#"Cross Country"#, author: r#"James Patterson"#, summary: r#"Unprotected and alone, Alex Cross is chasing a horrible new breed of killer. When the crimes hit close to home, he must hunt down the source . . . before it finds him first. When the home of Alex Cross's oldest friend, Ellie Cox, is turned into the worst murder scene Alex has ever seen, the destruct..."# },
+  /* 363. */
+    Book { title: r#"The Spy Who Came In from the Cold"#, author: r#"John Le CarrÃ©"#, summary: r#"No summary available."# },
+  /* 364. */
+    Book { title: r#"A Game of Thrones"#, author: r#"George R.R. Martin"#, summary: r#"No summary available."# },
+  /* 365. */
+    Book { title: r#"The Thorn Birds"#, author: r#"Colleen McCullough"#, summary: r#"One of the most beloved novels of all time, Colleen McCullough's magnificent saga of dreams, struggles, dark passions, and forbidden love in the Australian outback has enthralled readers the world over. The Thorn Birds is a chronicle of three generations of Clearys—an indomitable clan of ranchers ca..."# },
+  /* 366. */
+    Book { title: r#"Old Yeller"#, author: r#"Fred Gipson"#, summary: r#"No summary available."# },
+  /* 367. */
+    Book { title: r#"Ramona Quimby, Age 8"#, author: r#"Beverly Cleary"#, summary: r#"No summary available."# },
+  /* 368. */
+    Book { title: r#"Death In Venice"#, author: r#"Thomas Mann"#, summary: r#"No summary available."# },
+  /* 369. */
+    Book { title: r#"By the Shores of Silver Lake"#, author: r#"Laura Ingalls Wilder"#, summary: r#"No summary available."# },
+  /* 370. */
+    Book { title: r#"Inferno"#, author: r#"Dan Brown"#, summary: r#"No summary available."# },
+  /* 371. */
+    Book { title: r#"Schindler's List"#, author: r#"Thomas Keneally"#, summary: r#"No summary available."# },
+  /* 372. */
+    Book { title: r#"Jonathan Livingston Seagull"#, author: r#"Richard Bach"#, summary: r#"More concerned with the dynamics of his flight than with gathering food, Jonathan is scorned by the other seagulls."# },
+  /* 373. */
+    Book { title: r#"The Stand"#, author: r#"Stephen King"#, summary: r#"#1 BESTSELLER • NOW A PARAMOUNT+ LIMITED SERIES • Stephen King’s apocalyptic vision of a world blasted by plague and tangled in an elemental struggle between good and evil remains as riveting—and eerily plausible—as when it was first published. One of The Atlantic’s Great American Novels of the Past..."# },
+  /* 374. */
+    Book { title: r#"The Last Juror"#, author: r#"John Grisham"#, summary: r#"Convicted of the murder of a young mother in a 1970 trial that ended with his threat to seek revenge against the jurors, Danny Padgitt is paroled after nine years in prison and returns to the scene of the trial in Ford County, Mississippi."# },
+  /* 375. */
+    Book { title: r#"Shiloh"#, author: r#"Phyllis Reynolds Naylor"#, summary: r#"When he finds a lost beagle in the hills, Marty tries to hide it from his family and the dog's real owner, a mean-spirited man known to mistreat his animals. Grades 4-7. 1992 Newbery Medal winner. 1991."# },
+  /* 376. */
+    Book { title: r#"Girl With a Pearl Earring"#, author: r#"Tracy Chevalier"#, summary: r#"The New York Times bestselling novel by the author of A Single Thread and At the Edge of the Orchard Translated into thirty-nine languages and made into an Oscar-nominated film, starring Scarlett Johanson and Colin Firth Tracy Chevalier transports readers to a bygone time and place in this richly-im..."# },
+  /* 377. */
+    Book { title: r#"The Murder of Roger Ackroyd"#, author: r#"Agatha Christie"#, summary: r#"Voted the best crime novel ever written by the Crime Writers’ Association: “Breathless reading from first to the unexpected last.” —The Observer The eminent Belgian detective Hercule Poirot has lost a friend to an unfortunate stabbing incident, and now, despite his retirement in a previously peacefu..."# },
+  /* 378. */
+    Book { title: r#"It"#, author: r#"Stephen King"#, summary: r#"No summary available."# },
+  /* 379. */
+    Book { title: r#"The Rainmaker"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • “A taut and terrific page-turner” (Entertainment Weekly) from the master of the courtroom thriller “Great fun to read . . . The complex plotting is Grisham’s major accomplishment.”—Los Angeles Times In development as a USA Network series starring John Slattery It’s sum..."# },
+  /* 380. */
+    Book { title: r#"The Poisonwood Bible"#, author: r#"Barbara Kingsolver"#, summary: r#"New York Times Bestseller • Finalist for the Pulitzer Prize • An Oprah's Book Club Selection “Powerful . . . [Kingsolver] has with infinitely steady hands worked the prickly threads of religion, politics, race, sin and redemption into a thing of terrible beauty.” —Los Angeles Times Book Review The P..."# },
+  /* 381. */
+    Book { title: r#"The Indian in the Cupboard"#, author: r#"Lynne Reid Banks"#, summary: r#"No summary available."# },
+  /* 382. */
+    Book { title: r#"The Maltese Falcon"#, author: r#"Dashiell Hammett"#, summary: r#"ONE OF TIME MAGAZINE'S 100 BEST MYSTERY AND THRILLER BOOKS OF ALL TIME • A special edition of this coolly glittering gem of detective fiction that has haunted three generations of readers, from one of the greatest mystery writers of all time. Featuring an introduction by James Ellroy. A treasure wor..."# },
+  /* 383. */
+    Book { title: r#"The Warden"#, author: r#"Anthony Trollope"#, summary: r#"Books for All Kinds of Readers. ReadHowYouWant offers the widest selection of on-demand, accessible format editions on the market today. Each edition has been optimized for maximum readability, using our patent-pending conversion technology. We are partnering with leading publishers around the globe..."# },
+  /* 384. */
+    Book { title: r#"The Summons"#, author: r#"John Grisham"#, summary: r#"Law professor Ray Atlee and his troublesome younger brother Forrest are called home to Clanton, Mississippi, by their dying father, Judge Atlee, but when the judge dies before the meeting can take place, Ray is left to untangle an old family secret."# },
+  /* 385. */
+    Book { title: r#"Encyclopedia Brown: Boy Detective"#, author: r#"Donald J.  Sobol"#, summary: r#"Leroy Brown, aka Encyclopedia Brown, is Idaville neighborhood’s ten-year-old star detective. With an uncanny knack for trivia, he solves mysteries for the neighborhood kids through his own detective agency. But his dad also happens to be the chief of the Idaville police department, and every night a..."# },
+  /* 386. */
+    Book { title: r#"The Time Traveler's Wife"#, author: r#"Audrey Niffenegger"#, summary: r#""The Time Traveler's Wife is the story of Clare, a beautiful art student, and Henry, an adventuresome librarian, who have known each other since Clare was six and Henry was thirty-six, and were married when Clare was twenty-three and Henry was thirty-one. Impossible but true, because Henry is one of..."# },
+  /* 387. */
+    Book { title: r#"The Incredible Journey"#, author: r#"Sheila Burnford"#, summary: r#"Fans of Old Yeller, Where the Red Fern Grows, and Shiloh will love this timeless classic about two dogs and a cat that embark on a journey to return to their owner and inspired the movie Homeward Bound. An inquisitive Labrador retriever, friendly bull terrier, and courageous Siamese cat set out thro..."# },
+  /* 388. */
+    Book { title: r#"Daughter of Fortune"#, author: r#"Isabel Allende"#, summary: r#"From the New York Times bestselling author of The House of the Spirits, Isabelle Allende, comes a passionate tale of one young woman's quest to save her lover set against the chaos of the 1849 California Gold Rush. Orphaned at birth, Eliza Sommers is raised in the British colony of Valparaíso, Chile..."# },
+  /* 389. */
+    Book { title: r#"Shirley"#, author: r#"Charlotte BrontÃ«"#, summary: r#"No summary available."# },
+  /* 390. */
+    Book { title: r#"Bud, Not Buddy"#, author: r#"Christopher Paul Curtis"#, summary: r#"No summary available."# },
+  /* 391. */
+    Book { title: r#"The Horse Whisperer"#, author: r#"Nicholas Evans"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • “A compelling portrait of three people who love each other but can't break through the self-created walls that keep them apart.”—Chicago Sun-Times His name is Tom Booker. His voice can calm wild horses, his touch can heal broken spirits. And Annie Graves has traveled a..."# },
+  /* 392. */
+    Book { title: r#"The Street Lawyer"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • “Compelling . . . another timely tale from John Grisham. [The Street Lawyer] shows not only that Grisham has his finger on the public pulse but that he’s also out to prick its conscience.”—Chicago Tribune Michael was in a hurry. He was scrambling up the ladder at Drake..."# },
+  /* 393. */
+    Book { title: r#"Nausea"#, author: r#"Jean-Paul Sartre"#, summary: r#"This classic Existentialist novel features a new Introduction by renowned poet, translator, and critic Richard Howard."# },
+  /* 394. */
+    Book { title: r#"To Have and Have Not"#, author: r#"Ernest Hemingway"#, summary: r#"To Have and Have Not is the dramatic, brutal story of Harry Morgan, an honest boat owner who is forced into running contraband between Cuba and Key West as a means of keeping his crumbling family financially afloat. His adventures lead him into the world of the wealthy and dissipated yachtsmen who s..."# },
+  /* 395. */
+    Book { title: r#"The Bridges of Madison County"#, author: r#"Robert James Waller"#, summary: r#"Fall in love with one of the bestselling novels of all time -- the legendary love story that became a beloved film starring Clint Eastwood and Meryl Streep. If you've ever experienced the one true love of your life, a love that for some reason could never be, you will understand why readers all over..."# },
+  /* 396. */
+    Book { title: r#"Anne of the Island"#, author: r#"L.M. Montgomery"#, summary: r#"No summary available."# },
+  /* 397. */
+    Book { title: r#"The Winter of Our Discontent"#, author: r#"John Steinbeck"#, summary: r#"The final novel of one of America’s most beloved writers—a tale of degeneration, corruption, and spiritual crisis A Penguin Classic In awarding John Steinbeck the 1962 Nobel Prize in Literature, the Nobel committee stated that with The Winter of Our Discontent, he had “resumed his position as an ind..."# },
+  /* 398. */
+    Book { title: r#"The Shining"#, author: r#"Stephen King"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • ONE OF TIME MAGAZINE'S 100 BEST MYSTERY AND THRILLER BOOKS OF ALL TIME • Before Doctor Sleep, there was The Shining, a classic of modern American horror. Jack Torrance takes a job as the caretaker of the remote Overlook Hotel. As the brutal winter sets in, the hotel's ..."# },
+  /* 399. */
+    Book { title: r#"The Tenant of Wildfell Hall"#, author: r#"Anne BrontÃ«"#, summary: r#""The classic book has always read again and again.""What is the classic book?""""Why is the classic book?""READ READ READ.. then you'll know it's excellence.""# },
+  /* 400. */
+    Book { title: r#"First Family"#, author: r#"David Baldacci"#, summary: r#"In this #1 New York Times bestseller, a child is kidnapped at a presidential retreat and two former Secret Service agents must become private investigators in a desperate search that might destroy them both. A daring kidnapping turns a children's birthday party at Camp David, the presidential retrea..."# },
+  /* 401. */
+    Book { title: r#"The Partner"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • Once he was a well-liked, well-paid young partner in a thriving Mississippi law firm. Then he stole ninety million dollars from his own firm—and ran for his life. “One terrific book—smart, fast, stingingly satiric, and almost criminally entertaining.”—Entertainment Wee..."# },
+  /* 402. */
+    Book { title: r#"The Girl on the Train"#, author: r#"Paula Hawkins"#, summary: r#"The #1 New York Times bestseller, USA Today Book of the Year and now a major motion picture starring Emily Blunt. Rachel takes the same commuter train every morning and night. Every day she rattles down the track, flashes past a stretch of cozy suburban homes and stops at the signal that allows her ..."# },
+  /* 403. */
+    Book { title: r#"The Black Arrow: A Tale of the Two Roses"#, author: r#"Robert Louis Stevenson"#, summary: r#"No summary available."# },
+  /* 404. */
+    Book { title: r#"The Rise of Silas Lapham"#, author: r#"William Dea Howells"#, summary: r#"No summary available."# },
+  /* 405. */
+    Book { title: r#"The Choice"#, author: r#"Nicholas Sparks"#, summary: r#"No summary available."# },
+  /* 406. */
+    Book { title: r#"The Virginian: A Horseman of the Plains"#, author: r#"Owen Wister"#, summary: r#"The novel that introduced the first great American hero: the cowboy The Virginian cuts an impressive figure when the unnamed narrator of Owen Wister’s groundbreaking novel first encounters him in Medicine Bow, Wyoming. Dark-haired and physically imposing, the charismatic Virginian quickly befriends ..."# },
+  /* 407. */
+    Book { title: r#"A Walk to Remember"#, author: r#"Nicholas Sparks"#, summary: r#"A high school rebel and a minister's daughter find strength in each other in this star-crossed tale of "young but everlasting love" (Chicago Sun-Times). There was a time when the world was sweeter....when the women in Beaufort, North Carolina, wore dresses, and the men donned hats.... Every April, w..."# },
+  /* 408. */
+    Book { title: r#"The Maze Runner"#, author: r#"James Dashner"#, summary: r#"THE #1 NEW YORK TIMES BESTSELLING MAZE RUNNER SERIES • A teenager with no memory must navigate a deadly maze to survive in book one of this post-apocalyptic phenomenon. “[A] mysterious survival saga that passionate fans describe as a fusion of Lord of the Flies [and] The Hunger Games” (Entertainment..."# },
+  /* 409. */
+    Book { title: r#"The Westing Game"#, author: r#"Ellen Raskin"#, summary: r#"BE CLASSIC with The Westing Game, introduced by New York Times bestselling author Mac Barnett. NEWBERY MEDAL WINNER • Ellen Raskin's unforgettable, timeless classic continues to be cherished by young readers of each new generation. A highly inventive mystery begins when sixteen unlikely people gathe..."# },
+  /* 410. */
+    Book { title: r#"Misty of Chincoteague"#, author: r#"Marguerite Henry"#, summary: r#"Two youngsters' determination to own a Chincoteague pony is greatly increased when the Phantom and her colt are among those rounded up for the yearly auction."# },
+  /* 411. */
+    Book { title: r#"Diary of a Wimpy Kid: The Last Straw"#, author: r#"Jeff Kinney"#, summary: r#"THE ONE WHERE GREG SHAPES UP The third laugh-out-loud, fully-illustrated Diary of a Wimpy Kid book from #1 international bestselling author Jeff Kinney! A global phenomenon with 250 million copies of the series sold worldwide! Greg Heffley's dad is on a mission! He's decided it's time for this wimpy..."# },
+  /* 412. */
+    Book { title: r#"King Solomon's Mines"#, author: r#"H. Rider Haggard"#, summary: r#"Will the search lost diamond mine in the heart of Africa cost more than they bargained for? King Solomon's Mine's by H. Rider Haggard was the first British adventure novel set in Africa. In the story, three English adventures set off to find the legendary King Solomon Mine, and hopefully, a brother ..."# },
+  /* 413. */
+    Book { title: r#"The Princess of Cleves"#, author: r#"Madame de (Marie-Madeleine Pioche de La Vergne) La Fayett"#, summary: r#"No summary available."# },
+  /* 414. */
+    Book { title: r#"Jacob Have I Loved"#, author: r#"Katherine Paterson"#, summary: r#"Katherine Paterson's remarkable Newbery Medal-winning classic about a painful sibling rivalry, and one sister’s struggle to make her own way, is an honest and daring portrayal of adolescence and coming of age. A strong choice for independent reading, both for summer reading and homeschooling, as wel..."# },
+  /* 415. */
+    Book { title: r#"Mrs. Frisby and the Rats of NIMH"#, author: r#"Robert C. O'Brien"#, summary: r#"Some extraordinary rats come to the aid of a mouse family in this Newbery Medal Award–winning classic by notable children’s author Robert C. O’Brien. Mrs. Frisby, a widowed mouse with four small children, is faced with a terrible problem. She must move her family to their summer quarters immediately..."# },
+  /* 416. */
+    Book { title: r#"Misery"#, author: r#"Stephen King"#, summary: r#"No summary available."# },
+  /* 417. */
+    Book { title: r#"The Cider House Rules"#, author: r#"John Irving"#, summary: r#"First published in 1985, The Cider House Rules is John Irving's sixth novel. Set in rural Maine in the first half of this century, it tells the story of Dr. Wilbur Larch--saint and obstetrician, founder and director of the orphanage in the town of St. Cloud's, ether addict and abortionist. It is als..."# },
+  /* 418. */
+    Book { title: r#"King of the Wind"#, author: r#"Marguerite Henry"#, summary: r#"Sham and the stable boy Agba travel from Morocco to France to England where, at last, Sham's majesty is recognized and he becomes the "Godolphin Arabian," ancestor of the most superior Thoroughbred horses."# },
+  /* 419. */
+    Book { title: r#"The Once and Future King"#, author: r#"T. H. White"#, summary: r#"No summary available."# },
+  /* 420. */
+    Book { title: r#"The Witches"#, author: r#"Roald Dahl"#, summary: r#"From the World's No. 1 Storyteller, The Witches is a children's classic that has captured young reader's imaginations for generations. This is not a fairy tale. This is about real witches. Grandmamma loves to tell about witches. Real witches are the most dangerous of all living creatures on earth. T..."# },
+  /* 421. */
+    Book { title: r#"The Subtle Knife"#, author: r#"Philip Pullman"#, summary: r#"As the boundaries between worlds begin to dissolve, Lyra and her daemon help Will Parry in his search for his father and for a powerful, magical knife."# },
+  /* 422. */
+    Book { title: r#"When You Reach Me"#, author: r#"Rebecca Stead"#, summary: r#""Like A Wrinkle in Time (Miranda's favorite book), When You Reach Me far surpasses the usual whodunit or sci-fi adventure to become an incandescent exploration of 'life, death, and the beauty of it all.'" —The Washington Post This Newbery Medal winner that has been called "smart and mesmerizing," (T..."# },
+  /* 423. */
+    Book { title: r#"Carrie"#, author: r#"Stephen King"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • Stephen King's legendary debut, the bestselling smash hit that put him on the map as one of America's favorite writers • In a world where bullies rule, one girl holds a secret power. Unpopular and tormented, Carrie White's life takes a terrifying turn when her hidden a..."# },
+  /* 424. */
+    Book { title: r#"The Moon and Sixpence"#, author: r#"W. Somerset Maugham"#, summary: r#"The Moon and Sixpence By W. Somerset Maugham The Moon and Sixpence is a novel by W Somerset Maugham, told in episodic form by a first-person narrator, in a series of glimpses into the mind and soul of the central character Charles Strickland, a middle-aged English stockbroker, who abandons his wife ..."# },
+  /* 425. */
+    Book { title: r#"The Higher Power of Lucky"#, author: r#"Susan Patron"#, summary: r#"Lucky, age ten, can't wait another day. The meanness gland in her heart and the crevices full of questions in her brain make running away from Hard Pan, California (population 43), the rock-bottom only choice she has. It's all Brigitte's fault -- for wanting to go back to France. Guardians are suppo..."# },
+  /* 426. */
+    Book { title: r#"Looking Backward, 2000-1887"#, author: r#"Edward Bellamy"#, summary: r#"Edward Bellamy’s prophetic novel about a young Boston man who is mysteriously transported from the 19th to the 21st century—from a world of war and want to a world of peace and plenty. The year is 2000. The place: Utopian America. The hero: anyone who has ever longed for escape to a better life… Tra..."# },
+  /* 427. */
+    Book { title: r#"The Wings of the Dove"#, author: r#"Henry James"#, summary: r#"Selected by the Modern Library as one of the 100 best novels of all time Set amid the splendor of London drawing rooms and gilded Venetian palazzos, The Wings of the Dove is the story of Milly Theale, a naïve, doomed American heiress, and a pair of lovers, Kate Croy and Merton Densher, who conspire ..."# },
+  /* 428. */
+    Book { title: r#"The Summer of the Swans"#, author: r#"Betsy Cromer Byars"#, summary: r#""The longest day in the life of a 14-year-old girl--the summer day her loved, mentally retarded brother is lost, the day she discovers compassion is a friend. A compelling story".--Publishers Weekly. Newbery Award Book. Copyright © Libri GmbH. All rights reserved."# },
+  /* 429. */
+    Book { title: r#"Dangerous Liaisons"#, author: r#"Choderlos de Laclos"#, summary: r#"Dangerous Liaisons (Les Liaisons dangereuses) is an early French novel by Pierre Choderlos de Laclos, first published in four volumes in 1782. At the time of its publication novels were a new literary form, and Laclos chose to present his story in an epistolary style, composing the novel solely of a..."# },
+  /* 430. */
+    Book { title: r#"Jurassic Park"#, author: r#"Michael Crichton"#, summary: r#"No summary available."# },
+  /* 431. */
+    Book { title: r#"The Absolutely True Diary of a Part-time Indian"#, author: r#"Sherman Alexie"#, summary: r#"A New York Times bestseller—over 1 million copies sold! A National Book Award winner A Boston Globe-Horn Book Award winner Bestselling author Sherman Alexie tells the story of Junior, a budding cartoonist growing up on the Spokane Indian Reservation. Determined to take his future into his own hands,..."# },
+  /* 432. */
+    Book { title: r#"The Grey King"#, author: r#"Susan Cooper"#, summary: r#"Includes an excerpt from Silver on the tree."# },
+  /* 433. */
+    Book { title: r#"The Leopard"#, author: r#"Giuseppe Tomasi di Lampedusa"#, summary: r#"No summary available."# },
+  /* 434. */
+    Book { title: r#"The Mammoth Hunters"#, author: r#"Jean M. Auel"#, summary: r#"No summary available."# },
+  /* 435. */
+    Book { title: r#"The Trumpet of the Swan"#, author: r#"E.B. White"#, summary: r#"Swan Song Like the rest of his family, Louis is a trumpeter swan. But unlike his four brothers and sisters, Louis can't trumpet joyfully. In fact, he can't even make a sound. And since he can't trumpet his love, the beautiful swan Serena pays absolutely no attention to him. Louis tries everything he..."# },
+  /* 436. */
+    Book { title: r#"The Lucky One"#, author: r#"Nicholas Sparks"#, summary: r#"A U.S. Marine's brush with death leads him to the love of his life in this New York Times bestseller of destiny, luck, and the redemptive power of romance. After U.S. Marine Logan Thibault finds a photograph of a smiling young woman buried in the dirt during his tour of duty in Iraq, he experiences ..."# },
+  /* 437. */
+    Book { title: r#"These Happy Golden Years"#, author: r#"Laura Ingalls Wilder"#, summary: r#"Laura has her first experiences as a teacher and is courted by Almonzo Wilder."# },
+  /* 438. */
+    Book { title: r#"Arrowsmith"#, author: r#"Sinclair Lewis"#, summary: r#"This novel was awarded the Pulitzer Prize in 1925; Sinclair Lewis declined to accept it. The story of the career of a man of science."# },
+  /* 439. */
+    Book { title: r#"Julie of the Wolves"#, author: r#"Jean Craighead George"#, summary: r#"No summary available."# },
+  /* 440. */
+    Book { title: r#"The Screwtape Letters"#, author: r#"C.S. Lewis"#, summary: r#"In this humorous and perceptive exchange between two devils, C. S. Lewis delves into moral questions about good vs. evil, temptation, repentance, and grace. Through this wonderful tale, the reader emerges with a better understanding of what it means to live a faithful life."# },
+  /* 441. */
+    Book { title: r#"The Fall"#, author: r#"Albert Camus"#, summary: r#"Jean-Baptiste Clamence is a soul in turmoil. Over several drunken nights he regales a chance acquaintance with his story. From this successful former lawyer and seemingly model citizen a compelling, self-loathing catalogue of guilt, hypocrisy and alienation pours forth. The Fall (1956) is a brillian..."# },
+  /* 442. */
+    Book { title: r#"The No. 1 Ladies' Detective Agency"#, author: r#"Alexander McCall Smith"#, summary: r#"Sleuth Precious Ramotswe, who works in Gaborone, Botswana, investigates several local mysteries, including a search for a missing boy and the case of the clinic doctor with different personalities for different days of the week."# },
+  /* 443. */
+    Book { title: r#"Worst Case"#, author: r#"James Patterson"#, summary: r#"Best case: survival The son of one of New York's wealthiest families is snatched off the street and held hostage. His parents can't save him, because this kidnapper isn't demanding money. Instead, he quizzes his prisoner on the price others pay for his life of luxury. In this exam, wrong answers are..."# },
+  /* 444. */
+    Book { title: r#"Lost Horizon"#, author: r#"James Hilton"#, summary: r#"Two Englishmen, a woman missionary, and an American fleeing the consequences of shady financial deals are traveling companions."# },
+  /* 445. */
+    Book { title: r#"The Gunslinger"#, author: r#"Stephen King"#, summary: r#"“An impressive work of mythic magnitude that may turn out to be Stephen King’s greatest literary achievement” (The Atlanta Journal-Constitution), The Gunslinger is the first volume in the epic Dark Tower Series. A #1 national bestseller, The Gunslinger introduces readers to one of Stephen King’s mos..."# },
+  /* 446. */
+    Book { title: r#"The Slave Dancer"#, author: r#"Paula Fox"#, summary: r#"In this powerful historical novel a thirteen-year-old boy is kidnapped and brought aboard a slave ship, where he is forced to play music that will entice the slaves to exercise."# },
+  /* 447. */
+    Book { title: r#"Harry Potter and the Half-Blood Prince"#, author: r#"J.K. Rowling"#, summary: r#"It is Harry Potter's sixth year at Hogwarts School of Witchcraft and Wizardry. As Voldemort's sinister forces amass and a spirit of gloom and fear sweeps the land, it becomes more and more clear to Harry that he will soon have to confront his destiny. But is he up to the challenges ahead of him? In ..."# },
+  /* 448. */
+    Book { title: r#"Inkheart"#, author: r#"Cornelia Funke"#, summary: r#"Meggie's father, Mo, has an amazing secret - when he reads aloud, words come alive and dangerous characters step out of the pages. Suddenly Meggie is living the kind of adventure she has only read about in books, but this one will change her life for ever."# },
+  /* 449. */
+    Book { title: r#"Ramona and her Father"#, author: r#"Beverly Cleary"#, summary: r#"Ramona's father has lost his job and all the family are miserable, so Ramona decides to try and cheer them up, in her own inimitable way."# },
+  /* 450. */
+    Book { title: r#"Inkspell"#, author: r#"Cornelia Funke"#, summary: r#"A year has passed, but not a day goes by without Meggie thinking of Inkheart, the book that came alive. When she discovers that Dustfinger, one of its characters, has found a way home, she knows she must follow. But what is waiting for them between the pages of this dark, enchanted Inkworld?"# },
+  /* 451. */
+    Book { title: r#"Ramona the Pest"#, author: r#"Beverly Cleary"#, summary: r#"Ramona meets lots of interesting people in kindergarten class, like Davy whom she keeps trying to kiss and Susan whose springy curls seem to ask to be pulled."# },
+  /* 452. */
+    Book { title: r#"Walk Two Moons"#, author: r#"Sharon Creech"#, summary: r#"After her mother leaves home suddenly, thirteen-year-old Sal and her grandparents take a car trip retracing her mother's route. Along the way, Sal recounts the story of her friend Phoebe, whose mother also left."# },
+  /* 453. */
+    Book { title: r#"Miss Peregrine's Home for Peculiar Children"#, author: r#"Ransom Riggs"#, summary: r#"The #1 New York Times best-selling series An abandoned orphanage on a mysterious island holds the key to supernatural secrets in this unusual and original first book in the one-of-a-kind Miss Peregrine’s Peculiar Children series A captivating blend of horror, dark fantasy, paranormal mystery, and ti..."# },
+  /* 454. */
+    Book { title: r#"The Chocolate War"#, author: r#"Robert Cormier"#, summary: r#"A high-school freshman who refuses to participate in the annual fund-raising chocolate sale is forced to defend his convictions."# },
+  /* 455. */
+    Book { title: r#"Sophie's Choice"#, author: r#"William Styron"#, summary: r#"No summary available."# },
+  /* 456. */
+    Book { title: r#"Looking for Alaska"#, author: r#"John Green"#, summary: r#"A gorgeous collector's edition of the critically acclaimed debut novel by John Green, #1 bestselling author of Turtles All the Way Down and The Fault in Our Stars A perfect gift for every fan, this deluxe hardcover features a stunning special edition jacket and 50 pages of all-new exclusive content,..."# },
+  /* 457. */
+    Book { title: r#"Breakfast at Tiffany's"#, author: r#"Truman Capote"#, summary: r#"Holly Golightly knows that nothing bad can ever happen to you at Tiffany's. In this seductive, wistful masterpiece, Capote created a woman whose name has entered the American idiom and whose style is a part of the literary landscape—her poignancy, wit, and naïveté continue to charm. This volume also..."# },
+  /* 458. */
+    Book { title: r#"The Razor's Edge"#, author: r#"W. Somerset Maugham"#, summary: r#"The Razor's Edge is a book by W. Somerset Maugham published in 1944. Its epigraph reads, "The sharp edge of a razor is difficult to pass over; thus the wise say the path to Salvation is hard," taken from a verse in the Katha-Upanishad. The Razor's Edge tells the story of Larry Darrell, an American p..."# },
+  /* 459. */
+    Book { title: r#"Dreamcatcher"#, author: r#"Stephen King"#, summary: r#"Four friends' association with a mentally handicapped boy with supernatural abilities leaves them with special gifts that come in handy when they unite as adults for an annual hunting trip in Maine and find themselves in the middle of an alien invasion."# },
+  /* 460. */
+    Book { title: r#"Orlando"#, author: r#"Virginia Woolf"#, summary: r#""Virginia Woolf's exuberant 'biography' tells the story of the cross-dressing, sex-changing Orlando who begins life as a young noble in the sixteenth century and moves through numerous historical and geographical worlds to finish as a modern woman writer in the 1920s. The book is in part a happy tri..."# },
+  /* 461. */
+    Book { title: r#"The Things they Carried"#, author: r#"Tim O'Brien"#, summary: r#"One of the first questions people ask about The Things They Carried is this: Is it a novel, or a collection of short stories? The title page refers to the book simply as "a work of fiction," defying the conscientious reader's need to categorize this masterpiece. It is both: a collection of interrela..."# },
+  /* 462. */
+    Book { title: r#"Little Town on the Prairie"#, author: r#"Laura Ingalls Wilder"#, summary: r#"Pa's homestead thrives, Laura gets her first job in town, blackbirds eat the corn and oats crops, Mary goes to college, and Laura gets into trouble at school, but becomes a certified school teacher."# },
+  /* 463. */
+    Book { title: r#"Nights in Rodanthe"#, author: r#"Nicholas Sparks"#, summary: r#"Struggling to care for her sick father and raise her teenage children alone, a divorced mother spends the weekend at a North Carolina inn, only to meet a former surgeon running from his past. Adrienne Willis is 45 and has been divorced for three years, abandoned by her husband for a younger woman. T..."# },
+  /* 464. */
+    Book { title: r#"The Amber Spyglass"#, author: r#"Philip Pullman"#, summary: r#"Lyra and Will journey to a dank and gray-lit world where no living soul has ever gone."# },
+  /* 465. */
+    Book { title: r#"The Miraculous Journey of Edward Tulane"#, author: r#"Kate DiCamillo"#, summary: r#"Edward Tulane, a cold-hearted and proud toy rabbit, loves only himself until he is separated from the little girl who adores him and travels across the country, acquiring new owners and listening to their hopes, dreams, and histories."# },
+  /* 466. */
+    Book { title: r#"Flatland"#, author: r#"Edwin A. Abbott"#, summary: r#"Classic of science (and mathematical) fiction — charmingly illustrated by the author — describes the adventures of A. Square, a resident of Flatland, in Spaceland (three dimensions), Lineland (one dimension), and Pointland (no dimensions)."# },
+  /* 467. */
+    Book { title: r#"Diary of a Wimpy Kid"#, author: r#"Jeff  Kinney"#, summary: r#"It's the eleventh book in the bestselling Diary of a Wimpy Kid series! The pressure's really piling up on Greg Heffley. His mom thinks video games are turning his brain to mush, so she wants her son to put down the controller and explore his 'creative side'. As if that's not scary enough, Halloween'..."# },
+  /* 468. */
+    Book { title: r#"The Memory Keeper's Daughter"#, author: r#"Kim Edwards"#, summary: r#"A #1 New York Times bestseller by Kim Edwards, The Memory Keeper’s Daughter is a brilliantly crafted novel of parallel lives, familial secrets, and the redemptive power of love Kim Edwards’s stunning novel begins on a winter night in 1964 in Lexington, Kentucky, when a blizzard forces Dr. David Henr..."# },
+  /* 469. */
+    Book { title: r#"The Wedding"#, author: r#"Nicholas Sparks"#, summary: r#"In this stunning New York Times bestselling follow-up to The Notebook, a hardworking but distant husband vows to win back the love of his life by looking to Noah and Allie's legendary romance. After thirty years, Wilson Lewis is forced to face a painful truth: the romance has gone out of his marriag..."# },
+  /* 470. */
+    Book { title: r#"Fried Green Tomatoes at the Whistle-Stop Cafe"#, author: r#"Fannie Flagg"#, summary: r#"Folksy and fresh, endearing and affecting, Fried Green Tomatoes at the Whistle Stop Cafe is a now-classic novel about two women: Evelyn, who’s in the sad slump of middle age, and gray-headed Mrs. Threadgoode, who’s telling her life story. Her tale includes two more women—the irrepressibly daredevili..."# },
+  /* 471. */
+    Book { title: r#"The Cricket in Times Square"#, author: r#"George Selden"#, summary: r#"An updated version of the timeless children's classic featuring a business-savvy mouse, a kind alley cat, and a talented country cricket, featuring a new foreword and revisions by YA author Stacey Lee. Tucker is a streetwise city mouse. He thought he'd seen it all. But he's never met a cricket befor..."# },
+  /* 472. */
+    Book { title: r#"The Phantom Tollbooth"#, author: r#"Norton Juster"#, summary: r#"Here are Milo’s adventures in the Land of Wisdom, where he’s forced to think about many new things. Milo learns of the argument between King Azaz and his brother, the Mathemagician, whose disagreement over words and numbers has led to the banishment of Princesses Sweet Rhyme and Pure Reason. Milo is..."# },
+  /* 473. */
+    Book { title: r#"Rob Roy"#, author: r#"Walter Scott"#, summary: r#"Sir Walter Scott—who invented the historical novel—is still the writer to whom we turn when we seek the undiluted pleasures of narrative romance. His Rob Roy (1817) is a rousing tale of skulduggery and highway robbery, villainy and nobility, treasonous plots and dramatic escapes—and young love. From..."# },
+  /* 474. */
+    Book { title: r#"The Death of Ivan Ilych"#, author: r#"Leo Tolstoy"#, summary: r#"Hailed as one of the world's supreme masterpieces on the subject of death and dying, The Death of Ivan Ilyich is the story of a worldly careerist, a high court judge who has never given the inevitability of his death so much as a passing thought. But one day death announces itself to him, and to his..."# },
+  /* 475. */
+    Book { title: r#"Alex Cross's Trial"#, author: r#"James Patterson"#, summary: r#"Written in the fearless voice of Detective Alex Cross, Alex Cross's Trial is a #1 New York Times bestseller of murder, love, and above all, bravery. From his grandmother, Alex Cross has heard the story of his great uncle Abraham and his struggles for survival in the era of the Ku Klux Klan. Now, Ale..."# },
+  /* 476. */
+    Book { title: r#"Kenilworth"#, author: r#"Walter Scott"#, summary: r#"No summary available."# },
+  /* 477. */
+    Book { title: r#"The Life and Opinions of Tristram Shandy"#, author: r#"Laurence Sterne"#, summary: r#"No summary available."# },
+  /* 478. */
+    Book { title: r#"The Remains of theDay"#, author: r#"Kazuo Ishiguro"#, summary: r#"An English butler is the perfect manservant who doesn't allow his own feelings to interfere with his duties, even when he falls in love with the housekeeper or his father dies."# },
+  /* 479. */
+    Book { title: r#"M.C. Higgins, The Great"#, author: r#"Virginia Hamilton"#, summary: r#"Now available in this summer reading program edition, this Newbery Award-winning novel tells the story of M.C. Higgins, who saves his home and family from the slag heap of an Ohio strip mine when two strangers enter his life."# },
+  /* 480. */
+    Book { title: r#"Call It Courage"#, author: r#"Armstrong Sperry"#, summary: r#"No summary available."# },
+  /* 481. */
+    Book { title: r#"Go Set a Watchman"#, author: r#"Harper Lee"#, summary: r#"No summary available."# },
+  /* 482. */
+    Book { title: r#"Bleachers"#, author: r#"John Grisham"#, summary: r#"#1 NEW YORK TIMES BESTSELLER • High school all-American Neely Crenshaw was probably the best quarterback ever to play for the legendary Messina Spartans. Fifteen years have gone by since those glory days, and Neely has come home to Messina to bury Coach Eddie Rake, the man who molded the Spartans in..."# },
+  /* 483. */
+    Book { title: r#"Elijah of Buxton"#, author: r#"Christopher Paul Curtis"#, summary: r#"Master storyteller Christopher Paul Curtis's Newbery Honor novel, featuring his trademark humor and unique narrative voice, is now part of the Scholastic Gold line! Elijah of Buxton, recipient of the Newbery Honor and winner of the Coretta Scott King Award, joins the Scholastic Gold line, which feat..."# },
+  /* 484. */
+    Book { title: r#"Swimsuit"#, author: r#"James Patterson"#, summary: r#"In this #1 New York Times bestseller, tropical paradise becomes a dark inferno of kidnapping, temptation, and ruthless killing when a beautiful supermodel goes missing in Hawaii. Syd, a breathtakingly beautiful supermodel on a photo shoot in Hawaii, disappears. Fearing the worst, her parents travel ..."# },
+  /* 485. */
+    Book { title: r#"Cat's Cradle"#, author: r#"Kurt Vonnegut"#, summary: r#"In this novel, the author spatters the targets of religion and science as the hunt for the three children of Dr Felix Hoenikker, one of the fathers of the atomic bomb, draws towards the end that, forall of us, is nigh."# },
+  /* 486. */
+    Book { title: r#"The Caine Mutiny"#, author: r#"Herman Wouk"#, summary: r#"The Novel that Inspired the Now-Classic Film The Caine Mutiny and the Hit Broadway Play The Caine Mutiny Court-Martial Herman Wouk's boldly dramatic, brilliantly entertaining novel of life-and mutiny-on a Navy warship in the Pacific theater was immediately embraced, upon its original publication in ..."# },
+  /* 487. */
+    Book { title: r#"The Heart of the Matter"#, author: r#"Graham Greene"#, summary: r#"No summary available."# },
+  /* 488. */
+    Book { title: r#"Harriet, the Spy"#, author: r#"Louise Fitzhugh"#, summary: r#"No summary available."# },
+  /* 489. */
+    Book { title: r#"Darkness at Noon"#, author: r#"Arthur Koestler"#, summary: r#"An aging revolutionary is imprisoned and psychologically tortured by the Party to which he has dedicated his life. He recalls a career that embodies the ironies and betrayals of a totalitarian government."# },
+  /* 490. */
+    Book { title: r#"A Prayer for Owen Meany"#, author: r#"John Irving"#, summary: r#"“I am doomed to remember a boy with a wrecked voice—not because of his voice, or because he was the smallest person I ever knew, or even because he was the instrument of my mother’s death, but because he was the reason I believe in God; I am a Christian because of Owen Meany.” In the summer of 1953,..."# },
+  /* 491. */
+    Book { title: r#"The God of Small Things"#, author: r#"Arundhati Roy"#, summary: r#"No summary available."# },
+  /* 492. */
+    Book { title: r#"The Associate"#, author: r#"John Grisham"#, summary: r#"No summary available."# },
+  /* 493. */
+    Book { title: r#"The Shack"#, author: r#"William P. Young"#, summary: r#"Over 25 Million Copies Sold! After his daughter's murder, a grieving father confronts God with desperate questions -- and finds unexpected answers -- in this riveting and deeply moving #1 NYT bestseller. When Mackenzie Allen Phillips's youngest daughter Missy is abducted during a family vacation, he..."# },
+  /* 494. */
+    Book { title: r#"The Naked and the Dead"#, author: r#"Norman Mailer"#, summary: r#"No summary available."# },
+  /* 495. */
+    Book { title: r#"The Sea of Monsters"#, author: r#"Rick Riordan"#, summary: r#"No summary available."# },
+  /* 496. */
+    Book { title: r#"Stranger in a Strange Land"#, author: r#"Robert A. Heinlein"#, summary: r#"No summary available."# },
+  /* 497. */
+    Book { title: r#"Vision in White"#, author: r#"Nora Roberts"#, summary: r#"The first book in a brand new Wedding Quartet from internationally bestselling romance author Nora Roberts"# },
+  /* 498. */
+    Book { title: r#"The Whipping Boy"#, author: r#"Sid Fleischman"#, summary: r#"A Prince and a Pauper Jemmy, once a poor boy living on the streets, now lives in a castle. As the whipping boy, he bears the punishment when Prince Brat misbehaves, for it is forbidden to spank, thrash, or whack the heir to the throne. The two boys have nothing in common and even less reason to like..."# },
+  /* 499. */
+    Book { title: r#"Room"#, author: r#"Emma Donoghue"#, summary: r#"Kidnapped as a teenage girl, Ma has been locked inside a purpose built room in her captor's garden for seven years. Her five year old son, Jack, has no concept of the world outside and happily exists inside Room with the help of Ma's games and his vivid imagination where objects like Rug, Lamp and T..."# },
+  /* 500. */
+    Book { title: r#"Deception Point"#, author: r#"Dan Brown"#, summary: r#"From the #1 New York Times bestselling author of The Da Vinci Code, Angels & Demons, and Inferno and the “master of smart thrills” (People) comes a “rocket-fast thriller” (Vince Flynn) about an astonishing NASA discovery that unravels a deadly conspiracy that leads all the way to the White House. Wh..."# },
+    ]
+}
+
+/// Selects and returns a random book from the collection.
+/// 
+/// Uses the system's random number generator to select a book
+/// from the curated list for display to the user.
+/// 
+/// # Returns
+/// 
+/// A randomly selected `Book` from the collection.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::booklist::get_random_book;
+/// 
+/// let book = get_random_book();
+/// println!("Random book: {} by {}", book.title, book.author);
+/// ```
+pub fn get_random_book() -> Book {
+    let books = get_book_list();
+    let mut rng = rand::thread_rng();
+    let index = rng.gen_range(0..books.len());
+    books[index].clone()
+}
+
+/// Displays a random book recommendation in a formatted way.
+/// 
+/// Prints a nicely formatted book recommendation including title,
+/// author, and summary. This is called at the end of program execution
+/// to provide users with reading suggestions.
+/// 
+/// Uses ASCII-only characters for maximum compatibility across all systems
+/// and terminals, ensuring the display works correctly even on older systems
+/// or terminals without Unicode font support.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::booklist::print_random_book;
+/// 
+/// print_random_book();
+/// // Displays a formatted book recommendation
+/// ```
+pub fn print_random_book() {
+    let book = get_random_book();
+    
+    println!();
+    println!("=======================================================================");
+    println!("                           BOOK RECOMMENDATION");
+    println!("=======================================================================");
+    println!();
+    println!("Title:  {}", book.title);
+    println!("Author: {}", book.author);
+    println!();
+    println!("Summary:");
+    
+    // Word wrap the summary to fit nicely
+    let words: Vec<&str> = book.summary.split_whitespace().collect();
+    let mut line = String::new();
+    let max_width = 75;
+    
+    for word in words {
+        if line.len() + word.len() + 1 > max_width {
+            println!("   {}", line.trim());
+            line = String::new();
+        }
+        line.push_str(word);
+        line.push(' ');
+    }
+    
+    if !line.trim().is_empty() {
+        println!("   {}", line.trim());
+    }
+    
+    println!();
+    println!("=======================================================================");
+    println!("                            Happy reading :-)");
+    println!("=======================================================================");
+    println!();
+}
