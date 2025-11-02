@@ -604,7 +604,7 @@ Rotbond includes a comprehensive safety system to prevent system crashes from ex
 ```bash
 rotbond large_molecule
 
-⚠️  WARNING: Large conformer generation detected!
+  WARNING: Large conformer generation detected!
    Theoretical conformers: 1728
    This may consume significant memory and processing time.
    Current limit: 500 conformers
