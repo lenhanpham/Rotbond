@@ -78,9 +78,9 @@ cargo build --release
 cargo build
 ```
 
-***A binary file is provided for windows users in Release ***
+**A binary file is provided for windows users in Release**
 
-Copy rotbond.exe to a folder in your directory and add this directory your Windows*environment variable*. 
+Copy rotbond.exe to a directory and add this directory to your Windows *environment variable*. 
 
 ### Basic Usage
 
