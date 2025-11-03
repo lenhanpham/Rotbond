@@ -942,11 +942,11 @@ ALGORITHM DETAILS
 
    Steps:
    1. Translation: Move bond to origin
-      T = translation_matrix(-p₁)
+      T = translation_matrix(-p1)
 
    2. Axis Alignment: Rotate bond to align with Z-axis
-      k = normalized(p₂ - p₁)  (bond direction vector)
-      Calculate Rₓ, Rᵧ, Rₓ⁻¹, Rᵧ⁻¹
+      k = normalized(p2 - p1)  (bond direction vector)
+      Calculate Rx, Ry, Rx^-1, Ry^-1
 
    3. Rotation: Apply rotation around Z-axis by angle θ
       R_z(θ) = rotation_matrix_z(θ)
@@ -989,7 +989,7 @@ ALGORITHM DETAILS
       - Time: O(N × M × A)
         N = number of independent bonds
         M = average angle states per bond
-        A = validation cost (O(n²) for n atoms)
+        A = validation cost (O(n^2) for n atoms)
       - Space: O(C) for storing conformers
         C = number of valid conformers
 
@@ -1003,7 +1003,7 @@ ALGORITHM DETAILS
 
    Algorithm:
    For each atom pair (i, j):
-      distance = √[(xᵢ-xⱼ)² + (yᵢ-yⱼ)² + (zᵢ-zⱼ)²]
+      distance = √[(xᵢ-xⱼ)^2 + (yᵢ-yⱼ)^2 + (zᵢ-zⱼ)^2]
       min_distance = (cov_radius(i) + cov_radius(j)) × skip_factor
       if distance < min_distance:
          return INVALID (steric clash)
@@ -1061,11 +1061,11 @@ ALGORITHM COMPLEXITY SUMMARY:
 
 Operation                Time Complexity      Space Complexity
 -----------------       -----------------   -----------------
-Bond Detection          O(n²)               O(n²)
-Fragment ID             O(n + m)            O(n)
-Rotation               O(f)                O(1)
-Validation             O(n²)               O(1)
-Generation             O(C × n²)           O(C × n)
+Bond Detection          O(n^2)               O(n^2)
+Fragment ID             O(n + m)             O(n)
+Rotation                O(f)                 O(1)
+Validation              O(n^2)               O(1)
+Generation              O(C x n^2)           O(C x n)
 
 n = number of atoms
 m = number of bonds
