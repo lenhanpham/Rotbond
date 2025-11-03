@@ -35,8 +35,7 @@ Rotbond is program for generating molecular conformers through systematic bond r
   - Trajectory file with all conformers for easy visualization
   - Individual XYZ files with automatic smart padding
   - Progress reporting and statistics
-  - Random book recommendations after successful completion
-
+ 
 - **Intelligent Validation**
   
   - Steric clash detection and filtering
