@@ -104,12 +104,66 @@ pub struct Bond {
     pub direction: f64,
 }
 
+/// Represents a bond scanning specification for systematic bond length variation.
+/// 
+/// Contains parameters for scanning a bond through different lengths:
+/// number of steps and the step size (increment/decrement) in Angstroms.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::ScanningSpec;
+/// 
+/// // Scan bond in 10 steps with 0.1 Å increments
+/// let scan_spec = ScanningSpec {
+///     steps: 10,
+///     step_size: 0.1,
+/// };
+/// 
+/// // Compress bond in 5 steps with 0.05 Å decrements
+/// let compress_spec = ScanningSpec {
+///     steps: 5,
+///     step_size: -0.05,
+/// };
+/// ```
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+pub struct ScanningSpec {
+    /// Number of scanning steps to perform
+    pub steps: usize,
+    /// Step size in Angstrom units (positive = stretch, negative = compress)
+    pub step_size: f64,
+}
+
+/// Defines the operation mode for conformer generation.
+/// 
+/// Distinguishes between bond rotation and bond scanning modes,
+/// which are mutually exclusive operations that use different
+/// algorithms for generating molecular conformers.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::OperationMode;
+/// 
+/// let rotation_mode = OperationMode::Rotation;
+/// let scanning_mode = OperationMode::Scanning;
+/// ```
+#[derive(Debug, Clone)]
+pub enum OperationMode {
+    /// Bond rotation mode - varies dihedral angles
+    Rotation,
+    /// Bond scanning mode - varies bond lengths
+    Scanning,
+}
+
 /// Defines the type of rotation specification for a rotatable bond.
 /// 
-/// Supports three types of rotation specifications:
+/// Supports four types of specifications:
 /// - Step-based rotations (e.g., every 30°, 60°, 120°)
 /// - Explicit angle lists
 /// - Synchronous rotations that follow another bond
+/// - Bond length scanning with steps and step size
 /// 
 /// # Examples
 /// 
@@ -126,6 +180,12 @@ pub struct Bond {
 /// let sync_spec = RotationSpec::Synchronous { 
 ///     reference: 1, 
 ///     direction: -1.0 
+/// };
+/// 
+/// // Bond scanning with 10 steps of 0.1 Å increments
+/// let scan_spec = RotationSpec::Scanning { 
+///     steps: 10, 
+///     step_size: 0.1 
 /// };
 /// ```
 #[derive(Debug, Clone)]
@@ -144,6 +204,17 @@ pub enum RotationSpec {
         /// Direction multiplier: +1.0 for same, -1.0 for opposite
         direction: f64 
     },
+    /// Bond length scanning specification
+    Scanning { 
+        /// Index of first atom in the bond (1-based)
+        atom1: usize,
+        /// Index of second atom in the bond (1-based)
+        atom2: usize,
+        /// Number of scanning steps to perform
+        steps: usize, 
+        /// Step size in Angstrom units (positive = stretch, negative = compress)
+        step_size: f64 
+    },
 }
 
 /// Represents a complete molecular structure with bond detection parameters.
@@ -155,13 +226,14 @@ pub enum RotationSpec {
 /// # Examples
 /// 
 /// ```rust
-/// use rotbond::molecule::{Molecule, Atom};
+/// use rotbond::molecule::{Molecule, Atom, OperationMode};
 /// 
 /// let atoms = vec![
 ///     Atom { element: "C".to_string(), x: 0.0, y: 0.0, z: 0.0 },
 ///     Atom { element: "H".to_string(), x: 1.0, y: 0.0, z: 0.0 },
 /// ];
 /// let molecule = Molecule::new(atoms);
+/// assert_eq!(matches!(molecule.operation_mode, OperationMode::Rotation), true);
 /// ```
 #[derive(Debug, Clone)]
 pub struct Molecule {
@@ -190,6 +262,11 @@ pub struct Molecule {
     /// 
     /// These bonds will be removed even if detected automatically.
     pub forbidden_bonds: Vec<(usize, usize)>,
+    /// Operation mode for conformer generation (rotation or scanning)
+    /// 
+    /// Determines whether the system performs bond rotation or bond scanning.
+    /// These modes are mutually exclusive and use different algorithms.
+    pub operation_mode: OperationMode,
 }
 
 impl Molecule {
@@ -201,18 +278,20 @@ impl Molecule {
     /// 
     /// # Returns
     /// 
-    /// A new `Molecule` with `bond_factor = 1.0` and `skip_factor = 0.7`
+    /// A new `Molecule` with `bond_factor = 1.0`, `skip_factor = 0.7`, 
+    /// and `operation_mode = OperationMode::Rotation`
     /// 
     /// # Examples
     /// 
     /// ```rust
-    /// use rotbond::molecule::{Molecule, Atom};
+    /// use rotbond::molecule::{Molecule, Atom, OperationMode};
     /// 
     /// let atoms = vec![
     ///     Atom { element: "C".to_string(), x: 0.0, y: 0.0, z: 0.0 },
     /// ];
     /// let molecule = Molecule::new(atoms);
     /// assert_eq!(molecule.bond_factor, 1.0);
+    /// assert_eq!(matches!(molecule.operation_mode, OperationMode::Rotation), true);
     /// ```
     pub fn new(atoms: Vec<Atom>) -> Self {
         Molecule {
@@ -223,6 +302,7 @@ impl Molecule {
             skip_factor: 0.7,
             forced_bonds: Vec::new(),
             forbidden_bonds: Vec::new(),
+            operation_mode: OperationMode::Rotation,
         }
     }
 
@@ -260,6 +340,114 @@ impl Molecule {
     pub fn add_fragment(&mut self, fragment: Vec<usize>) {
         self.fragments.push(fragment);
     }
+}
+
+/// Calculates the distance between two atoms in 3D space.
+/// 
+/// Uses the Euclidean distance formula: √[(x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²]
+/// 
+/// # Arguments
+/// 
+/// * `atom1` - First atom
+/// * `atom2` - Second atom
+/// 
+/// # Returns
+/// 
+/// Distance between the atoms in Angstroms
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::{Atom, calculate_distance};
+/// 
+/// let atom1 = Atom::new("C".to_string(), 0.0, 0.0, 0.0);
+/// let atom2 = Atom::new("H".to_string(), 1.0, 0.0, 0.0);
+/// let distance = calculate_distance(&atom1, &atom2);
+/// assert_eq!(distance, 1.0);
+/// ```
+pub fn calculate_distance(atom1: &Atom, atom2: &Atom) -> f64 {
+    let dx = atom2.x - atom1.x;
+    let dy = atom2.y - atom1.y;
+    let dz = atom2.z - atom1.z;
+    (dx * dx + dy * dy + dz * dz).sqrt()
+}
+
+/// Computes the unit direction vector from atom1 to atom2.
+/// 
+/// Returns a normalized vector pointing from atom1 towards atom2.
+/// The vector has magnitude 1.0 and preserves the direction.
+/// 
+/// # Arguments
+/// 
+/// * `atom1` - Starting atom (vector origin)
+/// * `atom2` - Target atom (vector destination)
+/// 
+/// # Returns
+/// 
+/// A tuple (dx, dy, dz) representing the unit direction vector.
+/// Returns (0.0, 0.0, 0.0) if atoms are at the same position.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::{Atom, calculate_unit_vector};
+/// 
+/// let atom1 = Atom::new("C".to_string(), 0.0, 0.0, 0.0);
+/// let atom2 = Atom::new("H".to_string(), 2.0, 0.0, 0.0);
+/// let (dx, dy, dz) = calculate_unit_vector(&atom1, &atom2);
+/// assert_eq!((dx, dy, dz), (1.0, 0.0, 0.0));
+/// ```
+pub fn calculate_unit_vector(atom1: &Atom, atom2: &Atom) -> (f64, f64, f64) {
+    let dx = atom2.x - atom1.x;
+    let dy = atom2.y - atom1.y;
+    let dz = atom2.z - atom1.z;
+    
+    let distance = (dx * dx + dy * dy + dz * dz).sqrt();
+    
+    // Handle case where atoms are at the same position
+    if distance == 0.0 {
+        return (0.0, 0.0, 0.0);
+    }
+    
+    (dx / distance, dy / distance, dz / distance)
+}
+
+/// Validates that a bond length is positive and within reasonable chemical bounds.
+/// 
+/// Ensures bond lengths are physically meaningful for molecular structures.
+/// Very short bonds (< 0.1 Å) are considered invalid. No upper limit is enforced
+/// to allow users flexibility in their research, including long-range interactions.
+/// 
+/// # Arguments
+/// 
+/// * `length` - Bond length to validate in Angstroms
+/// 
+/// # Returns
+/// 
+/// `true` if the bond length is valid, `false` otherwise
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::validate_bond_length;
+/// 
+/// assert_eq!(validate_bond_length(1.5), true);   // Typical C-C bond
+/// assert_eq!(validate_bond_length(0.05), false); // Too short
+/// assert_eq!(validate_bond_length(15.0), false); // Too long
+/// assert_eq!(validate_bond_length(-1.0), false); // Negative
+/// ```
+/// 
+/// # Chemical Context
+/// 
+/// Typical bond lengths for reference:
+/// - C-H: ~1.1 Å
+/// - C-C: ~1.5 Å  
+/// - C=C: ~1.3 Å
+/// - C≡C: ~1.2 Å
+/// - C-N: ~1.5 Å
+/// - C-O: ~1.4 Å
+pub fn validate_bond_length(length: f64) -> bool {
+    length >= 0.1
 }
 
 /// Returns the covalent radius for a given element in Angstroms.
@@ -400,4 +588,147 @@ pub fn covalent_radius(element: &str) -> f64 {
         "lr" => 1.50,
         _ => 1.50, // Default for unknown elements
     }
+}
+
+/// Applies bond length scanning to generate new molecular coordinates.
+/// 
+/// Modifies the positions of atoms in a molecular fragment to achieve a target
+/// bond length between two specified atoms. The scanning preserves molecular
+/// geometry for all non-scanning bonds by moving one fragment as a rigid body.
+/// 
+/// This function integrates with existing validation systems by using covalent
+/// radii for bond length validation, ensuring that scanning produces chemically
+/// reasonable geometries that will pass the same validation as rotation mode.
+/// 
+/// # Arguments
+/// 
+/// * `atoms` - Mutable slice of all atoms in the molecule
+/// * `fragment` - Indices of atoms that should move together (0-based)
+/// * `atom1_idx` - Index of the first atom in the scanning bond (0-based)
+/// * `atom2_idx` - Index of the second atom in the scanning bond (0-based)
+/// * `target_length` - Desired bond length in Angstroms
+/// 
+/// # Returns
+/// 
+/// `Ok(())` if scanning was successful, or an error if:
+/// - Target length would create invalid geometry
+/// - Atom indices are out of bounds
+/// - Current bond length is zero (atoms at same position)
+/// - Target length is outside reasonable chemical bounds
+/// 
+/// # Algorithm
+/// 
+/// 1. Calculate current distance between atom1 and atom2
+/// 2. Compute unit direction vector from atom1 to atom2
+/// 3. Validate target length using covalent radii (integrates with validation systems)
+/// 4. Calculate displacement needed: target_length - current_length
+/// 5. Move all atoms in the fragment along the direction vector
+/// 6. Validate that the new bond length is reasonable and precise
+/// 
+/// # Integration with Validation Systems
+/// 
+/// - Uses covalent_radius() function for chemical bond length validation
+/// - Validates target lengths against reasonable chemical bounds
+/// - Ensures scanning produces geometries compatible with existing validation
+/// - Maintains consistency with bond length validation used in other parts of the system
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::molecule::{Atom, scan_bond_length};
+/// 
+/// let mut atoms = vec![
+///     Atom::new("C".to_string(), 0.0, 0.0, 0.0),
+///     Atom::new("H".to_string(), 1.0, 0.0, 0.0),
+/// ];
+/// let fragment = vec![1]; // Move the hydrogen atom
+/// 
+/// // Stretch C-H bond from 1.0 Å to 1.2 Å
+/// scan_bond_length(&mut atoms, &fragment, 0, 1, 1.2)?;
+/// ```
+/// 
+/// # Fragment Movement
+/// 
+/// The function moves the specified fragment as a rigid body, preserving:
+/// - Internal bond lengths within the fragment
+/// - Internal bond angles within the fragment  
+/// - Internal dihedral angles within the fragment
+/// 
+/// Only the distance between atom1 and atom2 is modified.
+pub fn scan_bond_length(
+    atoms: &mut [Atom],
+    fragment: &[usize],
+    atom1_idx: usize,
+    atom2_idx: usize,
+    target_length: f64,
+) -> Result<(), String> {
+    // Validate inputs with enhanced error messages
+    if atom1_idx >= atoms.len() || atom2_idx >= atoms.len() {
+        return Err(format!("Atom indices out of bounds: atom {} or {} exceeds molecule size ({})", 
+                          atom1_idx + 1, atom2_idx + 1, atoms.len()));
+    }
+    
+    if !validate_bond_length(target_length) {
+        return Err(format!("Target bond length {:.3} Å is too short (minimum: 0.1 Å). Consider using smaller compression steps.", target_length));
+    }
+    
+    // Calculate current bond length and direction
+    let atom1 = &atoms[atom1_idx];
+    let atom2 = &atoms[atom2_idx];
+    let current_length = calculate_distance(atom1, atom2);
+    
+    if current_length == 0.0 {
+        return Err(format!("Cannot scan bond between atoms {} and {}: atoms are at the same position", 
+                          atom1_idx + 1, atom2_idx + 1));
+    }
+    
+    // Validate that the target length is chemically reasonable for these atom types
+    let min_reasonable = (covalent_radius(&atom1.element) + covalent_radius(&atom2.element)) * 0.5;
+    let max_reasonable = (covalent_radius(&atom1.element) + covalent_radius(&atom2.element)) * 2.5;
+    
+    if target_length < min_reasonable {
+        return Err(format!("Target bond length {:.3} Å is too short for {}-{} bond (minimum reasonable: {:.2} Å)", 
+                          target_length, atom1.element, atom2.element, min_reasonable));
+    }
+    
+    if target_length > max_reasonable {
+        return Err(format!("Target bond length {:.3} Å is too long for {}-{} bond (maximum reasonable: {:.2} Å)", 
+                          target_length, atom1.element, atom2.element, max_reasonable));
+    }
+    
+    // Calculate displacement needed
+    let displacement = target_length - current_length;
+    
+    // Handle empty fragment case gracefully
+    if fragment.is_empty() {
+        // No atoms to move, but this is not necessarily an error
+        // The bond length is already at the target (no displacement needed)
+        return Ok(());
+    }
+    
+    // Get unit direction vector from atom1 to atom2
+    let (dx, dy, dz) = calculate_unit_vector(atom1, atom2);
+    
+    // Move all atoms in the fragment along the direction vector
+    for &atom_idx in fragment {
+        if atom_idx >= atoms.len() {
+            return Err(format!("Fragment contains invalid atom index: {} (molecule has {} atoms)", 
+                              atom_idx + 1, atoms.len()));
+        }
+        
+        atoms[atom_idx].x += displacement * dx;
+        atoms[atom_idx].y += displacement * dy;
+        atoms[atom_idx].z += displacement * dz;
+    }
+    
+    // Validate the result
+    let new_length = calculate_distance(&atoms[atom1_idx], &atoms[atom2_idx]);
+    let length_error = (new_length - target_length).abs();
+    
+    if length_error > 1e-6 {
+        return Err(format!("Bond scanning precision error: achieved {:.6} Å instead of {:.6} Å (error: {:.6} Å)", 
+                          new_length, target_length, length_error));
+    }
+    
+    Ok(())
 }

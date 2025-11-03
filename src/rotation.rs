@@ -34,6 +34,35 @@
 
 use crate::molecule::RotationSpec;
 
+/// Checks if a string is a case-insensitive scanning keyword.
+/// 
+/// Recognizes various forms of scanning keywords including:
+/// - Single character: s, S
+/// - Full word: scan, Scan, SCAN, sCaN, etc.
+/// 
+/// # Arguments
+/// 
+/// * `keyword` - The string to check for scanning keyword patterns
+/// 
+/// # Returns
+/// 
+/// `true` if the keyword matches any scanning pattern, `false` otherwise.
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// assert_eq!(is_scanning_keyword("s"), true);
+/// assert_eq!(is_scanning_keyword("S"), true);
+/// assert_eq!(is_scanning_keyword("scan"), true);
+/// assert_eq!(is_scanning_keyword("SCAN"), true);
+/// assert_eq!(is_scanning_keyword("sCaN"), true);
+/// assert_eq!(is_scanning_keyword("rotation"), false);
+/// ```
+pub fn is_scanning_keyword(keyword: &str) -> bool {
+    let lower_keyword = keyword.to_lowercase();
+    lower_keyword == "s" || lower_keyword == "scan"
+}
+
 /// Parses rotation parameters from a .rp format file.
 /// 
 /// Supports flexible parameter ordering and multiple rotation specification formats.
@@ -50,7 +79,9 @@ use crate::molecule::RotationSpec;
 /// - `skip_factor`: Steric clash detection threshold
 /// - `forced_bonds`: List of user-forced bonds (atom index pairs, 1-based)
 /// - `forbidden_bonds`: List of user-forbidden bonds (atom index pairs, 1-based)
-/// - `rotation_specs`: List of rotation specifications
+/// - `rotation_specs`: List of rotation/scanning specifications
+/// - `conformer_config`: Configuration for conformer generation limits
+/// - `operation_mode`: Whether to use rotation or scanning mode
 /// 
 /// # Errors
 /// 
@@ -106,7 +137,7 @@ impl Default for ConformerConfig {
     }
 }
 
-pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usize)>, Vec<(usize, usize)>, Vec<RotationSpec>, ConformerConfig), Box<dyn std::error::Error>> {
+pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usize)>, Vec<(usize, usize)>, Vec<RotationSpec>, ConformerConfig, crate::molecule::OperationMode), Box<dyn std::error::Error>> {
     let contents = std::fs::read_to_string(filename)?;
 
     let mut bond_factor = 1.0;
@@ -115,6 +146,8 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
     let mut forbidden_bonds = Vec::new();
     let mut rotation_specs = Vec::new();
     let mut conformer_config = ConformerConfig::default();
+    let mut has_rotation_specs = false;
+    let mut has_scanning_specs = false;
 
     for (line_num, line) in contents.lines().enumerate() {
         let line = line.trim();
@@ -224,6 +257,56 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
                 reference,
                 direction,
             });
+            has_rotation_specs = true;
+        } else if is_scanning_keyword(parts[1]) {
+            // Bond scanning specification
+            if parts.len() != 4 {
+                return Err(format!("Line {}: Invalid scanning specification (expected: atom1-atom2 scan steps step_size)", line_num + 1).into());
+            }
+
+            let steps = parts[2].parse::<usize>()
+                .map_err(|e| format!("Line {}: Invalid steps value '{}': {}", line_num + 1, parts[2], e))?;
+            
+            // Enhanced validation for steps
+            if steps == 0 {
+                return Err(format!("Line {}: Steps must be a positive integer (> 0). Example: {}-{} scan 10 0.1", 
+                                 line_num + 1, atom1, atom2).into());
+            }
+            
+            if steps > 1000 {
+                return Err(format!("Line {}: Steps should be ≤ 1000 to avoid excessive computation (got {}). Consider reducing steps or using larger step sizes.", 
+                                 line_num + 1, steps).into());
+            }
+
+            let step_size = parts[3].parse::<f64>()
+                .map_err(|e| format!("Line {}: Invalid step_size value '{}': {}", line_num + 1, parts[3], e))?;
+            
+            // Enhanced validation for step size
+            if step_size == 0.0 {
+                return Err(format!("Line {}: Step size must be non-zero. Use positive values to stretch bonds, negative to compress. Example: {}-{} scan 10 0.1", 
+                                 line_num + 1, atom1, atom2).into());
+            }
+            
+            if step_size.abs() > 5.0 {
+                return Err(format!("Line {}: Step size {:.3} Å is very large and may create unrealistic bond lengths. Consider using smaller step sizes (≤ 5.0 Å).", 
+                                 line_num + 1, step_size).into());
+            }
+            
+            // Warn about potentially problematic combinations
+            let total_change = steps as f64 * step_size.abs();
+            if total_change > 3.0 {
+                eprintln!("WARNING Line {}: Total bond length change of {:.2} Å may create unrealistic geometry", 
+                         line_num + 1, total_change);
+                eprintln!("         Consider reducing steps or step size for more realistic results");
+            }
+
+            rotation_specs.push(RotationSpec::Scanning {
+                atom1,
+                atom2,
+                steps,
+                step_size,
+            });
+            has_scanning_specs = true;
         } else if parts[1].starts_with('e') {
             // Step-based rotation (e.g., e20, e-60)
             let step_str = &parts[1][1..];
@@ -235,6 +318,7 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
             }
 
             rotation_specs.push(RotationSpec::Step { step });
+            has_rotation_specs = true;
         } else {
             // Explicit angles
             let mut angles = Vec::new();
@@ -255,10 +339,23 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
             }
 
             rotation_specs.push(RotationSpec::Explicit(angles));
+            has_rotation_specs = true;
         }
     }
 
-    Ok((bond_factor, skip_factor, forced_bonds, forbidden_bonds, rotation_specs, conformer_config))
+    // Validate mutual exclusion between rotation and scanning
+    if has_rotation_specs && has_scanning_specs {
+        return Err("Cannot mix rotation and scanning specifications in the same file. Please use either rotation (e30, e60, syn, explicit angles) or scanning (scan) specifications, but not both.".into());
+    }
+
+    // Determine operation mode based on specifications found
+    let operation_mode = if has_scanning_specs {
+        crate::molecule::OperationMode::Scanning
+    } else {
+        crate::molecule::OperationMode::Rotation
+    };
+
+    Ok((bond_factor, skip_factor, forced_bonds, forbidden_bonds, rotation_specs, conformer_config, operation_mode))
 }
 
 /// Generates angle sets from rotation specifications.
@@ -348,6 +445,11 @@ pub fn generate_angle_sets(specs: Vec<RotationSpec>) -> Result<Vec<Vec<f64>>, Bo
             RotationSpec::Synchronous { .. } => {
                 // Synchronous bonds don't have their own angles
                 // They'll use the reference bond's angles
+                angle_sets.push(Vec::new());
+            }
+            RotationSpec::Scanning { .. } => {
+                // Scanning bonds don't use angle sets - they use bond length variations
+                // Return empty angle set for compatibility with existing rotation infrastructure
                 angle_sets.push(Vec::new());
             }
         }

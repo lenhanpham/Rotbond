@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![warn(clippy::all)]
 //! # Rotbond - Molecular Conformer Generation Tool
 //!
 //! Rotbond is a high-performance molecular conformer generation tool that systematically
@@ -91,6 +92,7 @@ mod generate;
 mod utils;
 mod help;
 mod booklist;
+mod errors;
 
 #[cfg(test)]
 mod tests;
@@ -98,7 +100,7 @@ mod tests;
 use molecule::{Molecule, Bond, RotationSpec};
 use rotation::{parse_rotation_file, generate_angle_sets, validate_synchronous_references};
 use generate::generate_conformers;
-use utils::{print_usage, print_rotation_summary, print_configuration, print_summary};
+use utils::{print_usage, print_rotation_summary, print_scanning_summary, print_configuration, print_summary};
 use help::{print_basic_help, print_help_topic, print_help_topics, print_version};
 use booklist::print_random_book;
 use std::env;
@@ -131,10 +133,12 @@ fn create_template_rp_file(filename: &str) -> std::io::Result<()> {
     use std::io::Write;
     
     let template_content = r#"# =======================================================================
-# ROTBOND ROTATION PARAMETERS FILE
+# ROTBOND PARAMETERS FILE
 # =======================================================================
 # This is a template file with examples of all available features.
-# Edit this file to specify your rotation parameters, then run rotbond again.
+# Edit this file to specify your parameters, then run rotbond again.
+#
+# IMPORTANT: Choose either ROTATION or SCANNING mode - they cannot be mixed!
 #
 # For detailed help: rotbond --help input
 # =======================================================================
@@ -142,7 +146,7 @@ fn create_template_rp_file(filename: &str) -> std::io::Result<()> {
 # -----------------------------------------------------------------------
 # CONFIGURATION PARAMETERS (Optional)
 # -----------------------------------------------------------------------
-# Adjust these values to control bond detection and validation
+# These parameters apply to both rotation and scanning modes
 
 bond_factor = 1.0
 # - Multiplier for covalent radius threshold (default: 1.0)
@@ -155,10 +159,20 @@ skip_factor = 0.7
 # - Lower values = more lenient, higher values = stricter
 # - Recommended: 0.6-0.8 for most molecules
 
+maxgen = 500
+# - Maximum number of conformers to generate (default: 500)
+# - Use 'max' for unlimited generation
+# - Higher values may consume significant memory
+
+autoconfirm = false
+# - Automatically confirm large generation jobs (default: false)
+# - Set to 'true' to skip interactive warnings for large jobs
+
 # -----------------------------------------------------------------------
 # MANUAL BOND DEFINITIONS (Optional)
 # -----------------------------------------------------------------------
 # Force or remove bonds that automatic detection might miss or incorrectly identify
+# These work with both rotation and scanning modes
 
 # Force a bond (useful for metal-ligand bonds, weak interactions)
 # 8-12 bond
@@ -167,10 +181,10 @@ skip_factor = 0.7
 # Remove a false positive bond (atoms close but not bonded)
 # 22-45 nobond
 
-# -----------------------------------------------------------------------
-# ROTATION SPECIFICATIONS (Required)
-# -----------------------------------------------------------------------
-# Define which bonds to rotate and their angle sets
+# =======================================================================
+# ROTATION MODE SPECIFICATIONS
+# =======================================================================
+# Use these for traditional dihedral angle rotation conformer generation
 # Uncomment and modify the examples below for your molecule
 
 # STEP-BASED ROTATIONS (generates evenly spaced angles)
@@ -196,9 +210,31 @@ skip_factor = 0.7
 # 4-8 syn -1     # Bond 4 rotates opposite to bond 1
 # 6-10 syn -2    # Bond 6 rotates opposite to bond 2
 
+# =======================================================================
+# SCANNING MODE SPECIFICATIONS
+# =======================================================================
+# Use these for bond length scanning conformer generation
+# Format: atom1-atom2 scan steps step_size
+# - steps: number of scanning steps (positive integer)
+# - step_size: increment in Angstroms (positive = stretch, negative = compress)
+
+# SINGLE BOND SCANNING
+# Examples:
+# 1-2 scan 10 0.1     # Stretch C-C bond in 10 steps of 0.1 Å each
+# 3-4 scan 5 -0.05    # Compress bond in 5 steps of 0.05 Å each
+# 5-6 s 15 0.2        # Alternative syntax: 's' instead of 'scan'
+
+# MULTI-DIMENSIONAL SCANNING (multiple bonds simultaneously)
+# Examples:
+# 1-2 scan 8 0.1      # First bond: 8 steps, +0.1 Å
+# 3-4 scan 6 -0.05    # Second bond: 6 steps, -0.05 Å
+# Total combinations: 8 × 6 = 48 conformers
+
 # -----------------------------------------------------------------------
 # EXAMPLE CONFIGURATIONS FOR COMMON MOLECULES
 # -----------------------------------------------------------------------
+
+# ROTATION MODE EXAMPLES:
 
 # ETHANE (simple single bond rotation)
 # 1-2 e60
@@ -223,28 +259,58 @@ skip_factor = 0.7
 # 2-3 e90        # Ligand rotation
 # 4-5 syn 1      # Coordinated ligand rotation
 
+# SCANNING MODE EXAMPLES:
+
+# ETHANE (C-C bond length scanning)
+# 1-2 scan 10 0.1    # Stretch C-C bond from 1.5 to 2.5 Å
+
+# HYDROGEN MOLECULE (H-H bond compression and stretching)
+# 1-2 scan 20 0.05   # Fine scanning of H-H bond
+
+# WATER MOLECULE (O-H bond scanning)
+# 1-2 scan 8 0.1     # First O-H bond
+# 1-3 scan 8 0.1     # Second O-H bond (2D scanning)
+# Total: 8 × 8 = 64 conformers
+
+# METAL COMPLEX (with forced bonds and scanning)
+# 1-25 bond          # Force metal-ligand bond
+# 1-30 bond          # Force another metal-ligand bond
+# 15-20 nobond       # Remove false positive
+# 1-25 scan 6 0.2    # Scan first metal-ligand bond
+# 1-30 scan 6 -0.1   # Scan second metal-ligand bond (compress)
+
 # -----------------------------------------------------------------------
 # NOTES
 # -----------------------------------------------------------------------
 # - Atom indices are 1-based (first atom is 1, not 0)
 # - Use dashes (-) not hyphens or em-dashes in bond specifications
-# - Angles are in degrees, range: -360° to +360°
+# - Rotation angles are in degrees, range: -360° to +360°
+# - Scanning step sizes are in Angstroms
 # - Comments start with '#' and continue to end of line
 # - Empty lines are ignored
 # - Parameters can be in any order
-# - For large molecules, start with fewer bonds and larger step sizes
+# - CANNOT mix rotation and scanning in the same file
 
 # -----------------------------------------------------------------------
 # QUICK START
 # -----------------------------------------------------------------------
+
+# FOR ROTATION MODE:
 # 1. Identify rotatable bonds in your molecule
-# 2. Uncomment and modify examples above
+# 2. Uncomment rotation examples above
 # 3. Start with e60 or e90 for initial exploration
 # 4. Run: rotbond <molecule_name>
 # 5. Check success rate and adjust parameters if needed
 
-# DELETE THIS LINE AND ADD YOUR ROTATION SPECIFICATIONS BELOW:
-# (The program requires at least one rotation specification to run)
+# FOR SCANNING MODE:
+# 1. Identify bonds to scan in your molecule
+# 2. Uncomment scanning examples above
+# 3. Start with 5-10 steps and small step sizes (0.05-0.1 Å)
+# 4. Run: rotbond <molecule_name>
+# 5. Check bond lengths are chemically reasonable
+
+# DELETE THIS LINE AND ADD YOUR SPECIFICATIONS BELOW:
+# (The program requires at least one specification to run)
 "#;
 
     let mut file = File::create(filename)?;
@@ -269,6 +335,28 @@ fn calculate_theoretical_conformers(angle_sets: &[Vec<f64>]) -> usize {
     for angles in angle_sets {
         if !angles.is_empty() {
             total *= angles.len();
+        }
+    }
+    total
+}
+
+/// Calculates the theoretical number of conformers from scanning specifications.
+/// 
+/// Computes the cartesian product of all scanning steps to determine
+/// the total number of conformer combinations that would be generated.
+/// 
+/// # Arguments
+/// 
+/// * `rotation_specs` - Vector of rotation specifications (containing scanning specs)
+/// 
+/// # Returns
+/// 
+/// Total theoretical conformer count for scanning mode
+fn calculate_theoretical_scanning_conformers(rotation_specs: &[molecule::RotationSpec]) -> usize {
+    let mut total = 1;
+    for spec in rotation_specs {
+        if let molecule::RotationSpec::Scanning { steps, .. } = spec {
+            total *= steps;
         }
     }
     total
@@ -404,13 +492,18 @@ fn main() {
     };
     // Molecule loaded
 
-    // Parse rotation parameters file
-    // Parsing rotation parameters...
-    let (bond_factor, skip_factor, forced_bonds, forbidden_bonds, rotation_specs, conformer_config) = match parse_rotation_file(&rp_filename) {
+    // Parse rotation/scanning parameters file
+    // Parsing parameters...
+    let (bond_factor, skip_factor, forced_bonds, forbidden_bonds, rotation_specs, conformer_config, operation_mode) = match parse_rotation_file(&rp_filename) {
         Ok(result) => result,
         Err(e) => {
-            eprintln!("ERROR parsing rotation parameters: {}", e);
-            eprintln!("\nFor rotation file format help, use: --help input");
+            eprintln!("ERROR parsing parameters: {}", e);
+            // Check if error message mentions scanning to provide appropriate help
+            if e.to_string().to_lowercase().contains("scan") {
+                eprintln!("\nFor scanning file format help, use: --help input");
+            } else {
+                eprintln!("\nFor rotation file format help, use: --help input");
+            }
             process::exit(1);
         }
     };
@@ -421,34 +514,133 @@ fn main() {
 
     print_configuration(bond_factor, skip_factor);
 
-    // Validate synchronous references
-    if let Err(e) = validate_synchronous_references(&rotation_specs) {
-        eprintln!("ERROR validating synchronous references: {}", e);
-        eprintln!("\nFor synchronous rotation help, use: --help features");
-        process::exit(1);
+    // Validate specifications based on operation mode
+    match operation_mode {
+        molecule::OperationMode::Rotation => {
+            // Validate synchronous references for rotation mode
+            if let Err(e) = validate_synchronous_references(&rotation_specs) {
+                eprintln!("ERROR validating synchronous references: {}", e);
+                eprintln!("\nFor synchronous rotation help, use: --help features");
+                process::exit(1);
+            }
+        }
+        molecule::OperationMode::Scanning => {
+            // Validate scanning specifications with integration to existing validation systems
+            for (i, spec) in rotation_specs.iter().enumerate() {
+                if let molecule::RotationSpec::Scanning { atom1: _, atom2: _, steps, step_size } = spec {
+                    if *steps == 0 {
+                        eprintln!("ERROR: Scanning bond {} has zero steps", i + 1);
+                        eprintln!("\nFor scanning syntax help, use: --help input");
+                        process::exit(1);
+                    }
+                    if *step_size == 0.0 {
+                        eprintln!("ERROR: Scanning bond {} has zero step size", i + 1);
+                        eprintln!("\nFor scanning syntax help, use: --help input");
+                        process::exit(1);
+                    }
+                    
+                    // Enhanced validation with bond_factor and skip_factor integration
+                    // Warn about very large step sizes that might create unrealistic bond lengths
+                    if step_size.abs() > 2.0 {
+                        println!("WARNING: Scanning bond {} has large step size ({:.2} Å)", i + 1, step_size);
+                        println!("         This may create unrealistic bond lengths.");
+                        println!("         Consider the bond_factor ({:.2}) and skip_factor ({:.2}) settings.", bond_factor, skip_factor);
+                    }
+                    
+                    // Validate scanning limits with maxgen parameter integration
+                    let total_change = *steps as f64 * step_size.abs();
+                    if total_change > 4.0 {
+                        println!("WARNING: Scanning bond {} would change length by {:.2} Å total", i + 1, total_change);
+                        println!("         Large changes may violate steric constraints (skip_factor = {:.2})", skip_factor);
+                        println!("         Consider reducing steps or step_size for better results.");
+                    }
+                }
+            }
+            
+            // Validate scanning parameters for critical errors only (overflow, invalid params)
+            // Note: Conformer limit checking is handled later with interactive prompts
+            if let Err(e) = errors::validate_scanning_specs(&rotation_specs) {
+                eprintln!("ERROR: {}", errors::format_user_error(&e));
+                process::exit(1);
+            }
+            
+            // Validate forced and forbidden bonds compatibility with scanning
+            let scanning_bond_indices: Vec<usize> = rotation_specs.iter()
+                .enumerate()
+                .filter_map(|(i, spec)| {
+                    if matches!(spec, molecule::RotationSpec::Scanning { .. }) {
+                        Some(i)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            
+            // Create a temporary molecule to validate forced/forbidden bonds
+            let temp_molecule = molecule::Molecule {
+                atoms: atoms.clone(),
+                bonds: Vec::new(), // We don't need bonds for this validation
+                fragments: Vec::new(),
+                bond_factor,
+                skip_factor,
+                forced_bonds: forced_bonds.clone(),
+                forbidden_bonds: forbidden_bonds.clone(),
+                operation_mode: operation_mode.clone(),
+            };
+            
+            if let Err(e) = errors::validate_forced_forbidden_bonds(&temp_molecule, &scanning_bond_indices) {
+                eprintln!("ERROR: {}", errors::format_user_error(&e));
+                process::exit(1);
+            }
+        }
     }
 
-    // Generate angle sets
-    // Generating angle sets...
-    let angle_sets = match generate_angle_sets(rotation_specs.clone()) {
-        Ok(result) => result,
-        Err(e) => {
-            eprintln!("ERROR generating angle sets: {}", e);
-            eprintln!("\nFor rotation syntax help, use: --help features");
-            process::exit(1);
+    // Generate angle sets (only for rotation mode)
+    let angle_sets = match operation_mode {
+        molecule::OperationMode::Rotation => {
+            // Generating angle sets...
+            match generate_angle_sets(rotation_specs.clone()) {
+                Ok(result) => result,
+                Err(e) => {
+                    eprintln!("ERROR generating angle sets: {}", e);
+                    eprintln!("\nFor rotation syntax help, use: --help features");
+                    process::exit(1);
+                }
+            }
+        }
+        molecule::OperationMode::Scanning => {
+            // Scanning mode doesn't use angle sets - create empty vector
+            Vec::new()
         }
     };
 
     // Calculate theoretical conformer count and check limits
-    let theoretical_count = calculate_theoretical_conformers(&angle_sets);
+    let theoretical_count = match operation_mode {
+        molecule::OperationMode::Rotation => {
+            calculate_theoretical_conformers(&angle_sets)
+        }
+        molecule::OperationMode::Scanning => {
+            calculate_theoretical_scanning_conformers(&rotation_specs)
+        }
+    };
     
     // Check if we need to warn about large generation jobs
     let mut final_max_conformers = conformer_config.max_conformers;
     
     if theoretical_count > 500 && !conformer_config.auto_confirm {
-        println!("\n   WARNING: Large conformer generation detected!");
-        println!("   Theoretical conformers: {}", theoretical_count);
-        println!("   This may consume significant memory and processing time.");
+        match operation_mode {
+            molecule::OperationMode::Rotation => {
+                println!("\n   WARNING: Large rotation job detected!");
+                println!("   Theoretical conformers: {}", theoretical_count);
+                println!("   This may consume significant memory and processing time.");
+            }
+            molecule::OperationMode::Scanning => {
+                println!("\n   WARNING: Large scanning job detected!");
+                println!("   Theoretical conformers: {}", theoretical_count);
+                println!("   This may consume significant memory and processing time.");
+                println!("   Consider reducing the number of scanning steps or bonds.");
+            }
+        }
         
         if let Some(max_limit) = conformer_config.max_conformers {
             println!("   Current limit: {} conformers", max_limit);
@@ -496,7 +688,14 @@ fn main() {
             }
         }
     } else if theoretical_count > 500 {
-        println!("INFO: Large conformer generation ({}), auto-confirmed by configuration.", theoretical_count);
+        match operation_mode {
+            molecule::OperationMode::Rotation => {
+                println!("INFO: Large rotation job ({}), auto-confirmed by configuration.", theoretical_count);
+            }
+            molecule::OperationMode::Scanning => {
+                println!("INFO: Large scanning job ({}), auto-confirmed by configuration.", theoretical_count);
+            }
+        }
         if let Some(max_limit) = conformer_config.max_conformers {
             println!("      Generation will be limited to {} conformers.", max_limit);
         }
@@ -508,34 +707,51 @@ fn main() {
     molecule.skip_factor = skip_factor;
     molecule.forced_bonds = forced_bonds;
     molecule.forbidden_bonds = forbidden_bonds;
+    molecule.operation_mode = operation_mode.clone();
 
-    // Create bonds from rotation specifications
-    // Creating rotation bonds...
-    for (i, spec) in rotation_specs.iter().enumerate() {
-        match spec {
-            RotationSpec::Step { step: _ } | RotationSpec::Explicit(_) => {
-                // These will be handled by angle_sets
-                // For now, create a placeholder bond that will be filled in
-                let angles = angle_sets[i].clone();
-                molecule.add_bond(Bond {
-                    atom1: 0,
-                    atom2: 0,
-                    angles,
-                    is_synchronous: false,
-                    reference_bond: None,
-                    direction: 1.0,
-                });
+    // Create bonds from specifications
+    match operation_mode {
+        molecule::OperationMode::Rotation => {
+            // Creating rotation bonds...
+            for (i, spec) in rotation_specs.iter().enumerate() {
+                match spec {
+                    RotationSpec::Step { step: _ } | RotationSpec::Explicit(_) => {
+                        // These will be handled by angle_sets
+                        let angles = if i < angle_sets.len() {
+                            angle_sets[i].clone()
+                        } else {
+                            Vec::new()
+                        };
+                        molecule.add_bond(Bond {
+                            atom1: 0,
+                            atom2: 0,
+                            angles,
+                            is_synchronous: false,
+                            reference_bond: None,
+                            direction: 1.0,
+                        });
+                    }
+                    RotationSpec::Synchronous { reference, direction } => {
+                        molecule.add_bond(Bond {
+                            atom1: 0,
+                            atom2: 0,
+                            angles: Vec::new(), // Synchronous bonds use reference bond's angles
+                            is_synchronous: true,
+                            reference_bond: Some(*reference),
+                            direction: *direction,
+                        });
+                    }
+                    RotationSpec::Scanning { .. } => {
+                        // This shouldn't happen in rotation mode due to mutual exclusion
+                        eprintln!("ERROR: Scanning specification found in rotation mode");
+                        process::exit(1);
+                    }
+                }
             }
-            RotationSpec::Synchronous { reference, direction } => {
-                molecule.add_bond(Bond {
-                    atom1: 0,
-                    atom2: 0,
-                    angles: Vec::new(), // Synchronous bonds use reference bond's angles
-                    is_synchronous: true,
-                    reference_bond: Some(*reference),
-                    direction: *direction,
-                });
-            }
+        }
+        molecule::OperationMode::Scanning => {
+            // Scanning bonds are created in generate.rs during conformer generation
+            // No need to create bonds here for scanning mode
         }
     }
 
@@ -554,10 +770,18 @@ fn main() {
         }
     }
 
-    print_rotation_summary(&molecule.bonds, &angle_sets);
+    // Print summary based on operation mode
+    match operation_mode {
+        molecule::OperationMode::Rotation => {
+            print_rotation_summary(&molecule.bonds, &angle_sets);
+        }
+        molecule::OperationMode::Scanning => {
+            print_scanning_summary(&molecule.bonds, &rotation_specs);
+        }
+    }
 
-    // Validate bonds
-    if molecule.bonds.is_empty() {
+    // Validate bonds (only for rotation mode - scanning bonds are created in generate.rs)
+    if molecule.bonds.is_empty() && matches!(operation_mode, molecule::OperationMode::Rotation) {
         eprintln!("ERROR: No rotation bonds specified");
         eprintln!("\nFor rotation syntax help, use: --help features");
         process::exit(1);
@@ -573,10 +797,17 @@ fn main() {
     }
 
     // Generate conformers
-    println!("Generating conformers...");
+    match operation_mode {
+        molecule::OperationMode::Rotation => {
+            println!("Generating conformers through bond rotation...");
+        }
+        molecule::OperationMode::Scanning => {
+            println!("Generating conformers through bond scanning...");
+        }
+    }
     println!();
 
-    let (total_combinations, valid_conformers) = match generate_conformers(&mut molecule, &angle_sets, base_name, final_max_conformers) {
+    let (total_combinations, valid_conformers) = match generate_conformers(&mut molecule, &angle_sets, &rotation_specs, base_name, final_max_conformers) {
         Ok((total, valid)) => (total, valid),
         Err(e) => {
             eprintln!("ERROR generating conformers: {}", e);

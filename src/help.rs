@@ -18,7 +18,7 @@
 //! The help system supports topic-based queries and provides contextual
 //! information based on user needs.
 
-use crate::utils::print_separator;
+
 
 /// Prints basic help information including usage, options, and quick start guide.
 /// 
@@ -227,63 +227,7 @@ pub fn print_help_topic(topic: &str) {
     }
 }
 
-/// Prints all help information in a comprehensive format.
-/// 
-/// Displays every help topic in sequence, separated by visual dividers.
-/// This creates a complete reference manual that can be saved or printed.
-/// Currently unused but available for future comprehensive help modes.
-/// 
-/// # Output Structure
-/// 
-/// 1. Basic help and usage
-/// 2. Feature overview
-/// 3. Input file formats
-/// 4. Output file formats
-/// 5. Practical examples
-/// 6. Algorithm details
-/// 7. Troubleshooting guide
-/// 8. Reference materials
-/// 
-/// # Examples
-/// 
-/// ```rust
-/// use rotbond::help::print_all_help;
-/// 
-/// print_all_help();
-/// // Displays complete documentation (very long output)
-/// ```
-#[allow(dead_code)]
-pub fn print_all_help() {
-    print_basic_help();
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("features");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("input");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("output");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("examples");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("algorithms");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("troubleshoot");
-    println!();
-    print_separator();
-    println!();
-    print_help_topic("reference");
-}
+
 
 /// Prints a formatted header for help sections.
 /// 
@@ -393,6 +337,12 @@ EXAMPLES:
 pub const FEATURE_OVERVIEW: &str = r#"
 FEATURE OVERVIEW
 
+ROTBOND SUPPORTS TWO OPERATION MODES (mutually exclusive):
+
+=======================================================================
+ROTATION MODE - Dihedral Angle Variation
+=======================================================================
+
 1. STEP-BASED ROTATIONS
    Format: atom1-atom2 e<step_angle>
    Example: 1-6 e60
@@ -413,7 +363,33 @@ FEATURE OVERVIEW
    Example: 4-8 syn -1
    Effect: Bond 4 rotates in opposite direction to bond 1
 
-4. MANUAL BOND DEFINITIONS
+=======================================================================
+SCANNING MODE - Bond Length Variation
+=======================================================================
+
+4. BOND LENGTH SCANNING
+   Format: atom1-atom2 scan steps step_size
+   Format: atom1-atom2 s steps step_size (alternative)
+   
+   Examples:
+   1-2 scan 10 0.1     # Stretch bond in 10 steps of 0.1 Å each
+   3-4 scan 5 -0.05    # Compress bond in 5 steps of 0.05 Å each
+   5-6 s 15 0.2        # Alternative 's' syntax
+   
+   Parameters:
+   - steps: positive integer (number of scanning steps)
+   - step_size: float in Angstroms (+ = stretch, - = compress)
+   
+   Multi-dimensional scanning:
+   1-2 scan 8 0.1      # First bond: 8 steps
+   3-4 scan 6 -0.05    # Second bond: 6 steps
+   Total: 8 × 6 = 48 conformers
+
+=======================================================================
+SHARED FEATURES (work with both modes)
+=======================================================================
+
+5. MANUAL BOND DEFINITIONS
    Force a bond:
    Format: atom1-atom2 bond
    Example: 8-12 bond
@@ -424,7 +400,7 @@ FEATURE OVERVIEW
    Example: 22-45 nobond
    Use: Remove false positive bonds
 
-5. CONFIGURATION PARAMETERS
+6. CONFIGURATION PARAMETERS
    bond_factor = <value>
    - Multiplier for covalent radius threshold (default: 1.0)
    - Higher = detect more bonds, Lower = detect fewer
@@ -433,6 +409,23 @@ FEATURE OVERVIEW
    - Minimum distance validation (default: 0.7)
    - Filters conformers with steric clashes
    - Formula: d[atom1][atom2] >= (cov_radius1 + cov_radius2) x skip_factor
+
+   maxgen = <value>
+   - Maximum conformers to generate (default: 500)
+   - Use 'max' for unlimited generation
+
+   autoconfirm = <true/false>
+   - Skip interactive warnings for large jobs (default: false)
+
+=======================================================================
+IMPORTANT NOTES
+=======================================================================
+
+- ROTATION and SCANNING modes are mutually exclusive
+- Cannot mix rotation (e30, syn) and scanning (scan) in same file
+- Choose one mode based on your research needs:
+  * Rotation: Traditional conformational analysis
+  * Scanning: Bond length effects, reaction coordinates
 "#;
 
 pub const INPUT_FORMAT: &str = r#"
@@ -478,7 +471,7 @@ INPUT FILE FORMATS
        # Remove a bond
        22-45 nobond
 
-   Rotation Specifications:
+   ROTATION MODE Specifications:
        # Step-based rotation
        1-6 e60
 
@@ -491,25 +484,26 @@ INPUT FILE FORMATS
        # Synchronous rotation (opposite direction)
        4-8 syn -1
 
+   SCANNING MODE Specifications:
+       # Bond length scanning
+       1-2 scan 10 0.1     # 10 steps, +0.1 Å (stretch)
+       3-4 scan 5 -0.05    # 5 steps, -0.05 Å (compress)
+       5-6 s 15 0.2        # Alternative 's' syntax
+
    Flexible Format - Parameters can be in ANY order:
    - Comments start with '#'
    - Empty lines ignored
    - atom1-atom2 format (dash, not hyphen)
    - All parameters can be mixed - NO ordering restrictions!
-   - All angles in degrees
-   - Angles range: -360° to +360°
+   - Rotation angles in degrees, range: -360° to +360°
+   - Scanning step sizes in Angstroms
+   - CANNOT mix rotation and scanning in same file
 
-   Example Flexible File (all formats work the same):
-       7-11 e30
-       bond_factor = 1.2
-       2-5 0 60 120
-       skip_factor = 0.7
-       8-12 bond
-       22-45 nobond
-
-   File Example:
+   Example Rotation File:
        bond_factor = 1.2
        skip_factor = 0.7
+       maxgen = 1000
+       autoconfirm = false
 
        # Manual bond definitions
        8-12 bond
@@ -523,6 +517,20 @@ INPUT FILE FORMATS
        24-26 syn 2
        25-78 e-60
        17-23 syn -3
+
+   Example Scanning File:
+       bond_factor = 1.2
+       skip_factor = 0.7
+       maxgen = 500
+
+       # Manual bond definitions
+       8-12 bond
+       22-45 nobond
+
+       # Scanning specifications
+       1-2 scan 10 0.1     # Stretch C-C bond
+       3-4 scan 8 -0.05    # Compress another bond
+       5-6 s 12 0.15       # Multi-dimensional scanning
 "#;
 
 pub const OUTPUT_FORMAT: &str = r#"
@@ -674,6 +682,10 @@ OUTPUT FILE FORMATS
 pub const EXAMPLES: &str = r#"
 PRACTICAL EXAMPLES
 
+=======================================================================
+ROTATION MODE EXAMPLES
+=======================================================================
+
 1. SIMPLE SINGLE BOND ROTATION (Ethane)
 
    Input Files:
@@ -806,6 +818,146 @@ PRACTICAL EXAMPLES
    False bonds removed to prevent incorrect rotations
    ~15-20 valid conformers
 
+=======================================================================
+SCANNING MODE EXAMPLES
+=======================================================================
+
+5. SIMPLE BOND LENGTH SCANNING (Ethane C-C bond)
+
+   Input Files:
+   -----------
+   ethane.xyz: (8 atoms - same as rotation example)
+
+   ethane.rp:
+       bond_factor = 1.2
+       skip_factor = 0.7
+       1-2 scan 10 0.1
+
+   Command:
+   --------
+   rotbond ethane
+
+   Output:
+   -------
+   ethane_traj.xyz          - Trajectory with all conformers
+   ethane_01.xyz ...        - Individual conformer files
+
+   Result:
+   -------
+   10 scanning steps → 10 conformers with C-C bonds from 1.5 to 2.5 Å
+
+---
+
+6. MULTI-DIMENSIONAL SCANNING (Water molecule O-H bonds)
+
+   Input Files:
+   -----------
+   water.xyz: (3 atoms)
+       3
+       Water molecule
+       O  0.000000  0.000000  0.000000
+       H  0.957000  0.000000  0.000000
+       H -0.240000  0.927000  0.000000
+
+   water.rp:
+       bond_factor = 1.2
+       skip_factor = 0.6
+       1-2 scan 8 0.05     # First O-H bond
+       1-3 scan 8 0.05     # Second O-H bond
+
+   Command:
+   --------
+   rotbond water
+
+   Result:
+   -------
+   2 bonds × 8 steps each = 64 total combinations
+   ~50-60 valid conformers (after steric clash filtering)
+
+---
+
+7. BOND COMPRESSION SCANNING (H2 molecule)
+
+   Input Files:
+   -----------
+   h2.xyz: (2 atoms)
+       2
+       Hydrogen molecule
+       H  0.000000  0.000000  0.000000
+       H  0.740000  0.000000  0.000000
+
+   h2.rp:
+       bond_factor = 1.0
+       skip_factor = 0.5
+       1-2 scan 15 -0.02   # Compress H-H bond
+
+   Command:
+   --------
+   rotbond h2
+
+   Result:
+   -------
+   15 scanning steps → 15 conformers with H-H bonds from 0.74 to 0.44 Å
+   Explores bond compression effects
+
+---
+
+8. MIXED STRETCH AND COMPRESSION (Formaldehyde)
+
+   Input Files:
+   -----------
+   formaldehyde.xyz: (4 atoms)
+
+   formaldehyde.rp:
+       bond_factor = 1.2
+       skip_factor = 0.7
+       1-2 scan 6 0.1      # Stretch C=O bond
+       1-3 scan 8 -0.05    # Compress C-H bond
+       1-4 scan 8 -0.05    # Compress other C-H bond
+
+   Command:
+   --------
+   rotbond formaldehyde
+
+   Result:
+   -------
+   3 bonds × [6, 8, 8] steps = 384 total combinations
+   ~300-350 valid conformers
+
+---
+
+9. METAL COMPLEX SCANNING (with forced bonds)
+
+   Input Files:
+   -----------
+   complex.xyz: (25 atoms, includes metal center)
+
+   complex.rp:
+       bond_factor = 1.5
+       skip_factor = 0.6
+
+       # Force metal-ligand bonds
+       1-12 bond
+       1-15 bond
+       1-18 bond
+
+       # Remove false positive
+       22-25 nobond
+
+       # Scan metal-ligand distances
+       1-12 scan 5 0.2     # First ligand
+       1-15 scan 5 -0.1    # Second ligand (compress)
+
+   Command:
+   --------
+   rotbond complex
+
+   Result:
+   -------
+   Manual bonds ensure correct connectivity
+   2 scanning bonds × 5 steps each = 25 conformers
+   Explores metal-ligand distance effects
+
 ---
 
 EXAMPLE FILE PATTERNS:
@@ -826,6 +978,10 @@ Very large (10000+ conformers):
 
 TIPS FOR EFFECTIVE USAGE:
 
+=======================================================================
+ROTATION MODE TIPS
+=======================================================================
+
 1. Start Simple
    - Begin with one bond rotation to test
    - Verify output before adding more bonds
@@ -844,40 +1000,85 @@ TIPS FOR EFFECTIVE USAGE:
    - Symmetric fragments
    - Maintains molecular symmetry
 
-5. Manual Bonds for Special Cases
-   - Metal complexes
-   - Coordinate bonds
-   - Aromatic systems
-   - Remove false positives
-
-6. Adjust Validation
-   - Strict: skip_factor = 0.8-1.0
-   - Relaxed: skip_factor = 0.5-0.7
-   - Consider molecular flexibility
-
-7. Estimate Before Generation
+5. Estimate Before Generation
    - Count independent bonds
    - Multiply angle states
    - Check for combinatorial explosion
    - 5 bonds x 7 states = 16,807 combinations!
 
-8. Use Trajectory Files
-   - Easier for visualization
-   - Better for analysis
-   - Compatible with MD software
-   - Use for initial screening
+=======================================================================
+SCANNING MODE TIPS
+=======================================================================
 
-9. Validate Results
-   - Check bond lengths reasonable
-   - Verify angles make chemical sense
-   - Look for unexpected conformations
-   - Use chemical knowledge
+6. Start with Small Steps
+   - Begin with 5-10 scanning steps
+   - Use small step sizes (0.05-0.1 Å)
+   - Verify chemically reasonable bond lengths
 
-10. Performance Optimization
-    - Reduce unnecessary angle states
+7. Choose Appropriate Step Sizes
+   - Small molecules: 0.05-0.1 Å steps
+   - Flexible bonds: 0.1-0.2 Å steps
+   - Stiff bonds: 0.02-0.05 Å steps
+
+8. Consider Chemical Limits
+   - Typical C-C: 1.3-1.8 Å range
+   - Typical C-H: 0.9-1.3 Å range
+   - Metal-ligand: highly variable
+   - Avoid unphysical bond lengths
+
+9. Multi-dimensional Scanning
+   - Start with 2D (two bonds)
+   - Limit steps to avoid explosion
+   - 10 × 10 = 100 combinations manageable
+   - 20 × 20 = 400 combinations large
+
+10. Compression vs Stretching
+    - Positive step_size = bond stretching
+    - Negative step_size = bond compression
+    - Mix both for complete exploration
+    - Be careful with compression limits
+
+=======================================================================
+SHARED TIPS (both modes)
+=======================================================================
+
+11. Manual Bonds for Special Cases
+    - Metal complexes
+    - Coordinate bonds
+    - Aromatic systems
+    - Remove false positives
+
+12. Adjust Validation
+    - Strict: skip_factor = 0.8-1.0
+    - Relaxed: skip_factor = 0.5-0.7
+    - Consider molecular flexibility
+    - Scanning may need lower skip_factor
+
+13. Use Trajectory Files
+    - Easier for visualization
+    - Better for analysis
+    - Compatible with MD software
+    - Use for initial screening
+
+14. Validate Results
+    - Check bond lengths reasonable
+    - Verify angles make chemical sense (rotation)
+    - Verify bond lengths make chemical sense (scanning)
+    - Look for unexpected conformations
+    - Use chemical knowledge
+
+15. Performance Optimization
+    - Reduce unnecessary states/steps
     - Use skip_factor to filter early
-    - Consider parallel processing
+    - Consider maxgen limits
+    - Use autoconfirm for large jobs
     - Save intermediate results
+
+16. Mode Selection Guidelines
+    - Use ROTATION for: conformational analysis, torsional profiles
+    - Use SCANNING for: bond length effects, reaction coordinates
+    - Cannot mix modes in same file
+    - Choose based on research question
 "#;
 
 pub const ALGORITHMS: &str = r#"
@@ -1263,6 +1464,80 @@ COMMON ERRORS AND SOLUTIONS
 
 ---
 
+16. "Invalid scanning specification"
+
+    Cause: Incorrect scanning syntax
+
+    Solution:
+    - Use format: atom1-atom2 scan steps step_size
+    - Alternative: atom1-atom2 s steps step_size
+    - Steps must be positive integer
+    - Step_size must be non-zero float
+    - Example: 1-2 scan 10 0.1
+
+---
+
+17. "Steps must be a positive integer"
+
+    Cause: Zero or negative steps in scanning
+
+    Solution:
+    - Use positive integers only
+    - Minimum: 1 step
+    - Recommended: 5-20 steps
+    - Example: 1-2 scan 10 0.1 (not 1-2 scan 0 0.1)
+
+---
+
+18. "Step size must be non-zero"
+
+    Cause: Zero step size in scanning specification
+
+    Solution:
+    - Use non-zero step sizes
+    - Positive = stretch bond
+    - Negative = compress bond
+    - Typical range: ±0.05 to ±0.2 Å
+
+---
+
+19. "Cannot mix rotation and scanning specifications"
+
+    Cause: Both rotation and scanning in same file
+
+    Solution:
+    - Choose one mode only
+    - Remove all rotation specs (e30, syn, explicit angles)
+    - OR remove all scanning specs (scan, s)
+    - Create separate files for different modes
+
+---
+
+20. "Target bond length outside valid range"
+
+    Cause: Scanning would create unrealistic bond lengths
+
+    Solution:
+    - Reduce step size
+    - Reduce number of steps
+    - Check starting bond length
+    - Ensure final length stays ≥ 0.1 Å
+    - Consider chemical reasonableness
+
+---
+
+21. "Bond scanning failed: achieved X.XX Å instead of Y.YY Å"
+
+    Cause: Numerical precision issues in scanning
+
+    Solution:
+    - Usually harmless (precision < 1e-6)
+    - If persistent, check molecule geometry
+    - Verify fragment identification
+    - May indicate structural problems
+
+---
+
 16. "Too many rotation specifications"
 
     Cause: Exceeded maximum bonds (usually 26, letters a-z)
@@ -1603,7 +1878,9 @@ REFERENCE MATERIALS
 
 ---
 
-8. ROTATION SYNTAX REFERENCE
+8. SYNTAX REFERENCE
+
+   ROTATION MODE:
 
    Step-based:
       Format: atom1-atom2 e<number>
@@ -1633,6 +1910,30 @@ REFERENCE MATERIALS
         4-8 syn -1      → Bond 4 syncs with bond 1 (opposite)
         6-10 syn -2     → Bond 6 syncs with bond 2 (opposite)
 
+   SCANNING MODE:
+
+   Bond Length Scanning:
+      Format: atom1-atom2 scan steps step_size
+      Format: atom1-atom2 s steps step_size (alternative)
+      Examples:
+        1-2 scan 10 0.1     → 10 steps, +0.1 Å each (stretch)
+        3-4 scan 5 -0.05    → 5 steps, -0.05 Å each (compress)
+        5-6 s 15 0.2        → 15 steps, +0.2 Å each (alternative syntax)
+        7-8 scan 8 -0.1     → 8 steps, -0.1 Å each (compress)
+
+   Multi-dimensional Scanning:
+      Examples:
+        1-2 scan 8 0.1      → First bond: 8 steps
+        3-4 scan 6 -0.05    → Second bond: 6 steps
+        Total combinations: 8 × 6 = 48 conformers
+
+   Parameter Ranges:
+      - steps: positive integer (1 to ~50 recommended)
+      - step_size: non-zero float in Angstroms
+      - Positive step_size: bond stretching
+      - Negative step_size: bond compression
+      - Typical range: ±0.02 to ±0.5 Å
+
 ---
 
 9. PERFORMANCE GUIDELINES
@@ -1644,16 +1945,33 @@ REFERENCE MATERIALS
       200 atoms x 10000 conformers = 200 MB
 
    Processing Speed:
-      Typical: 100-1000 conformers/second
+      Rotation mode: 100-1000 conformers/second
+      Scanning mode: 200-2000 conformers/second (simpler algorithm)
       Depends on: molecule size, validation strictness
       Use skip_factor to control speed
 
-   Optimization Tips:
-      - Reduce angle states
-      - Use explicit angles
-      - Increase skip_factor
-      - Use trajectory output
-      - Process in batches
+   ROTATION MODE Optimization:
+      - Reduce angle states (use e90 instead of e30)
+      - Use explicit angles for specific needs
+      - Increase skip_factor for faster validation
+      - Use synchronous bonds to reduce independent bonds
+      - Process in batches for very large jobs
+
+   SCANNING MODE Optimization:
+      - Reduce scanning steps (use 5-10 instead of 20-50)
+      - Use larger step sizes for initial exploration
+      - Limit multi-dimensional scanning (2-3 bonds max)
+      - Consider chemical reasonableness to avoid invalid conformers
+      - Use maxgen parameter to limit output
+
+   Combinatorial Explosion:
+      Rotation: n₁ × n₂ × ... × nₖ (nᵢ = angles per bond)
+      Scanning: s₁ × s₂ × ... × sₖ (sᵢ = steps per bond)
+      
+      Examples:
+      - 3 rotation bonds × 6 angles = 216 conformers
+      - 3 scanning bonds × 10 steps = 1000 conformers
+      - Mixed: not allowed (mutually exclusive)
 
 ---
 
@@ -1661,7 +1979,7 @@ REFERENCE MATERIALS
 
     Conformers:
     - Different spatial arrangements of same molecule
-    - Connected by bond rotations
+    - Generated by bond rotations OR bond length changes
     - Same connectivity, different geometry
     - Important for:
       * Energy calculations
@@ -1669,27 +1987,59 @@ REFERENCE MATERIALS
       * Reaction pathways
       * Molecular recognition
 
+    ROTATION MODE Applications:
+    - Traditional conformational analysis
+    - Torsional angle effects
+    - Steric hindrance studies
+    - Drug design and flexibility
+
+    Bond Rotation:
+    - Most common conformational change
+    - Around single (σ) bonds
+    - Low energy barrier (~1-10 kcal/mol)
+    - Temperature-dependent populations
+
+    Synchronous Rotations:
+    - Physically linked motions
+    - Methyl groups rotate together
+    - Symmetric fragments
+    - Coupled bond rotations
+
+    SCANNING MODE Applications:
+    - Bond length effects on properties
+    - Reaction coordinate exploration
+    - Vibrational analysis preparation
+    - Transition state searches
+
+    Bond Length Scanning:
+    - Systematic variation of bond distances
+    - Higher energy barriers than rotation
+    - Explores bond stretching/compression
+    - Useful for:
+      * Force field parameterization
+      * Potential energy surface mapping
+      * Vibrational frequency calculations
+      * Chemical reaction studies
+
+    Typical Bond Length Ranges:
+    - C-C single: 1.3-1.8 Å (equilibrium ~1.54 Å)
+    - C-H: 0.9-1.3 Å (equilibrium ~1.09 Å)
+    - C=C double: 1.2-1.5 Å (equilibrium ~1.34 Å)
+    - C≡C triple: 1.1-1.3 Å (equilibrium ~1.20 Å)
+    - O-H: 0.8-1.2 Å (equilibrium ~0.96 Å)
+    - N-H: 0.9-1.2 Å (equilibrium ~1.01 Å)
+
     Steric Effects:
     - Repulsion between electron clouds
     - Prevent atoms from overlapping
     - skip_factor validates physical reasonableness
     - Based on van der Waals radii
-
-    Bond Rotation:
-    - Most common conformational change
-    - Around single (σ) bonds
-    - Low energy barrier
-    - Temperature-dependent populations
-
-    Synchronous Rotations:
-    - Physically linked motions
-    - Methyl groups
-    - Symmetric fragments
-    - Coupled bond rotations
+    - More critical in scanning (closer approaches possible)
 
     Validation Importance:
     - Prevents impossible conformations
     - Filters high-energy structures
     - Ensures chemical reasonableness
     - Saves computational resources
+    - Critical for both rotation and scanning modes
 "#;

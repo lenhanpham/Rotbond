@@ -182,6 +182,56 @@ pub fn print_rotation_summary(bonds: &[crate::molecule::Bond], angle_sets: &[Vec
     println!();
 }
 
+/// Prints a summary of bond scanning specifications.
+/// 
+/// Displays information about each scanning bond including atom indices,
+/// number of scanning steps, and step size. This provides users with
+/// a clear overview of the scanning parameters before generation begins.
+/// 
+/// # Arguments
+/// 
+/// * `bonds` - Slice of bond specifications
+/// * `rotation_specs` - Corresponding rotation specifications containing scanning parameters
+/// 
+/// # Output Format
+/// 
+/// For each scanning bond, displays:
+/// - Bond number and atom indices (1-based for user clarity)
+/// - Number of scanning steps
+/// - Step size in Angstroms (positive = stretch, negative = compress)
+/// - Direction indication (stretch/compress)
+/// 
+/// # Examples
+/// 
+/// ```rust
+/// use rotbond::utils::print_scanning_summary;
+/// 
+/// print_scanning_summary(&bonds, &rotation_specs);
+/// // Output:
+/// // Scanning specifications:
+/// //   Bond 1: atoms 1-2 (10 steps, +0.10 Å step size - stretch)
+/// //   Bond 2: atoms 3-4 (5 steps, -0.05 Å step size - compress)
+/// ```
+pub fn print_scanning_summary(_bonds: &[crate::molecule::Bond], rotation_specs: &[crate::molecule::RotationSpec]) {
+    println!("Scanning specifications:");
+    
+    let mut bond_count = 0;
+    for spec in rotation_specs.iter() {
+        if let crate::molecule::RotationSpec::Scanning { atom1, atom2, steps, step_size } = spec {
+            bond_count += 1;
+            let direction = if *step_size > 0.0 { "stretch" } else { "compress" };
+            println!("  Bond {}: atoms {}-{} ({} steps, {:+.2} Å step size - {})",
+                     bond_count, atom1, atom2, steps, step_size, direction);
+        }
+    }
+    
+    if bond_count == 0 {
+        println!("  No scanning bonds specified");
+    }
+    
+    println!();
+}
+
 /// Prints the current configuration parameters in a formatted display.
 /// 
 /// Shows the bond detection and steric clash parameters being used
@@ -254,26 +304,3 @@ pub fn print_summary(total_theoretical: usize, valid_conformers: usize) {
     print_separator();
 }
 
-/// Prints an error message and exits the program with status code 1.
-/// 
-/// This is a utility function for fatal error handling that ensures
-/// consistent error message formatting and proper program termination.
-/// 
-/// # Arguments
-/// 
-/// * `msg` - The error message to display
-/// 
-/// # Examples
-/// 
-/// ```rust
-/// use rotbond::utils::print_error_and_exit;
-/// 
-/// print_error_and_exit("File not found");
-/// // Output: ERROR: File not found
-/// // Program exits with code 1
-/// ```
-#[allow(dead_code)]
-pub fn print_error_and_exit(msg: &str) -> ! {
-    eprintln!("ERROR: {}", msg);
-    std::process::exit(1);
-}

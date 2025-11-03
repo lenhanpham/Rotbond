@@ -21,21 +21,30 @@ Rotbond is program for generating molecular conformers through systematic bond r
 
 ## Features
 
-### Core Capabilities
+### Capabilities
 
-- **Flexible Rotation Specifications**
+- **Flexible Conformer Generation Methods**
   
-  - Step-based rotations - e.g., `e60` generates 0°, 60°, 120°, 180°, 240°, 300° (6 states); `e30` generates 12 states
-  - Explicit angle lists - specify exact angles needed
-  - Synchronous rotations - link multiple bonds to rotate together
-  - Manual bond definitions - force or remove bonds as needed
+  - **Bond Rotation Mode**: Traditional dihedral angle rotation
+    
+    - Step-based rotations - e.g., `e60` generates 0°, 60°, 120°, 180°, 240°, 300° (6 states); `e30` generates 12 states
+    - Explicit angle lists - specify exact angles needed
+    - Synchronous rotations - link multiple bonds to rotate together
+  
+  - **Bond Scanning Mode**: Systematic bond length variation
+    
+    - Step-based scanning - e.g., `scan 10 0.1` stretches bond in 10 steps of 0.1 Å each
+    - Multi-dimensional scanning - scan multiple bonds simultaneously
+    - Compression and stretching - positive step sizes stretch, negative compress
+  
+  - Manual bond definitions - force or remove bonds as needed for both modes
 
 - **Smart Output Generation**
   
   - Trajectory file with all conformers for easy visualization
   - Individual XYZ files with automatic smart padding
   - Progress reporting and statistics
- 
+
 - **Intelligent Validation**
   
   - Steric clash detection and filtering
@@ -270,9 +279,13 @@ skip_factor = 0.8
 
 All formats above work identically!
 
-## Rotation Syntax Reference
+## Conformer Generation Syntax Reference
 
-### Step-Based Rotation
+Rotbond supports two mutually exclusive modes for conformer generation: **Bond Rotation** and **Bond Scanning**. Choose one mode per molecule.
+
+### Bond Rotation Mode (Traditional)
+
+#### Step-Based Rotation
 
 Generates evenly spaced angles from 0° to 360°-step:
 
@@ -295,7 +308,7 @@ The number of states is calculated as 360°/step. Smaller step angles generate m
 - When you want evenly spaced angle coverage
 - Default choice for most rotations
 
-### Explicit Angle Lists
+#### Explicit Angle Lists
 
 Specify exact angles to use:
 
@@ -315,7 +328,7 @@ atom1-atom2 angle1 angle2 angle3 ...
 - Reduce computational load
 - Define symmetry-unique angles
 
-### Synchronous Rotations
+#### Synchronous Rotations
 
 Link multiple bonds to rotate together:
 
@@ -345,6 +358,72 @@ atom1-atom2 syn -<reference_bond>
 - Cannot reference themselves
 - Cannot create circular references
 - Use negative sign for opposite direction
+
+### Bond Scanning Mode
+
+Bond scanning systematically varies bond lengths to explore conformational space through bond stretching and compression.
+
+#### Scanning inputs
+
+```bash
+atom1-atom2 scan steps step_size
+atom1-atom2 s steps step_size        # Short form
+```
+
+**Parameters:**
+
+- `steps`: Number of scanning steps (positive integer)
+- `step_size`: Bond length increment in Angstroms (positive = stretch, negative = compress)
+
+**Examples:**
+
+- `1-2 scan 10 0.1` → Stretch C-C bond in 10 steps of 0.1 Å each (1.5 → 2.5 Å)
+- `3-4 scan 5 -0.05` → Compress bond in 5 steps of 0.05 Å each
+- `5-6 s 15 0.2` → Alternative syntax using 's' instead of 'scan'
+
+#### Multi-Dimensional Scanning
+
+Scan multiple bonds simultaneously:
+
+```bash
+# 2D scanning example
+1-2 scan 8 0.1      # First bond: 8 steps, +0.1 Å
+3-4 scan 6 -0.05    # Second bond: 6 steps, -0.05 Å
+# Total combinations: 8 × 6 = 48 conformers
+```
+
+**Use cases:**
+
+- Explore bond length effects on molecular geometry
+- Study reaction coordinate scanning
+- Investigate steric effects of bond compression/stretching
+- Generate structures for potential energy surface mapping
+
+#### Scanning vs Rotation Comparison
+
+| Feature              | Bond Rotation              | Bond Scanning           |
+| -------------------- | -------------------------- | ----------------------- |
+| **Parameter varied** | Dihedral angles            | Bond lengths            |
+| **Units**            | Degrees (°)                | Angstroms (Å)           |
+| **Typical range**    | 0° to 360°                 | ±3.0 Å from equilibrium |
+| **Use case**         | Conformational flexibility | Bond length effects     |
+| **Output**           | Different conformations    | Different geometries    |
+
+#### Important Notes for Scanning
+
+- **Mutually exclusive**: Cannot mix rotation and scanning in the same file
+- **Chemical validity**: Large step sizes may create unrealistic bond lengths
+- **Validation**: Scanning conformers undergo additional geometric validation
+- **Fragment movement**: One molecular fragment moves as a rigid body
+- **Bond length limits**: System validates minimum bond length (≥ 0.1 Å) with no upper limit
+
+#### Scanning Best Practices
+
+1. **Start small**: Use step sizes of 0.1-0.5 Å initially
+2. **Reasonable steps**: 5-15 steps typically sufficient
+3. **Check chemistry**: Ensure final bond lengths are chemically reasonable
+4. **Multi-dimensional caution**: Combinations multiply quickly (5×5×5 = 125 conformers)
+5. **Use with validation**: lower skip_factor may be needed for compressed bonds
 
 ## Configuration Parameters
 
@@ -457,7 +536,7 @@ H  0.234567  0.345678  0.456789
 **Features:**
 
 - Standard XYZ format
-- Compatible with VMD, Chimera, PyMOL
+- Compatible with VMD, Chimera, PyMOL, Avogadro, Chemcraft
 - Each structure labeled with conformer number
 - Easy for visualization and analysis
 
@@ -479,7 +558,9 @@ One file per valid conformer with smart padding:
 
 ## Practical Examples
 
-### Example 1: Simple Single Bond (Ethane)
+### Bond Rotation Examples
+
+#### Example 1: Simple Single Bond (Ethane)
 
 **Input:** `ethane.rp`
 
@@ -491,7 +572,7 @@ skip_factor = 0.7
 
 **Result:** 6 rotation states → 6 valid conformers (100% success rate)
 
-### Example 2: Multiple Independent Bonds (Butane)
+#### Example 2: Multiple Independent Bonds (Butane)
 
 **Input:** `butane.rp`
 
@@ -511,9 +592,9 @@ skip_factor = 0.7
 
 **Result:** 3 bonds × [3, 6, 2] states = 36 total combinations
 
-### Example 3: Synchronous Rotations (p-Xylene)
+#### Example 3: Synchronous Rotations
 
-**Input:** `p_xylene.rp`
+**Input:** `examle_molecule.rp`
 
 ```
 bond_factor = 1.2
@@ -533,9 +614,79 @@ skip_factor = 0.7
 ```
 
 **Result:** Only 1 independent bond → 6 rotation states
-All methyl groups rotate predictably with main bond
 
-### Example 4: Complex Molecule with Manual Bonds
+### Bond Scanning Examples
+
+#### Example 4: Simple Bond Length Scanning (Ethane C-C)
+
+**Input:** `ethane_scan.rp`
+
+```
+bond_factor = 1.0
+skip_factor = 0.7
+
+# Scan C-C bond length
+1-2 scan 10 0.1
+```
+
+**Result:** 10 scanning steps → C-C bond varies from 1.54 Å to 2.54 Å
+Explores effect of bond stretching on molecular geometry
+
+#### Example 5: Bond Compression Scanning (H-H)
+
+**Input:** `h2_scan.rp`
+
+```
+bond_factor = 1.0
+skip_factor = 0.6    # More permissive for compressed bonds
+
+# Compress H-H bond
+1-2 scan 8 -0.05
+```
+
+**Result:** 8 scanning steps → H-H bond compresses from 0.74 Å to 0.34 Å
+Studies bond compression effects
+
+#### Example 6: Multi-Dimensional Bond Scanning (Water)
+
+**Input:** `water_scan.rp`
+
+```
+bond_factor = 1.0
+skip_factor = 0.7
+
+# Scan both O-H bonds simultaneously
+1-2 scan 6 0.1      # First O-H bond: 6 steps, +0.1 Å
+1-3 scan 5 0.08     # Second O-H bond: 5 steps, +0.08 Å
+```
+
+**Result:** 6 × 5 = 30 combinations → Systematic exploration of O-H bond length effects
+Useful for studying hydrogen bonding effects
+
+#### Example 7: Metal Complex Bond Scanning
+
+**Input:** `metal_complex_scan.rp`
+
+```
+bond_factor = 1.2
+skip_factor = 0.8
+
+# Force metal-ligand bonds
+25-30 bond
+25-35 bond
+25-40 bond
+
+# Scan metal-ligand bond lengths
+25-30 scan 8 0.1    # First ligand: stretch
+25-35 scan 6 -0.05  # Second ligand: compress
+```
+
+**Result:** 8 × 6 = 48 combinations → Studies metal-ligand bond length effects
+Useful for coordination chemistry and catalysis studies
+
+### Mixed Examples
+
+#### Example 8: Complex Molecule with Manual Bonds (Rotation Mode)
 
 **Input:** `complex.rp`
 
@@ -560,7 +711,7 @@ skip_factor = 0.7
 **Result:** Manual bonds ensure correct connectivity
 ~15-20 valid conformers
 
-### Example 5: Large Molecule with Safety Limits
+#### Example 9: Large Molecule with Safety Limits (Rotation Mode)
 
 **Input:** `large_complex.rp`
 
@@ -585,6 +736,28 @@ autoconfirm = true   # Skip interactive warnings
 
 **Result:** 12 × 12 × 12 × 1 = 1,728 theoretical conformers
 Limited to 300 actual conformers, no interactive prompts
+
+#### Example 10: Large Scanning Job with Safety Limits
+
+**Input:** `large_scan.rp`
+
+```
+bond_factor = 1.0
+skip_factor = 0.7
+
+# Safety configuration for large scanning
+maxgen = 200         # Conservative limit for scanning
+autoconfirm = true   # Skip interactive warnings
+
+# Multi-dimensional scanning (would generate 300 theoretical conformers)
+1-5 scan 10 0.05     # 10 steps
+6-10 scan 6 0.08     # 6 steps
+12-18 scan 5 -0.03   # 5 steps
+```
+
+**Result:** 10 × 6 × 5 = 300 theoretical conformers
+Limited to 200 actual conformers, no interactive prompts
+Systematic exploration of multiple bond length effects
 
 ## Conformer Generation Limits & Safety
 
@@ -981,11 +1154,15 @@ Based on OpenBabel covalent radii values:
 
 ## License
 
-This project is open source. See [LICENSE](LICENSE) file for details.
+Rotbond is licensed under the **MIT License**.
 
-## Contributing
+### Acknowledgments
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+- **Le Nhan Pham**: Developer and maintainer
+- **Open-source community**: For contributions and feedback
+- **Computational chemistry community**: For validation and testing
+
+---
 
 ## Additional Resources
 

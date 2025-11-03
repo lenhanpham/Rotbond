@@ -20,7 +20,6 @@
 use crate::molecule::Atom;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
-use std::path::Path;
 
 /// Loads a molecular structure from an XYZ format file.
 /// 
@@ -90,7 +89,7 @@ pub fn read_xyz_file(filename: &str) -> Result<(Vec<Atom>, String), Box<dyn std:
             .ok_or(format!("Expected {} atoms, found fewer", nat))?
             .map_err(|e| format!("Failed to read atom {}: {}", i + 1, e))?;
 
-        let parts: Vec<&str> = line.trim().split_whitespace().collect();
+        let parts: Vec<&str> = line.split_whitespace().collect();
 
         if parts.len() < 4 {
             return Err(format!("Invalid atom format on line {}: expected 4 columns (element x y z), got {}", i + 1, parts.len()).into());
@@ -291,31 +290,4 @@ pub fn format_conformer_filename(base_name: &str, index: usize, total: usize) ->
     format!("{}_{}.xyz", base_name, index_str)
 }
 
-/// Extracts the base name from an XYZ filename.
-/// 
-/// Removes the file extension to get the base name that can be used
-/// for generating output filenames.
-/// 
-/// # Arguments
-/// 
-/// * `xyz_filename` - The XYZ filename to process
-/// 
-/// # Returns
-/// 
-/// The base name without extension.
-/// 
-/// # Examples
-/// 
-/// ```rust
-/// use rotbond::io::extract_base_name;
-/// 
-/// assert_eq!(extract_base_name("molecule.xyz"), "molecule");
-/// assert_eq!(extract_base_name("complex_name.xyz"), "complex_name");
-/// ```
-#[allow(dead_code)]
-pub fn extract_base_name(xyz_filename: &str) -> String {
-    Path::new(xyz_filename)
-        .file_stem()
-        .and_then(|s| s.to_str().map(|s| s.to_string()))
-        .unwrap_or_else(|| xyz_filename.to_string())
-}
+
