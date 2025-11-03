@@ -1529,7 +1529,7 @@ REFERENCE MATERIALS
 5. BOND DETECTION PARAMETERS
 
    Default bond_factor = 1.0
-   Formula: threshold = (radius₁ + radius₂) × bond_factor
+   Formula: threshold = (radius_1 + radius_2) × bond_factor
 
    Effects:
    bond_factor < 1.0: Stricter detection (fewer bonds)
@@ -1552,7 +1552,7 @@ REFERENCE MATERIALS
 6. VALIDATION PARAMETERS
 
    Default skip_factor = 0.7
-   Formula: min_distance = (radius₁ + radius₂) × skip_factor
+   Formula: min_distance = (radius_1 + radius_2) × skip_factor
 
    Effects:
    skip_factor < 0.7: More lenient (accept closer atoms)
