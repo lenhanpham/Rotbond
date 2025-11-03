@@ -643,7 +643,7 @@ OUTPUT FILE FORMATS
    Conformer generation completed successfully!
 
    =======================================================================
-                              BOOK RECOMMENDATION
+                           ROTBOND FOUND A BOOK :-)
    =======================================================================
 
    Title:  Pride and Prejudice
