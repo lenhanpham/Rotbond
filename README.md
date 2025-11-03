@@ -42,7 +42,7 @@ Rotbond is program for generating molecular conformers through systematic bond r
   - Configurable bond detection parameters
   - Distance-based validation using covalent radii
 
-- **Professional Documentation**
+- **Documentation**
   
   - Built-in help system with 8 comprehensive sections
   - Practical examples and troubleshooting guides
