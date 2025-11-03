@@ -432,7 +432,7 @@ FEATURE OVERVIEW
    skip_factor = <value>
    - Minimum distance validation (default: 0.7)
    - Filters conformers with steric clashes
-   - Formula: d[atom1][atom2] >= (cov_radius1 + cov_radius2) × skip_factor
+   - Formula: d[atom1][atom2] >= (cov_radius1 + cov_radius2) x skip_factor
 "#;
 
 pub const INPUT_FORMAT: &str = r#"
@@ -662,7 +662,7 @@ OUTPUT FILE FORMATS
    - Theoretical combinations: Total possible conformer combinations
    - Rejected (steric clashes): Conformers filtered due to atomic overlaps
    - Valid conformers generated: Conformers that passed validation
-   - Success rate: Percentage of valid conformers (valid/theoretical × 100%)
+   - Success rate: Percentage of valid conformers (valid/theoretical x 100%)
    
    Additional Features:
    - Interactive conformer limit warnings for large generation jobs
@@ -734,7 +734,7 @@ PRACTICAL EXAMPLES
 
    Result:
    -------
-   3 bonds × [3, 6, 2] states = 36 total combinations
+   3 bonds x [3, 6, 2] states = 36 total combinations
    ~30-35 valid conformers (after validation)
 
 ---
@@ -859,7 +859,7 @@ TIPS FOR EFFECTIVE USAGE:
    - Count independent bonds
    - Multiply angle states
    - Check for combinatorial explosion
-   - 5 bonds × 7 states = 16,807 combinations!
+   - 5 bonds x 7 states = 16,807 combinations!
 
 8. Use Trajectory Files
    - Easier for visualization
@@ -888,9 +888,9 @@ ALGORITHM DETAILS
    Purpose: Determine which atoms are bonded
 
    Process:
-   1. Calculate distance matrix: d[i][j] = √[(xᵢ-xⱼ)² + (yᵢ-yⱼ)² + (zᵢ-zⱼ)²]
+   1. Calculate distance matrix: d[i][j] = √[(x_i-x_j)^2 + (y_i-y_j)^2 + (z_i-z_j)^2]
    2. Initialize bonds based on covalent radii:
-      if d[i][j] < (cov_radius(i) + cov_radius(j)) × bond_factor
+      if d[i][j] < (cov_radius(i) + cov_radius(j)) x bond_factor
          then atoms i and j are bonded
    3. Apply manual bond definitions:
       - Add forced bonds (even if distance > threshold)
@@ -942,22 +942,22 @@ ALGORITHM DETAILS
 
    Steps:
    1. Translation: Move bond to origin
-      T = translation_matrix(-p1)
+      T = translation_matrix(-p_1)
 
    2. Axis Alignment: Rotate bond to align with Z-axis
-      k = normalized(p2 - p1)  (bond direction vector)
+      k = normalized(p_2 - p_1)  (bond direction vector)
       Calculate Rx, Ry, Rx^-1, Ry^-1
 
    3. Rotation: Apply rotation around Z-axis by angle θ
       R_z(θ) = rotation_matrix_z(θ)
 
    4. Restoration: Apply inverse transformations
-      M = T⁻¹ × Rₓ⁻¹ × Rᵧ⁻¹ × R_z(θ) × Rᵧ × Rₓ × T
+      M = T^-1 x Rx^-1 x Ry^-1 x R_z(θ) x Ry x Rx x T
 
    5. Apply transformation to all fragment atoms
 
    Mathematical Formula:
-      v_rot = v × cos(θ) + (k × v) × sin(θ) + k × (k · v) × (1 - cos(θ))
+      v_rot = v x cos(θ) + (k x v) x sin(θ) + k x (k · v) x (1 - cos(θ))
       where:
         v = point to rotate
         k = unit vector along rotation axis
@@ -981,12 +981,12 @@ ALGORITHM DETAILS
           Apply rotation
           Recurse to next bond
    4. Apply synchronous bond rotations:
-      Use reference bond's angle × direction
+      Use reference bond's angle x direction
    5. Validate conformer (steric clash check)
    6. Save if valid
 
    Complexity:
-      - Time: O(N × M × A)
+      - Time: O(N x M x A)
         N = number of independent bonds
         M = average angle states per bond
         A = validation cost (O(n^2) for n atoms)
@@ -1003,8 +1003,8 @@ ALGORITHM DETAILS
 
    Algorithm:
    For each atom pair (i, j):
-      distance = √[(xᵢ-xⱼ)^2 + (yᵢ-yⱼ)^2 + (zᵢ-zⱼ)^2]
-      min_distance = (cov_radius(i) + cov_radius(j)) × skip_factor
+      distance = √[(x_i-x_j)^2 + (y_i-y_j)^2 + (z_i-z_j)^2]
+      min_distance = (cov_radius(i) + cov_radius(j)) x skip_factor
       if distance < min_distance:
          return INVALID (steric clash)
 
@@ -1027,12 +1027,12 @@ PERFORMANCE CONSIDERATIONS:
 
 1. Combinatorial Explosion
    - Each independent bond multiplies conformers
-   - 5 bonds × 7 angles = 16,807 conformers
-   - 6 bonds × 7 angles = 117,649 conformers!
+   - 5 bonds x 7 angles = 16,807 conformers
+   - 6 bonds x 7 angles = 117,649 conformers!
    - Consider reducing angle states
 
 2. Validation Cost
-   - O(n²) distance checks per conformer
+   - O(n^2) distance checks per conformer
    - n = number of atoms
    - 50 atoms = 1,225 distance checks per conformer
    - Optimize by:
@@ -1450,7 +1450,7 @@ REFERENCE MATERIALS
    Default for unknown elements: 1.50 Å
 
    Usage in bond detection:
-      threshold = (radius₁ + radius₂) × bond_factor
+      threshold = (radius₁ + radius₂) x bond_factor
 
 ---
 
@@ -1495,7 +1495,7 @@ REFERENCE MATERIALS
    - Included by default in step rotations
 
    Step-Based Generation:
-   - Generates: 0°, step, 2×step, ..., 360°-step
+   - Generates: 0°, step, 2xstep, ..., 360°-step
    - Example (e60): 0°, 60°, 120°, 180°, 240°, 300° (6 states)
    - Always includes 0°, number of states = 360°/step
 
@@ -1529,7 +1529,7 @@ REFERENCE MATERIALS
 5. BOND DETECTION PARAMETERS
 
    Default bond_factor = 1.0
-   Formula: threshold = (radius_1 + radius_2) × bond_factor
+   Formula: threshold = (radius_1 + radius_2) x bond_factor
 
    Effects:
    bond_factor < 1.0: Stricter detection (fewer bonds)
@@ -1552,7 +1552,7 @@ REFERENCE MATERIALS
 6. VALIDATION PARAMETERS
 
    Default skip_factor = 0.7
-   Formula: min_distance = (radius_1 + radius_2) × skip_factor
+   Formula: min_distance = (radius_1 + radius_2) x skip_factor
 
    Effects:
    skip_factor < 0.7: More lenient (accept closer atoms)
@@ -1594,7 +1594,7 @@ REFERENCE MATERIALS
       Multiple XYZ structures concatenated
       No blank lines between structures
       Each structure: n_atoms + comment + coordinates
-      Total size: n_atoms × (n_conformers + 1) lines
+      Total size: n_atoms x (n_conformers + 1) lines
 
    Individual XYZ (Output):
       Single XYZ structure per file
@@ -1639,9 +1639,9 @@ REFERENCE MATERIALS
 
    Memory Usage:
       ~100 bytes per atom per conformer
-      Example: 50 atoms × 100 conformers = 0.5 MB
-      100 atoms × 1000 conformers = 10 MB
-      200 atoms × 10000 conformers = 200 MB
+      Example: 50 atoms x 100 conformers = 0.5 MB
+      100 atoms x 1000 conformers = 10 MB
+      200 atoms x 10000 conformers = 200 MB
 
    Processing Speed:
       Typical: 100-1000 conformers/second
