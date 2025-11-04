@@ -682,18 +682,11 @@ pub fn scan_bond_length(
                           atom1_idx + 1, atom2_idx + 1));
     }
     
-    // Validate that the target length is chemically reasonable for these atom types
-    let min_reasonable = (covalent_radius(&atom1.element) + covalent_radius(&atom2.element)) * 0.5;
-    let max_reasonable = (covalent_radius(&atom1.element) + covalent_radius(&atom2.element)) * 2.5;
-    
-    if target_length < min_reasonable {
-        return Err(format!("Target bond length {:.3} Å is too short for {}-{} bond (minimum reasonable: {:.2} Å)", 
-                          target_length, atom1.element, atom2.element, min_reasonable));
-    }
-    
-    if target_length > max_reasonable {
-        return Err(format!("Target bond length {:.3} Å is too long for {}-{} bond (maximum reasonable: {:.2} Å)", 
-                          target_length, atom1.element, atom2.element, max_reasonable));
+    // For scanning purposes, we allow any bond length >= 0.1 Å
+    // No maximum constraint - users can explore any bond length they want
+    if target_length < 0.1 {
+        return Err(format!("Target bond length {:.3} Å is too short (minimum: 0.1 Å required)", 
+                          target_length));
     }
     
     // Calculate displacement needed

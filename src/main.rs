@@ -48,27 +48,33 @@
 //!
 //! ## Quick Start Example (New Simplified Workflow)
 //!
-//! 1. **Create structure file** (`ethane.xyz`):
+//! 1. **Create structure file** (`butane.xyz`):
 //! ```text
-//! 8
-//! Ethane molecule
-//! C       -2.6972703886      0.5190638733     -0.0000003688
-//! C       -1.1782073026      0.5190641624     -0.0000004138
-//! H       -3.0738517143     -0.1361520096     -0.8135565479
-//! H       -3.0738520178      1.5512320348     -0.1606558009
-//! H       -3.0738517177      0.1421113795      0.9742112740
-//! H       -0.8016259769      0.8960166481     -0.9742120609
-//! H       -0.8016256734     -0.5131039980      0.1606550254
-//! H       -0.8016259735      1.1742800518      0.8135557588
+//!14
+//!Butane molecule
+//!C    -4.390308655000     -0.632987590700      0.043677475300
+//!H    -5.330057936000     -0.527510732400     -0.503444569700
+//!H    -4.389058916600      0.077648432000      0.873491606400
+//!H    -4.345674372500     -1.643033486700      0.457086407500
+//!C    -3.188670330900     -0.384837924800     -0.886583891400
+//!C    -3.226558849100      1.036845318100     -1.485516216000
+//!H    -2.262792259600     -0.522845611400     -0.322588193200
+//!H    -3.198108077300     -1.124349892400     -1.691208307400
+//!H    -3.217121102700      1.776357285700     -0.680891800000
+//!C    -2.024920525000      1.284994984100     -2.415777582700
+//!H    -4.152436920400      1.174853004700     -2.049511914300
+//!H    -1.085171244000      1.179518125700     -1.868655537800
+//!H    -2.026170263400      0.574358961400     -3.245591713900
+//!H    -2.069554807400      2.295040880000     -2.829186515000
 //! ```
 //!
 //! 2. **Run rotbond to create template**:
 //! ```bash
-//! rotbond ethane
+//! rotbond butane
 //! ```
-//! Output: "✓ Template file 'ethane.rp' created successfully!"
+//! Output: "✓ Template file 'butane.rp' created successfully!"
 //!
-//! 3. **Edit the generated template** (`ethane.rp`):
+//! 3. **Edit the generated template** (`butane.rp`):
 //! ```text
 //! bond_factor = 1.0
 //! skip_factor = 0.7
@@ -77,61 +83,63 @@
 //!
 //! 4. **Run conformer generation**:
 //! ```bash
-//! rotbond ethane
+//! rotbond butane
 //! ```
 //!
 //! 5. **Output files**:
-//! - `ethane_1.xyz`, `ethane_2.xyz`, ..., `ethane_6.xyz` (individual conformers)
-//! - `ethane_traj.xyz` (all conformers in trajectory format)
+//! - `butane_1.xyz`, `butane_2.xyz`, ..., `butane_6.xyz` (individual conformers)
+//! - `butane_traj.xyz` (all conformers in trajectory format)
 
-mod molecule;
-mod rotation;
 mod algorithms;
-mod io;
-mod generate;
-mod utils;
-mod help;
 mod booklist;
 mod errors;
+mod generate;
+mod help;
+mod io;
+mod molecule;
+mod rotation;
+mod utils;
 
 #[cfg(test)]
 mod tests;
 
-use molecule::{Molecule, Bond, RotationSpec};
-use rotation::{parse_rotation_file, generate_angle_sets, validate_synchronous_references};
-use generate::generate_conformers;
-use utils::{print_usage, print_rotation_summary, print_scanning_summary, print_configuration, print_summary};
-use help::{print_basic_help, print_help_topic, print_help_topics, print_version};
 use booklist::print_random_book;
+use generate::generate_conformers;
+use help::{print_basic_help, print_help_topic, print_help_topics, print_version};
+use molecule::{Bond, Molecule, RotationSpec};
+use rotation::{generate_angle_sets, parse_rotation_file, validate_synchronous_references};
 use std::env;
+use std::io::{Write, stdin};
 use std::process;
-use std::io::{stdin, Write};
+use utils::{
+    print_configuration, print_rotation_summary, print_scanning_summary, print_summary, print_usage,
+};
 
 /// Creates a template rotation parameters (.rp) file with comprehensive examples and documentation.
-/// 
+///
 /// Generates a well-documented template file that includes:
 /// - Configuration parameters with explanations
 /// - Examples of all rotation specification types
 /// - Manual bond definition examples
 /// - Comments explaining each feature
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `filename` - Path where the template .rp file should be created
-/// 
+///
 /// # Returns
-/// 
+///
 /// Result indicating success or failure of file creation
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// create_template_rp_file("molecule.rp")?;
 /// ```
 fn create_template_rp_file(filename: &str) -> std::io::Result<()> {
     use std::fs::File;
     use std::io::Write;
-    
+
     let template_content = r#"# =======================================================================
 # ROTBOND PARAMETERS FILE
 # =======================================================================
@@ -241,7 +249,7 @@ autoconfirm = false
 
 # BUTANE (multiple independent bonds)
 # 1-2 e120       # C1-C2 bond
-# 2-3 e60        # C2-C3 bond  
+# 2-3 e60        # C2-C3 bond
 # 3-4 e180       # C3-C4 bond
 
 # TOLUENE (aromatic + methyl rotation)
@@ -319,16 +327,16 @@ autoconfirm = false
 }
 
 /// Calculates the theoretical number of conformers from angle sets.
-/// 
+///
 /// Computes the cartesian product of all angle sets to determine
 /// the total number of conformer combinations that would be generated.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `angle_sets` - Vector of angle vectors for each rotatable bond
-/// 
+///
 /// # Returns
-/// 
+///
 /// Total theoretical conformer count
 fn calculate_theoretical_conformers(angle_sets: &[Vec<f64>]) -> usize {
     let mut total = 1;
@@ -341,16 +349,16 @@ fn calculate_theoretical_conformers(angle_sets: &[Vec<f64>]) -> usize {
 }
 
 /// Calculates the theoretical number of conformers from scanning specifications.
-/// 
+///
 /// Computes the cartesian product of all scanning steps to determine
 /// the total number of conformer combinations that would be generated.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `rotation_specs` - Vector of rotation specifications (containing scanning specs)
-/// 
+///
 /// # Returns
-/// 
+///
 /// Total theoretical conformer count for scanning mode
 fn calculate_theoretical_scanning_conformers(rotation_specs: &[molecule::RotationSpec]) -> usize {
     let mut total = 1;
@@ -363,14 +371,14 @@ fn calculate_theoretical_scanning_conformers(rotation_specs: &[molecule::Rotatio
 }
 
 /// Main entry point for the Rotbond conformer generation tool.
-/// 
+///
 /// Parses command line arguments, loads molecular structure and rotation parameters,
 /// then generates all possible conformers using dihedral angle rotation.
 /// Supports both `molecule` and `molecule.xyz` input formats and automatically
 /// creates comprehensive .rp template files when they don't exist.
-/// 
+///
 /// # Process Flow
-/// 
+///
 /// 1. Parse command line arguments for molecule name and options (supports .xyz extension)
 /// 2. Check for XYZ structure file existence
 /// 3. Create comprehensive .rp template if rotation parameter file doesn't exist
@@ -378,9 +386,9 @@ fn calculate_theoretical_scanning_conformers(rotation_specs: &[molecule::Rotatio
 /// 5. Generate conformers by systematic rotation with safety limits
 /// 6. Apply steric clash filtering and interactive warnings for large jobs
 /// 7. Write output files with proper formatting and display book recommendations
-/// 
+///
 /// # Exit Codes
-/// 
+///
 /// - `0`: Success - all conformers generated successfully
 /// - `1`: Error - invalid arguments, file not found, or generation failure
 fn main() {
@@ -449,7 +457,7 @@ fn main() {
     } else {
         &args[1]
     };
-    
+
     let xyz_filename = format!("{}.xyz", base_name);
     let rp_filename = format!("{}.rp", base_name);
 
@@ -464,16 +472,22 @@ fn main() {
     if !std::path::Path::new(&rp_filename).exists() {
         println!("Rotation parameters file '{}' not found.", rp_filename);
         println!("Creating template file with default parameters...");
-        
+
         match create_template_rp_file(&rp_filename) {
             Ok(()) => {
                 println!("✓ Template file '{}' created successfully!", rp_filename);
-                println!("\nPlease edit '{}' to specify your rotation parameters, then run rotbond again.", rp_filename);
+                println!(
+                    "\nPlease edit '{}' to specify your rotation parameters, then run rotbond again.",
+                    rp_filename
+                );
                 println!("\nFor help with rotation parameters, use: --help input");
                 process::exit(0);
             }
             Err(e) => {
-                eprintln!("ERROR: Could not create template file '{}': {}", rp_filename, e);
+                eprintln!(
+                    "ERROR: Could not create template file '{}': {}",
+                    rp_filename, e
+                );
                 eprintln!("\nFor help creating rotation files, use: --help input");
                 process::exit(1);
             }
@@ -494,7 +508,15 @@ fn main() {
 
     // Parse rotation/scanning parameters file
     // Parsing parameters...
-    let (bond_factor, skip_factor, forced_bonds, forbidden_bonds, rotation_specs, conformer_config, operation_mode) = match parse_rotation_file(&rp_filename) {
+    let (
+        bond_factor,
+        skip_factor,
+        forced_bonds,
+        forbidden_bonds,
+        rotation_specs,
+        conformer_config,
+        operation_mode,
+    ) = match parse_rotation_file(&rp_filename) {
         Ok(result) => result,
         Err(e) => {
             eprintln!("ERROR parsing parameters: {}", e);
@@ -527,7 +549,13 @@ fn main() {
         molecule::OperationMode::Scanning => {
             // Validate scanning specifications with integration to existing validation systems
             for (i, spec) in rotation_specs.iter().enumerate() {
-                if let molecule::RotationSpec::Scanning { atom1: _, atom2: _, steps, step_size } = spec {
+                if let molecule::RotationSpec::Scanning {
+                    atom1: _,
+                    atom2: _,
+                    steps,
+                    step_size,
+                } = spec
+                {
                     if *steps == 0 {
                         eprintln!("ERROR: Scanning bond {} has zero steps", i + 1);
                         eprintln!("\nFor scanning syntax help, use: --help input");
@@ -538,34 +566,51 @@ fn main() {
                         eprintln!("\nFor scanning syntax help, use: --help input");
                         process::exit(1);
                     }
-                    
+
                     // Enhanced validation with bond_factor and skip_factor integration
                     // Warn about very large step sizes that might create unrealistic bond lengths
                     if step_size.abs() > 2.0 {
-                        println!("WARNING: Scanning bond {} has large step size ({:.2} Å)", i + 1, step_size);
+                        println!(
+                            "WARNING: Scanning bond {} has large step size ({:.2} Å)",
+                            i + 1,
+                            step_size
+                        );
                         println!("         This may create unrealistic bond lengths.");
-                        println!("         Consider the bond_factor ({:.2}) and skip_factor ({:.2}) settings.", bond_factor, skip_factor);
+                        println!(
+                            "         Consider the bond_factor ({:.2}) and skip_factor ({:.2}) settings.",
+                            bond_factor, skip_factor
+                        );
                     }
-                    
+
                     // Validate scanning limits with maxgen parameter integration
                     let total_change = *steps as f64 * step_size.abs();
                     if total_change > 4.0 {
-                        println!("WARNING: Scanning bond {} would change length by {:.2} Å total", i + 1, total_change);
-                        println!("         Large changes may violate steric constraints (skip_factor = {:.2})", skip_factor);
-                        println!("         Consider reducing steps or step_size for better results.");
+                        println!(
+                            "WARNING: Scanning bond {} would change length by {:.2} Å total",
+                            i + 1,
+                            total_change
+                        );
+                        println!(
+                            "         Large changes may violate steric constraints (skip_factor = {:.2})",
+                            skip_factor
+                        );
+                        println!(
+                            "         Consider reducing steps or step_size for better results."
+                        );
                     }
                 }
             }
-            
+
             // Validate scanning parameters for critical errors only (overflow, invalid params)
             // Note: Conformer limit checking is handled later with interactive prompts
             if let Err(e) = errors::validate_scanning_specs(&rotation_specs) {
                 eprintln!("ERROR: {}", errors::format_user_error(&e));
                 process::exit(1);
             }
-            
+
             // Validate forced and forbidden bonds compatibility with scanning
-            let scanning_bond_indices: Vec<usize> = rotation_specs.iter()
+            let scanning_bond_indices: Vec<usize> = rotation_specs
+                .iter()
                 .enumerate()
                 .filter_map(|(i, spec)| {
                     if matches!(spec, molecule::RotationSpec::Scanning { .. }) {
@@ -575,7 +620,7 @@ fn main() {
                     }
                 })
                 .collect();
-            
+
             // Create a temporary molecule to validate forced/forbidden bonds
             let temp_molecule = molecule::Molecule {
                 atoms: atoms.clone(),
@@ -587,8 +632,10 @@ fn main() {
                 forbidden_bonds: forbidden_bonds.clone(),
                 operation_mode: operation_mode.clone(),
             };
-            
-            if let Err(e) = errors::validate_forced_forbidden_bonds(&temp_molecule, &scanning_bond_indices) {
+
+            if let Err(e) =
+                errors::validate_forced_forbidden_bonds(&temp_molecule, &scanning_bond_indices)
+            {
                 eprintln!("ERROR: {}", errors::format_user_error(&e));
                 process::exit(1);
             }
@@ -616,17 +663,15 @@ fn main() {
 
     // Calculate theoretical conformer count and check limits
     let theoretical_count = match operation_mode {
-        molecule::OperationMode::Rotation => {
-            calculate_theoretical_conformers(&angle_sets)
-        }
+        molecule::OperationMode::Rotation => calculate_theoretical_conformers(&angle_sets),
         molecule::OperationMode::Scanning => {
             calculate_theoretical_scanning_conformers(&rotation_specs)
         }
     };
-    
+
     // Check if we need to warn about large generation jobs
     let mut final_max_conformers = conformer_config.max_conformers;
-    
+
     if theoretical_count > 500 && !conformer_config.auto_confirm {
         match operation_mode {
             molecule::OperationMode::Rotation => {
@@ -641,13 +686,16 @@ fn main() {
                 println!("   Consider reducing the number of scanning steps or bonds.");
             }
         }
-        
+
         if let Some(max_limit) = conformer_config.max_conformers {
             println!("   Current limit: {} conformers", max_limit);
         } else {
-            println!("   Current limit: unlimited (all {} conformers)", theoretical_count);
+            println!(
+                "   Current limit: unlimited (all {} conformers)",
+                theoretical_count
+            );
         }
-        
+
         println!("\n   Options:");
         println!("   - Press Enter or 'y' to continue with current limit");
         println!("   - Enter a number (e.g., 300) to set a new limit");
@@ -655,21 +703,30 @@ fn main() {
         println!("   - Enter 'n' to cancel");
         print!("\n   Your choice: ");
         std::io::stdout().flush().unwrap();
-        
+
         let mut input = String::new();
         match stdin().read_line(&mut input) {
             Ok(_) => {
                 let response = input.trim();
-                
-                if response.is_empty() || response.to_lowercase() == "y" || response.to_lowercase() == "yes" {
+
+                if response.is_empty()
+                    || response.to_lowercase() == "y"
+                    || response.to_lowercase() == "yes"
+                {
                     // Continue with current limit
                     println!("✓ Continuing with current limit.");
                 } else if response.to_lowercase() == "n" || response.to_lowercase() == "no" {
                     println!("Generation cancelled by user.");
                     process::exit(0);
-                } else if response.to_lowercase() == "max" || response.to_lowercase() == "maximum" || response.to_lowercase() == "unlimited" {
+                } else if response.to_lowercase() == "max"
+                    || response.to_lowercase() == "maximum"
+                    || response.to_lowercase() == "unlimited"
+                {
                     final_max_conformers = None;
-                    println!("✓ Limit set to unlimited - all {} conformers will be generated.", theoretical_count);
+                    println!(
+                        "✓ Limit set to unlimited - all {} conformers will be generated.",
+                        theoretical_count
+                    );
                 } else if let Ok(new_limit) = response.parse::<usize>() {
                     if new_limit == 0 {
                         println!("ERROR: Limit must be greater than 0");
@@ -678,7 +735,10 @@ fn main() {
                     final_max_conformers = Some(new_limit);
                     println!("✓ Limit set to {} conformers.", new_limit);
                 } else {
-                    println!("ERROR: Invalid input '{}'. Please enter a number, 'max', 'y', or 'n'.", response);
+                    println!(
+                        "ERROR: Invalid input '{}'. Please enter a number, 'max', 'y', or 'n'.",
+                        response
+                    );
                     process::exit(1);
                 }
             }
@@ -690,14 +750,23 @@ fn main() {
     } else if theoretical_count > 500 {
         match operation_mode {
             molecule::OperationMode::Rotation => {
-                println!("INFO: Large rotation job ({}), auto-confirmed by configuration.", theoretical_count);
+                println!(
+                    "INFO: Large rotation job ({}), auto-confirmed by configuration.",
+                    theoretical_count
+                );
             }
             molecule::OperationMode::Scanning => {
-                println!("INFO: Large scanning job ({}), auto-confirmed by configuration.", theoretical_count);
+                println!(
+                    "INFO: Large scanning job ({}), auto-confirmed by configuration.",
+                    theoretical_count
+                );
             }
         }
         if let Some(max_limit) = conformer_config.max_conformers {
-            println!("      Generation will be limited to {} conformers.", max_limit);
+            println!(
+                "      Generation will be limited to {} conformers.",
+                max_limit
+            );
         }
     }
 
@@ -731,7 +800,10 @@ fn main() {
                             direction: 1.0,
                         });
                     }
-                    RotationSpec::Synchronous { reference, direction } => {
+                    RotationSpec::Synchronous {
+                        reference,
+                        direction,
+                    } => {
                         molecule.add_bond(Bond {
                             atom1: 0,
                             atom2: 0,
@@ -789,8 +861,12 @@ fn main() {
 
     for (i, bond) in molecule.bonds.iter().enumerate() {
         if bond.atom1 >= molecule.atoms.len() || bond.atom2 >= molecule.atoms.len() {
-            eprintln!("ERROR: Bond {} references non-existent atoms ({}, {})",
-                     i + 1, bond.atom1 + 1, bond.atom2 + 1);
+            eprintln!(
+                "ERROR: Bond {} references non-existent atoms ({}, {})",
+                i + 1,
+                bond.atom1 + 1,
+                bond.atom2 + 1
+            );
             eprintln!("\nFor atom indexing help, use: --help input");
             process::exit(1);
         }
@@ -807,8 +883,14 @@ fn main() {
     }
     println!();
 
-    let (total_combinations, valid_conformers) = match generate_conformers(&mut molecule, &angle_sets, &rotation_specs, base_name, final_max_conformers) {
-        Ok((total, valid)) => (total, valid),
+    let (total_combinations, valid_conformers, min_length_violations) = match generate_conformers(
+        &mut molecule,
+        &angle_sets,
+        &rotation_specs,
+        base_name,
+        final_max_conformers,
+    ) {
+        Ok((total, valid, min_violations)) => (total, valid, min_violations),
         Err(e) => {
             eprintln!("ERROR generating conformers: {}", e);
             eprintln!("\nFor troubleshooting help, use: --help troubleshoot");
@@ -817,44 +899,46 @@ fn main() {
     };
 
     // Print summary
-    print_summary(total_combinations, valid_conformers);
+    print_summary(total_combinations, valid_conformers, min_length_violations);
 
     println!("\nConformer generation completed successfully!");
-    
+
     // Display a random book recommendation
     print_random_book();
 }
 
 /// Extracts atom pairs from rotation parameter file.
-/// 
+///
 /// This helper function parses the .rp file to extract the atom indices
 /// for each rotatable bond specification. It handles various rotation
 /// formats including step-based, explicit angles, and synchronous rotations.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `filename` - Path to the .rp parameter file
-/// 
+///
 /// # Returns
-/// 
+///
 /// A vector of tuples containing atom index pairs (1-based indexing as in file).
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns an error if:
 /// - File cannot be read
 /// - Atom indices cannot be parsed as numbers
 /// - Invalid bond specification format
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// let pairs = extract_atom_pairs_from_rp("molecule.rp")?;
 /// for (atom1, atom2) in pairs {
 ///     println!("Bond between atoms {} and {}", atom1, atom2);
 /// }
 /// ```
-fn extract_atom_pairs_from_rp(filename: &str) -> Result<Vec<(usize, usize)>, Box<dyn std::error::Error>> {
+fn extract_atom_pairs_from_rp(
+    filename: &str,
+) -> Result<Vec<(usize, usize)>, Box<dyn std::error::Error>> {
     let contents = std::fs::read_to_string(filename)?;
     let mut atom_pairs = Vec::new();
 
@@ -893,7 +977,8 @@ fn extract_atom_pairs_from_rp(filename: &str) -> Result<Vec<(usize, usize)>, Box
         // - atom1-atom2 bond (manual bond)
         // - atom1-atom2 nobond (manual bond removal)
 
-        let is_rotation_or_bond = if parts[1] == "syn" || parts[1] == "bond" || parts[1] == "nobond" {
+        let is_rotation_or_bond = if parts[1] == "syn" || parts[1] == "bond" || parts[1] == "nobond"
+        {
             // Synchronous or manual bond - valid
             parts.len() >= 3
         } else if parts[1].starts_with('e') {

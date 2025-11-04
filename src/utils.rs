@@ -16,15 +16,15 @@
 //! interactive use and log file analysis.
 
 /// Prints a separator line for output formatting.
-/// 
+///
 /// Creates a visual separator using 80 equal signs to improve readability
 /// of console output by clearly delineating different sections.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_separator;
-/// 
+///
 /// print_separator();
 /// // Output: =======================================================================
 /// ```
@@ -33,16 +33,16 @@ pub fn print_separator() {
 }
 
 /// Prints the program header with version information.
-/// 
+///
 /// Displays the program name, version, and decorative separators in the
 /// official Rotbond styling format. This provides a consistent header
 /// that matches the main program output.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_header;
-/// 
+///
 /// print_header();
 /// // Output:
 /// // ***********************************************************************
@@ -60,7 +60,10 @@ pub fn print_header() {
     println!("                                ROTBOND");
     println!("  ***********************************************************************");
     println!("# -----------------------------------------------------------------------#");
-    println!("# Version {}  Release date: 2025                                      #", env!("CARGO_PKG_VERSION"));
+    println!(
+        "# Version {}  Release date: 2025                                      #",
+        env!("CARGO_PKG_VERSION")
+    );
     println!("# Developer: Le Nhan Pham                                                #");
     println!("# https://github.com/lenhanpham/Rotbond                                  #");
     println!("# -----------------------------------------------------------------------#");
@@ -78,24 +81,24 @@ pub fn print_header() {
 }
 
 /// Prints comprehensive usage information and command-line help.
-/// 
+///
 /// Displays detailed information about command-line options, required files,
 /// output files, and usage examples. This is the main help function shown
 /// when users provide invalid arguments or request help.
-/// 
+///
 /// # Output Sections
-/// 
+///
 /// - **Options**: Command-line flags and their descriptions
 /// - **Arguments**: Required positional arguments
 /// - **Required Files**: Input file format descriptions
 /// - **Output Files**: Generated file descriptions
 /// - **Examples**: Common usage patterns
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_usage;
-/// 
+///
 /// print_usage();
 /// // Displays comprehensive help information
 /// ```
@@ -110,7 +113,7 @@ pub fn print_usage() {
     println!();
     println!("ARGUMENTS:");
     println!("  <molecule_name>         Base name for input/output files");
-    println!("                          (e.g., 'ethane' uses ethane.xyz and ethane.rp)");
+    println!("                          (e.g., 'butane' uses butane.xyz and butane.rp)");
     println!();
     println!("REQUIRED FILES:");
     println!("  <molecule_name>.xyz    - Input molecule structure (XYZ format)");
@@ -130,29 +133,29 @@ pub fn print_usage() {
 }
 
 /// Prints a summary of rotation specifications in a clear, formatted display.
-/// 
+///
 /// Shows all rotatable bonds and their associated rotation angles,
 /// providing a complete overview of the conformational search space.
 /// Handles both independent and synchronous bond rotations.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `bonds` - Slice of bond specifications
 /// * `angle_sets` - Corresponding angle sets for each bond
-/// 
+///
 /// # Output Format
-/// 
+///
 /// For each bond, displays:
 /// - Bond number and atom indices (1-based for user clarity)
 /// - Number of rotation states
 /// - List of rotation angles
 /// - Synchronous bond relationships if applicable
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_rotation_summary;
-/// 
+///
 /// print_rotation_summary(&bonds, &angle_sets);
 /// // Output:
 /// // Rotation specifications:
@@ -167,15 +170,29 @@ pub fn print_rotation_summary(bonds: &[crate::molecule::Bond], angle_sets: &[Vec
         let atom2_idx = bond.atom2 + 1;
 
         if bond.is_synchronous {
-            println!("  Bond {}: atoms {}-{} (synchronous with bond {})",
-                     i + 1, atom1_idx, atom2_idx, bond.reference_bond.unwrap_or(0));
+            println!(
+                "  Bond {}: atoms {}-{} (synchronous with bond {})",
+                i + 1,
+                atom1_idx,
+                atom2_idx,
+                bond.reference_bond.unwrap_or(0)
+            );
         } else if angles.is_empty() {
-            println!("  Bond {}: atoms {}-{} (no rotations)",
-                     i + 1, atom1_idx, atom2_idx);
+            println!(
+                "  Bond {}: atoms {}-{} (no rotations)",
+                i + 1,
+                atom1_idx,
+                atom2_idx
+            );
         } else {
             let num_states = angles.len();
-            println!("  Bond {}: atoms {}-{} ({} rotation states)",
-                     i + 1, atom1_idx, atom2_idx, num_states);
+            println!(
+                "  Bond {}: atoms {}-{} ({} rotation states)",
+                i + 1,
+                atom1_idx,
+                atom2_idx,
+                num_states
+            );
             println!("           Angles: {:?}", angles);
         }
     }
@@ -183,70 +200,85 @@ pub fn print_rotation_summary(bonds: &[crate::molecule::Bond], angle_sets: &[Vec
 }
 
 /// Prints a summary of bond scanning specifications.
-/// 
+///
 /// Displays information about each scanning bond including atom indices,
 /// number of scanning steps, and step size. This provides users with
 /// a clear overview of the scanning parameters before generation begins.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `bonds` - Slice of bond specifications
 /// * `rotation_specs` - Corresponding rotation specifications containing scanning parameters
-/// 
+///
 /// # Output Format
-/// 
+///
 /// For each scanning bond, displays:
 /// - Bond number and atom indices (1-based for user clarity)
 /// - Number of scanning steps
 /// - Step size in Angstroms (positive = stretch, negative = compress)
 /// - Direction indication (stretch/compress)
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_scanning_summary;
-/// 
+///
 /// print_scanning_summary(&bonds, &rotation_specs);
 /// // Output:
 /// // Scanning specifications:
 /// //   Bond 1: atoms 1-2 (10 steps, +0.10 Å step size - stretch)
 /// //   Bond 2: atoms 3-4 (5 steps, -0.05 Å step size - compress)
 /// ```
-pub fn print_scanning_summary(_bonds: &[crate::molecule::Bond], rotation_specs: &[crate::molecule::RotationSpec]) {
+pub fn print_scanning_summary(
+    _bonds: &[crate::molecule::Bond],
+    rotation_specs: &[crate::molecule::RotationSpec],
+) {
     println!("Scanning specifications:");
-    
+
     let mut bond_count = 0;
     for spec in rotation_specs.iter() {
-        if let crate::molecule::RotationSpec::Scanning { atom1, atom2, steps, step_size } = spec {
+        if let crate::molecule::RotationSpec::Scanning {
+            atom1,
+            atom2,
+            steps,
+            step_size,
+        } = spec
+        {
             bond_count += 1;
-            let direction = if *step_size > 0.0 { "stretch" } else { "compress" };
-            println!("  Bond {}: atoms {}-{} ({} steps, {:+.2} Å step size - {})",
-                     bond_count, atom1, atom2, steps, step_size, direction);
+            let direction = if *step_size > 0.0 {
+                "stretch"
+            } else {
+                "compress"
+            };
+            println!(
+                "  Bond {}: atoms {}-{} ({} steps, {:+.2} Å step size - {})",
+                bond_count, atom1, atom2, steps, step_size, direction
+            );
         }
     }
-    
+
     if bond_count == 0 {
         println!("  No scanning bonds specified");
     }
-    
+
     println!();
 }
 
 /// Prints the current configuration parameters in a formatted display.
-/// 
+///
 /// Shows the bond detection and steric clash parameters being used
 /// for the current conformer generation run.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `bond_factor` - Bond detection threshold multiplier
 /// * `skip_factor` - Steric clash detection threshold
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_configuration;
-/// 
+///
 /// print_configuration(1.0, 0.7);
 /// // Output:
 /// // Configuration:
@@ -261,21 +293,21 @@ pub fn print_configuration(bond_factor: f64, skip_factor: f64) {
 }
 
 /// Prints a comprehensive summary of the conformer generation results.
-/// 
+///
 /// Displays statistics including total combinations attempted, number of
 /// valid conformers generated, rejected conformers, and success rate percentage.
 /// Uses visual separators for clear presentation.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `total_theoretical` - Total number of conformer combinations attempted
 /// * `valid_conformers` - Number of conformers that passed validation
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::utils::print_summary;
-/// 
+///
 /// print_summary(24, 21);
 /// // Output:
 /// // =======================================================================
@@ -286,21 +318,26 @@ pub fn print_configuration(bond_factor: f64, skip_factor: f64) {
 /// //   Success rate: 87.5%
 /// // =======================================================================
 /// ```
-pub fn print_summary(total_theoretical: usize, valid_conformers: usize) {
+pub fn print_summary(total_theoretical: usize, valid_conformers: usize, min_length_violations: usize) {
+    println!("\n");
     print_separator();
     println!("Generation Summary:");
     println!("  Theoretical combinations: {}", total_theoretical);
-    
+
     if valid_conformers < total_theoretical {
         let rejected = total_theoretical - valid_conformers;
         println!("  Rejected (steric clashes): {}", rejected);
+        if min_length_violations > 0 {
+            println!("  Rejected (minimum bond length): {}", min_length_violations);
+        }
         println!("  Valid conformers generated: {}", valid_conformers);
-        println!("  Success rate: {:.1}%",
-                 (valid_conformers as f64 / total_theoretical as f64) * 100.0);
+        println!(
+            "  Success rate: {:.1}%",
+            (valid_conformers as f64 / total_theoretical as f64) * 100.0
+        );
     } else {
         println!("  Valid conformers generated: {}", valid_conformers);
         println!("  Success rate: 100.0%");
     }
     print_separator();
 }
-

@@ -160,7 +160,9 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
         // Check for configuration parameters
         if line.starts_with("bond_factor") {
             if let Some(value) = line.split('=').nth(1) {
-                bond_factor = value.trim().parse::<f64>()
+                // Remove comments from the value
+                let value = value.split('#').next().unwrap_or(value).trim();
+                bond_factor = value.parse::<f64>()
                     .map_err(|e| format!("Line {}: Invalid bond_factor: {}", line_num + 1, e))?;
             }
             continue;
@@ -168,7 +170,9 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
 
         if line.starts_with("skip_factor") {
             if let Some(value) = line.split('=').nth(1) {
-                skip_factor = value.trim().parse::<f64>()
+                // Remove comments from the value
+                let value = value.split('#').next().unwrap_or(value).trim();
+                skip_factor = value.parse::<f64>()
                     .map_err(|e| format!("Line {}: Invalid skip_factor: {}", line_num + 1, e))?;
             }
             continue;
@@ -176,7 +180,8 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
 
         if line.starts_with("maxgen") {
             if let Some(value) = line.split('=').nth(1) {
-                let value = value.trim().to_lowercase();
+                // Remove comments from the value
+                let value = value.split('#').next().unwrap_or(value).trim().to_lowercase();
                 if value == "max" || value == "maximum" || value == "full" {
                     conformer_config.max_conformers = None; // Unlimited
                 } else {
@@ -190,7 +195,8 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
 
         if line.starts_with("autoconfirm") {
             if let Some(value) = line.split('=').nth(1) {
-                let value = value.trim().to_lowercase();
+                // Remove comments from the value
+                let value = value.split('#').next().unwrap_or(value).trim().to_lowercase();
                 conformer_config.auto_confirm = match value.as_str() {
                     "true" | "yes" | "1" | "on" => true,
                     "false" | "no" | "0" | "off" => false,
@@ -233,7 +239,7 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
         // Parse rotation specification
         if parts[1] == "syn" {
             // Synchronous rotation
-            if parts.len() != 3 {
+            if parts.len() < 3 {
                 return Err(format!("Line {}: Invalid synchronous rotation specification (expected: atom1-atom2 syn <reference>)", line_num + 1).into());
             }
 
@@ -260,7 +266,7 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
             has_rotation_specs = true;
         } else if is_scanning_keyword(parts[1]) {
             // Bond scanning specification
-            if parts.len() != 4 {
+            if parts.len() < 4 {
                 return Err(format!("Line {}: Invalid scanning specification (expected: atom1-atom2 scan steps step_size)", line_num + 1).into());
             }
 
@@ -287,10 +293,7 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
                                  line_num + 1, atom1, atom2).into());
             }
             
-            if step_size.abs() > 5.0 {
-                return Err(format!("Line {}: Step size {:.3} Å is very large and may create unrealistic bond lengths. Consider using smaller step sizes (≤ 5.0 Å).", 
-                                 line_num + 1, step_size).into());
-            }
+            // No constraint on step size - users can use any step size they want for scanning
             
             // Warn about potentially problematic combinations
             let total_change = steps as f64 * step_size.abs();
@@ -324,6 +327,11 @@ pub fn parse_rotation_file(filename: &str) -> Result<(f64, f64, Vec<(usize, usiz
             let mut angles = Vec::new();
 
             for i in 1..parts.len() {
+                // Stop parsing if we hit a comment
+                if parts[i].starts_with('#') {
+                    break;
+                }
+                
                 let angle = parts[i].parse::<f64>()
                     .map_err(|e| format!("Line {}: Invalid angle '{}': {}", line_num + 1, parts[i], e))?;
 

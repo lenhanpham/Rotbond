@@ -18,26 +18,24 @@
 //! The help system supports topic-based queries and provides contextual
 //! information based on user needs.
 
-
-
 /// Prints basic help information including usage, options, and quick start guide.
-/// 
+///
 /// This is the main help function displayed when users request general help
 /// or provide invalid command-line arguments. It provides essential information
 /// to get started with Rotbond.
-/// 
+///
 /// # Output Sections
-/// 
+///
 /// - Command usage syntax
 /// - Basic command-line options
 /// - Quick start example
 /// - References to detailed help topics
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::help::print_basic_help;
-/// 
+///
 /// print_basic_help();
 /// // Displays comprehensive basic help information
 /// ```
@@ -57,16 +55,16 @@ pub fn print_basic_help() {
 }
 
 /// Prints version information for the Rotbond tool with a decorative banner.
-/// 
+///
 /// Displays a comprehensive program information banner including version,
 /// developer information, repository link, and citation request.
 /// Used when users request version details with --version flag.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::help::print_version;
-/// 
+///
 /// print_version();
 /// // Displays a decorative banner with:
 /// // - Program name and title
@@ -81,7 +79,10 @@ pub fn print_version() {
     println!("                                ROTBOND                                  ");
     println!("  ***********************************************************************");
     println!("# -----------------------------------------------------------------------#");
-    println!("# Version {}  Release date: 2025                                      #", env!("CARGO_PKG_VERSION"));
+    println!(
+        "# Version {}  Release date: 2025                                      #",
+        env!("CARGO_PKG_VERSION")
+    );
     println!("# Developer: Le Nhan Pham                                                #");
     println!("# https://github.com/lenhanpham/Rotbond                                  #");
     println!("# -----------------------------------------------------------------------#");
@@ -97,12 +98,12 @@ pub fn print_version() {
 }
 
 /// Lists all available help topics with brief descriptions.
-/// 
+///
 /// Provides an overview of all help topics available through the --help system.
 /// Each topic covers a specific aspect of Rotbond functionality.
-/// 
+///
 /// # Available Topics
-/// 
+///
 /// 1. **usage** - Command-line usage and options
 /// 2. **features** - Feature overview and capabilities
 /// 3. **input** - Input file formats (XYZ, .rp)
@@ -111,12 +112,12 @@ pub fn print_version() {
 /// 6. **algorithms** - Algorithm details and complexity
 /// 7. **troubleshoot** - Troubleshooting guide
 /// 8. **reference** - Reference materials and tables
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::help::print_help_topics;
-/// 
+///
 /// print_help_topics();
 /// // Displays numbered list of all available help topics
 /// ```
@@ -137,16 +138,16 @@ pub fn print_help_topics() {
 }
 
 /// Prints detailed help information for a specific topic.
-/// 
+///
 /// Provides comprehensive documentation for the requested help topic.
 /// Topics are matched case-insensitively and support multiple aliases.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `topic` - The help topic to display (case-insensitive)
-/// 
+///
 /// # Supported Topics
-/// 
+///
 /// - **usage, help**: Command-line usage and basic options
 /// - **features, feature**: Feature overview and capabilities
 /// - **input, format**: Input file formats and syntax
@@ -155,21 +156,21 @@ pub fn print_help_topics() {
 /// - **algorithms, algorithm, tech**: Algorithm details and performance
 /// - **troubleshoot, troubleshooting, errors**: Common issues and solutions
 /// - **reference, ref**: Reference materials and lookup tables
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::help::print_help_topic;
-/// 
+///
 /// print_help_topic("examples");
 /// // Displays detailed examples and usage patterns
-/// 
+///
 /// print_help_topic("input");
 /// // Shows input file format documentation
 /// ```
-/// 
+///
 /// # Error Handling
-/// 
+///
 /// If an unknown topic is requested, displays an error message and
 /// shows the list of available topics.
 pub fn print_help_topic(topic: &str) {
@@ -227,10 +228,8 @@ pub fn print_help_topic(topic: &str) {
     }
 }
 
-
-
 /// Prints a formatted header for help sections.
-/// 
+///
 /// Creates a consistent header format with separators and title information
 /// for all help topic displays. Used internally by help functions.
 fn print_header() {
@@ -238,7 +237,10 @@ fn print_header() {
     println!("                                ROTBOND");
     println!("  ***********************************************************************");
     println!("# -----------------------------------------------------------------------#");
-    println!("# Version {}  Release date: 2025                                      #", env!("CARGO_PKG_VERSION"));
+    println!(
+        "# Version {}  Release date: 2025                                      #",
+        env!("CARGO_PKG_VERSION")
+    );
     println!("# Developer: Le Nhan Pham                                                #");
     println!("# https://github.com/lenhanpham/Rotbond                                  #");
     println!("# -----------------------------------------------------------------------#");
@@ -293,35 +295,35 @@ OPTIONS:
 
 ARGUMENTS:
     <molecule_name>         Base name for input/output files
-                            (e.g., 'ethane' uses ethane.xyz and ethane.rp)
+                            (e.g., 'butane' uses butane.xyz and butane.rp)
                             Also accepts 'molecule.xyz' format
 "#;
 
 pub const QUICK_START: &str = r#"
 QUICK START:
 
-1. Create XYZ file (ethane.xyz):
+1. Create XYZ file (butane.xyz):
        8
-       Ethane molecule
+       butane molecule
        C  0.000000  0.000000  0.000000
        H  0.000000  0.000000  1.090000
        ...
 
 2. Run rotbond to create template:
-       rotbond ethane
-       (Creates ethane.rp template automatically)
+       rotbond butane
+       (Creates butane.rp template automatically)
 
-3. Edit rotation file (ethane.rp):
+3. Edit rotation file (butane.rp):
        bond_factor = 1.2
        skip_factor = 0.7
        1-2 e60
 
 4. Run rotbond again:
-       rotbond ethane
+       rotbond butane
 
 5. Output:
-       ethane_traj.xyz       - All conformers
-       ethane_01.xyz ...     - Individual files
+       butane_traj.xyz       - All conformers
+       butane_01.xyz ...     - Individual files
 "#;
 
 pub const CMD_EXAMPLES: &str = r#"
@@ -331,7 +333,7 @@ EXAMPLES:
     rotbond --help               # Show help
     rotbond --help examples      # Show examples
     rotbond --version            # Show version
-    rotbond --verbose ethane     # Verbose output
+    rotbond --verbose butane     # Verbose output
 "#;
 
 pub const FEATURE_OVERVIEW: &str = r#"
@@ -370,16 +372,16 @@ SCANNING MODE - Bond Length Variation
 4. BOND LENGTH SCANNING
    Format: atom1-atom2 scan steps step_size
    Format: atom1-atom2 s steps step_size (alternative)
-   
+
    Examples:
    1-2 scan 10 0.1     # Stretch bond in 10 steps of 0.1 Å each
    3-4 scan 5 -0.05    # Compress bond in 5 steps of 0.05 Å each
    5-6 s 15 0.2        # Alternative 's' syntax
-   
+
    Parameters:
    - steps: positive integer (number of scanning steps)
    - step_size: float in Angstroms (+ = stretch, - = compress)
-   
+
    Multi-dimensional scanning:
    1-2 scan 8 0.1      # First bond: 8 steps
    3-4 scan 6 -0.05    # Second bond: 6 steps
@@ -441,16 +443,22 @@ INPUT FILE FORMATS
        ...
 
    Example:
-       8
-       Ethane molecule - optimized geometry
-       C       -2.6972703886      0.5190638733     -0.0000003688                 
-       C       -1.1782073026      0.5190641624     -0.0000004138                 
-       H       -3.0738517143     -0.1361520096     -0.8135565479                 
-       H       -3.0738520178      1.5512320348     -0.1606558009                 
-       H       -3.0738517177      0.1421113795      0.9742112740                 
-       H       -0.8016259769      0.8960166481     -0.9742120609                 
-       H       -0.8016256734     -0.5131039980      0.1606550254                 
-       H       -0.8016259735      1.1742800518      0.8135557588 
+   14
+   Butane molecule
+   C    -4.390308655000     -0.632987590700      0.043677475300
+   H    -5.330057936000     -0.527510732400     -0.503444569700
+   H    -4.389058916600      0.077648432000      0.873491606400
+   H    -4.345674372500     -1.643033486700      0.457086407500
+   C    -3.188670330900     -0.384837924800     -0.886583891400
+   C    -3.226558849100      1.036845318100     -1.485516216000
+   H    -2.262792259600     -0.522845611400     -0.322588193200
+   H    -3.198108077300     -1.124349892400     -1.691208307400
+   H    -3.217121102700      1.776357285700     -0.680891800000
+   C    -2.024920525000      1.284994984100     -2.415777582700
+   H    -4.152436920400      1.174853004700     -2.049511914300
+   H    -1.085171244000      1.179518125700     -1.868655537800
+   H    -2.026170263400      0.574358961400     -3.245591713900
+   H    -2.069554807400      2.295040880000     -2.829186515000
 
    Notes:
    - Atom indices are 1-based in input files
@@ -671,7 +679,7 @@ OUTPUT FILE FORMATS
    - Rejected (steric clashes): Conformers filtered due to atomic overlaps
    - Valid conformers generated: Conformers that passed validation
    - Success rate: Percentage of valid conformers (valid/theoretical x 100%)
-   
+
    Additional Features:
    - Interactive conformer limit warnings for large generation jobs
    - Random book recommendations after successful completion
@@ -686,34 +694,40 @@ PRACTICAL EXAMPLES
 ROTATION MODE EXAMPLES
 =======================================================================
 
-1. SIMPLE SINGLE BOND ROTATION (Ethane)
+1. SIMPLE SINGLE BOND ROTATION (butane)
 
    Input Files:
    -----------
-   8
-   Ethane molecule - optimized geometry
-   C       -2.6972703886      0.5190638733     -0.0000003688                 
-   C       -1.1782073026      0.5190641624     -0.0000004138                 
-   H       -3.0738517143     -0.1361520096     -0.8135565479                 
-   H       -3.0738520178      1.5512320348     -0.1606558009                 
-   H       -3.0738517177      0.1421113795      0.9742112740                 
-   H       -0.8016259769      0.8960166481     -0.9742120609                 
-   H       -0.8016256734     -0.5131039980      0.1606550254                 
-   H       -0.8016259735      1.1742800518      0.8135557588 
+   14
+   Butane molecule - optimized geometry
+   C    -4.390308655000     -0.632987590700      0.043677475300
+   H    -5.330057936000     -0.527510732400     -0.503444569700
+   H    -4.389058916600      0.077648432000      0.873491606400
+   H    -4.345674372500     -1.643033486700      0.457086407500
+   C    -3.188670330900     -0.384837924800     -0.886583891400
+   C    -3.226558849100      1.036845318100     -1.485516216000
+   H    -2.262792259600     -0.522845611400     -0.322588193200
+   H    -3.198108077300     -1.124349892400     -1.691208307400
+   H    -3.217121102700      1.776357285700     -0.680891800000
+   C    -2.024920525000      1.284994984100     -2.415777582700
+   H    -4.152436920400      1.174853004700     -2.049511914300
+   H    -1.085171244000      1.179518125700     -1.868655537800
+   H    -2.026170263400      0.574358961400     -3.245591713900
+   H    -2.069554807400      2.295040880000     -2.829186515000
 
-   ethane.rp:
+   butane.rp:
        bond_factor = 1.2
        skip_factor = 0.7
        1-6 e60
 
    Command:
    --------
-   rotbond ethane
+   rotbond butane
 
    Output:
    -------
-   ethane_traj.xyz          - Trajectory with all conformers
-   ethane_1.xyz ...         - Individual conformer files
+   butane_traj.xyz          - Trajectory with all conformers
+   butane_1.xyz ...         - Individual conformer files
 
    Result:
    -------
@@ -822,25 +836,25 @@ ROTATION MODE EXAMPLES
 SCANNING MODE EXAMPLES
 =======================================================================
 
-5. SIMPLE BOND LENGTH SCANNING (Ethane C-C bond)
+5. SIMPLE BOND LENGTH SCANNING (butane C-C bond)
 
    Input Files:
    -----------
-   ethane.xyz: (8 atoms - same as rotation example)
+   butane.xyz: (8 atoms - same as rotation example)
 
-   ethane.rp:
+   butane.rp:
        bond_factor = 1.2
        skip_factor = 0.7
        1-2 scan 10 0.1
 
    Command:
    --------
-   rotbond ethane
+   rotbond butane
 
    Output:
    -------
-   ethane_traj.xyz          - Trajectory with all conformers
-   ethane_01.xyz ...        - Individual conformer files
+   butane_traj.xyz          - Trajectory with all conformers
+   butane_01.xyz ...        - Individual conformer files
 
    Result:
    -------
@@ -1669,7 +1683,7 @@ BEST PRACTICES:
    - Document successful configurations
 
 7. Test on Known Cases
-   - Ethane rotation (standard test)
+   - butane rotation (standard test)
    - Butane (multiple bonds)
    - Compare with literature
 
@@ -1967,7 +1981,7 @@ REFERENCE MATERIALS
    Combinatorial Explosion:
       Rotation: n₁ × n₂ × ... × nₖ (nᵢ = angles per bond)
       Scanning: s₁ × s₂ × ... × sₖ (sᵢ = steps per bond)
-      
+
       Examples:
       - 3 rotation bonds × 6 angles = 216 conformers
       - 3 scanning bonds × 10 steps = 1000 conformers

@@ -25,42 +25,44 @@
 //! per bond and k is the number of rotatable bonds. For molecules with many
 //! rotatable bonds, consider using larger step sizes (e.g., e120 instead of e30).
 
-use crate::molecule::{Molecule, Bond, OperationMode, RotationSpec, scan_bond_length};
-use crate::algorithms::{build_bond_graph, identify_fragments, rotate_fragment, is_valid_conformer, 
-                        log_fragment_info, log_rotation_application, validate_conformer_diversity};
-use crate::io::{write_trajectory_file, write_individual_xyz_file, format_conformer_filename};
+use crate::algorithms::{
+    build_bond_graph, identify_fragments, is_valid_conformer, is_valid_scanning_conformer,
+    log_fragment_info, log_rotation_application, rotate_fragment, validate_conformer_diversity,
+};
+use crate::io::{format_conformer_filename, write_individual_xyz_file, write_trajectory_file};
+use crate::molecule::{Bond, Molecule, OperationMode, RotationSpec, scan_bond_length};
 
 /// Generates all possible conformers based on rotation or scanning specifications.
-/// 
+///
 /// This is the main conformer generation function that systematically explores
 /// conformational space by applying all combinations of specified rotations or
 /// bond length variations. Supports both independent and synchronous bond rotations,
 /// as well as single and multi-dimensional bond scanning.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `molecule` - The molecular structure with bond detection parameters and operation mode
 /// * `angle_sets` - Pre-computed angle sets for rotatable bonds (empty for scanning bonds)
 /// * `rotation_specs` - Original rotation specifications for extracting scanning parameters
-/// * `base_name` - Base name for output files (e.g., "ethane" → "ethane_1.xyz")
+/// * `base_name` - Base name for output files (e.g., "butane" → "butane_1.xyz")
 /// * `max_conformers` - Optional limit on number of conformers to generate
-/// 
+///
 /// # Returns
-/// 
+///
 /// A tuple containing:
 /// - Total number of theoretical combinations attempted
 /// - Number of valid conformers successfully generated
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns an error if:
 /// - Bond graph construction fails
 /// - Fragment identification fails
 /// - File writing operations fail
 /// - Scanning parameters are invalid
-/// 
+///
 /// # Process
-/// 
+///
 /// ## Rotation Mode
 /// 1. **Preparation**: Build bond graph and identify molecular fragments
 /// 2. **Bond Classification**: Separate independent from synchronous bonds
@@ -69,7 +71,7 @@ use crate::io::{write_trajectory_file, write_individual_xyz_file, format_conform
 /// 5. **Validation**: Check for steric clashes and geometric validity
 /// 6. **Output**: Write valid conformers to individual XYZ files
 /// 7. **Trajectory**: Combine all conformers into a single trajectory file
-/// 
+///
 /// ## Scanning Mode
 /// 1. **Preparation**: Build bond graph and identify molecular fragments
 /// 2. **Parameter Extraction**: Extract scanning parameters from rotation specs
@@ -78,23 +80,23 @@ use crate::io::{write_trajectory_file, write_individual_xyz_file, format_conform
 /// 5. **Validation**: Check for steric clashes and geometric validity
 /// 6. **Output**: Write valid conformers to individual XYZ files
 /// 7. **Trajectory**: Combine all conformers into a single trajectory file
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// use rotbond::generate::generate_conformers;
-/// 
+///
 /// // Rotation mode
-/// let (total, valid) = generate_conformers(&mut molecule, &angle_sets, &rotation_specs, "ethane", None)?;
-/// println!("Generated {}/{} conformers ({:.1}% success)", 
+/// let (total, valid) = generate_conformers(&mut molecule, &angle_sets, &rotation_specs, "butane", None)?;
+/// println!("Generated {}/{} conformers ({:.1}% success)",
 ///          valid, total, 100.0 * valid as f64 / total as f64);
-/// 
+///
 /// // Scanning mode (angle_sets will be empty, scanning params extracted from rotation_specs)
-/// let (total, valid) = generate_conformers(&mut scanning_molecule, &[], &scanning_specs, "ethane_scan", Some(100))?;
+/// let (total, valid) = generate_conformers(&mut scanning_molecule, &[], &scanning_specs, "butane_scan", Some(100))?;
 /// ```
-/// 
+///
 /// # Performance Notes
-/// 
+///
 /// - **Rotation**: Complexity O(n^k) where n = avg angles per bond, k = number of bonds
 /// - **Scanning**: Complexity O(s₁ × s₂ × ... × sₖ) where sᵢ = steps for bond i
 /// - Memory usage scales with the number of valid conformers
@@ -105,11 +107,12 @@ pub fn generate_conformers(
     rotation_specs: &[RotationSpec],
     base_name: &str,
     max_conformers: Option<usize>,
-) -> Result<(usize, usize), Box<dyn std::error::Error>> {
+) -> Result<(usize, usize, usize), Box<dyn std::error::Error>> {
     // Detect operation mode and delegate to appropriate generation function
     match molecule.operation_mode {
         OperationMode::Rotation => {
-            generate_rotation_conformers(molecule, angle_sets, base_name, max_conformers)
+            let (total, valid) = generate_rotation_conformers(molecule, angle_sets, base_name, max_conformers)?;
+            Ok((total, valid, 0)) // No minimum length violations in rotation mode
         }
         OperationMode::Scanning => {
             generate_scanning_conformers(molecule, rotation_specs, base_name, max_conformers)
@@ -118,24 +121,24 @@ pub fn generate_conformers(
 }
 
 /// Generates conformers using bond rotation mode.
-/// 
+///
 /// This function handles the traditional dihedral rotation approach to conformer
 /// generation. It builds bond graphs, identifies fragments, and systematically
 /// explores all combinations of rotation angles.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `molecule` - The molecular structure with bond detection parameters
 /// * `angle_sets` - Pre-computed angle sets for each rotatable bond
 /// * `base_name` - Base name for output files
 /// * `max_conformers` - Optional limit on number of conformers to generate
-/// 
+///
 /// # Returns
-/// 
+///
 /// A tuple containing (total_combinations_attempted, valid_conformers_generated).
-/// 
+///
 /// # Process
-/// 
+///
 /// 1. Build bond graph and identify molecular fragments
 /// 2. Separate independent from synchronous bonds
 /// 3. Generate all combinations of rotation angles
@@ -154,10 +157,10 @@ fn generate_rotation_conformers(
     molecule.fragments.clear();
     for (i, bond) in molecule.bonds.iter().enumerate() {
         let (frag1, frag2) = identify_fragments(bond.atom1, bond.atom2, &adjacency_list);
-        
+
         // Log fragment information for debugging
         log_fragment_info(i, bond.atom1, bond.atom2, &frag1, &frag2);
-        
+
         // Use fragment2 (atoms attached to atom2) for rotation
         molecule.fragments.push(frag2);
     }
@@ -195,31 +198,31 @@ fn generate_rotation_conformers(
 }
 
 /// Generates conformers using bond length scanning mode.
-/// 
+///
 /// This function handles the bond scanning approach to conformer generation.
 /// It extracts scanning parameters from rotation specifications, builds bond
 /// graphs, identifies fragments, and systematically explores all combinations
 /// of bond length variations.
-/// 
+///
 /// Integrates with existing validation systems by:
 /// - Using bond_factor and skip_factor from molecule configuration
 /// - Respecting forced_bonds and forbidden_bonds specifications
 /// - Applying maxgen limits for conformer generation
 /// - Using same steric clash validation as rotation mode
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `molecule` - The molecular structure with scanning specifications in bonds
 /// * `rotation_specs` - Rotation specifications containing scanning parameters
 /// * `base_name` - Base name for output files
 /// * `max_conformers` - Optional limit on number of conformers to generate (from maxgen)
-/// 
+///
 /// # Returns
-/// 
+///
 /// A tuple containing (total_combinations_attempted, valid_conformers_generated).
-/// 
+///
 /// # Process
-/// 
+///
 /// 1. Extract scanning parameters from bond rotation specifications
 /// 2. Build bond graph using molecule's bond_factor and forced/forbidden bonds
 /// 3. Identify molecular fragments for each scanning bond
@@ -227,9 +230,9 @@ fn generate_rotation_conformers(
 /// 5. Apply bond length changes using fragment movement
 /// 6. Validate conformers using molecule's skip_factor and existing validation
 /// 7. Write output files with proper conformer limits
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns an error if:
 /// - No scanning specifications are found
 /// - Bond graph construction fails (respecting bond_factor)
@@ -241,7 +244,7 @@ fn generate_scanning_conformers(
     rotation_specs: &[RotationSpec],
     base_name: &str,
     max_conformers: Option<usize>,
-) -> Result<(usize, usize), Box<dyn std::error::Error>> {
+) -> Result<(usize, usize, usize), Box<dyn std::error::Error>> {
     // Build bond graph using molecule's bond_factor and forced/forbidden bonds
     // This ensures scanning respects the same bond detection parameters as rotation
     let adjacency_list = build_bond_graph(molecule);
@@ -250,9 +253,15 @@ fn generate_scanning_conformers(
     molecule.fragments.clear();
     let mut scanning_bonds = Vec::new();
     let mut scanning_params = Vec::new();
-    
+
     for (_i, spec) in rotation_specs.iter().enumerate() {
-        if let RotationSpec::Scanning { atom1, atom2, steps, step_size } = spec {
+        if let RotationSpec::Scanning {
+            atom1,
+            atom2,
+            steps,
+            step_size,
+        } = spec
+        {
             // This is a scanning bond - create the bond with correct atom indices
             let bond = Bond {
                 atom1: *atom1 - 1, // Convert from 1-based to 0-based indexing
@@ -262,19 +271,19 @@ fn generate_scanning_conformers(
                 reference_bond: None,
                 direction: 1.0,
             };
-            
+
             // Identify fragments for this bond
             let (frag1, frag2) = identify_fragments(bond.atom1, bond.atom2, &adjacency_list);
-            
+
             // Log fragment information for debugging
             log_fragment_info(molecule.bonds.len(), bond.atom1, bond.atom2, &frag1, &frag2);
-            
+
             // Add the bond to the molecule
             molecule.bonds.push(bond);
-            
+
             // Use fragment2 (atoms attached to atom2) for scanning
             molecule.fragments.push(frag2);
-            
+
             scanning_bonds.push(molecule.bonds.len() - 1); // Use the actual bond index
             scanning_params.push((*steps, *step_size));
         } else {
@@ -282,7 +291,7 @@ fn generate_scanning_conformers(
             molecule.fragments.push(Vec::new());
         }
     }
-    
+
     if scanning_bonds.is_empty() {
         return Err("No scanning bonds found for scanning mode".into());
     }
@@ -297,24 +306,34 @@ fn generate_scanning_conformers(
     // This integrates with the maxgen parameter from conformer configuration
     // Inherits maxgen and autoconfirm parameters for scanning conformer limits
     let effective_limit = max_conformers.unwrap_or(500);
-    
+
     if total_estimated > effective_limit {
-        println!("WARNING: Large scanning job detected - {} total combinations", total_estimated);
-        println!("This exceeds the current limit of {} conformers.", effective_limit);
+        println!(
+            "WARNING: Large scanning job detected - {} total combinations",
+            total_estimated
+        );
+        println!(
+            "This exceeds the current limit of {} conformers.",
+            effective_limit
+        );
         println!("This may take significant time and memory.");
         println!("Consider reducing the number of steps or bonds to scan.");
         println!("Or increase maxgen in your .rp file to allow more conformers.");
-        
+        println!("\n");
+
         // Note: autoconfirm parameter would be handled at the main application level
         // The max_conformers parameter passed here already reflects the maxgen setting
     } else if total_estimated > 500 {
-        println!("INFO: Large scanning job detected - {} total combinations", total_estimated);
+        println!(
+            "INFO: Large scanning job detected - {} total combinations",
+            total_estimated
+        );
         println!("This may take significant time and memory.");
         println!("Consider reducing the number of steps or bonds to scan.");
     }
 
     // Generate all combinations of scanning parameters using recursive pattern similar to rotation
-    let (total_combinations, valid_conformers) = generate_scanning_combinations(
+    let (total_combinations, valid_conformers, min_length_violations) = generate_scanning_combinations(
         molecule,
         &scanning_bonds,
         &scanning_params,
@@ -323,32 +342,30 @@ fn generate_scanning_conformers(
         max_conformers,
     )?;
 
-    Ok((total_combinations, valid_conformers))
-
-
+    Ok((total_combinations, valid_conformers, min_length_violations))
 }
 
 /// Generates all combinations of conformers using cartesian product approach.
-/// 
+///
 /// This function handles the combinatorial explosion of conformer generation
 /// by systematically exploring all possible combinations of rotation angles
 /// for independent bonds, while properly handling synchronous bond relationships.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `molecule` - The molecular structure with atoms and bonds
 /// * `angle_sets` - Pre-computed rotation angles for each bond
 /// * `independent_indices` - Indices of bonds that rotate independently
 /// * `synchronous_bond_indices` - Indices of bonds that follow other bonds
 /// * `base_name` - Base name for output files
 /// * `total_estimated` - Estimated total number of conformers for progress tracking
-/// 
+///
 /// # Returns
-/// 
+///
 /// A tuple containing (total_combinations_attempted, valid_conformers_generated).
-/// 
+///
 /// # Algorithm
-/// 
+///
 /// Uses recursive generation to explore the full combinatorial space while
 /// maintaining memory efficiency. Each combination is validated immediately
 /// and discarded if invalid, preventing memory overflow for large search spaces.
@@ -400,7 +417,8 @@ fn generate_conformer_combinations(
 
     // Validate conformer diversity
     if valid_conformers.len() > 1 {
-        let (_identical_pairs, _total_pairs) = validate_conformer_diversity(&valid_conformers, 0.001);
+        let (_identical_pairs, _total_pairs) =
+            validate_conformer_diversity(&valid_conformers, 0.001);
         // Conformer diversity validation completed
     }
 
@@ -411,13 +429,13 @@ fn generate_conformer_combinations(
 }
 
 /// Recursively generates all angle combinations for conformer exploration.
-/// 
+///
 /// This is the core recursive function that explores the full combinatorial
 /// space of rotation angles. It applies rotations depth-first, validates
 /// each complete conformer, and collects valid results.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `depth` - Current recursion depth (bond index being processed)
 /// * `molecule` - The molecular structure
 /// * `angle_sets` - Rotation angles for each bond
@@ -430,9 +448,9 @@ fn generate_conformer_combinations(
 /// * `valid_conformers` - Collection of valid conformers found
 /// * `base_name` - Base name for output files
 /// * `total_estimated` - Total estimated conformers for progress
-/// 
+///
 /// # Algorithm
-/// 
+///
 /// 1. **Base case**: When depth equals number of bonds, apply all rotations
 /// 2. **Recursive case**: Try each angle for current bond, recurse deeper
 /// 3. **Validation**: Check each complete conformer for steric clashes
@@ -447,7 +465,7 @@ fn generate_recursive(
     current_bond_indices: &mut [usize],
     processed: &mut usize,
     total_combinations: usize,
-    valid_conformers: &mut Vec<Vec< crate::molecule::Atom>>,
+    valid_conformers: &mut Vec<Vec<crate::molecule::Atom>>,
     base_name: &str,
     total_estimated: usize,
     max_conformers: Option<usize>,
@@ -470,9 +488,9 @@ fn generate_recursive(
             if angle != 0.0 {
                 // Store coordinates before rotation for debugging
                 let coords_before = coordinates.clone();
-                
+
                 rotate_fragment(&mut coordinates, fragment, bond.atom1, bond.atom2, angle);
-                
+
                 // Log rotation application for debugging
                 log_rotation_application(bond_idx, angle, fragment, &coords_before, &coordinates);
             }
@@ -493,7 +511,13 @@ fn generate_recursive(
                         let fragment = &molecule.fragments[sync_idx];
 
                         if angle != 0.0 {
-                            rotate_fragment(&mut coordinates, fragment, sync_bond.atom1, sync_bond.atom2, angle);
+                            rotate_fragment(
+                                &mut coordinates,
+                                fragment,
+                                sync_bond.atom1,
+                                sync_bond.atom2,
+                                angle,
+                            );
                         }
                         found = true;
                         break;
@@ -578,22 +602,22 @@ fn generate_recursive(
 }
 
 /// Calculates the total number of conformer combinations.
-/// 
+///
 /// Computes the cartesian product size for all independent rotatable bonds
 /// to determine the total search space size. This is used for progress
 /// tracking and memory estimation.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `angle_sets` - Rotation angles for each bond
 /// * `independent_indices` - Indices of independently rotating bonds
-/// 
+///
 /// # Returns
-/// 
+///
 /// Total number of theoretical conformer combinations.
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
 /// // Two bonds with 6 and 4 angles respectively = 24 combinations
 /// let total = calculate_total_combinations(&angle_sets, &[0, 1]);
@@ -608,35 +632,35 @@ fn calculate_total_combinations(angle_sets: &[Vec<f64>], independent_indices: &[
 }
 
 /// Writes all valid conformers to individual files and a trajectory file.
-/// 
+///
 /// Creates properly formatted XYZ files for each conformer and combines
 /// them into a single trajectory file for visualization and analysis.
 /// Uses smart filename padding for consistent directory ordering.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `base_name` - Base name for output files
 /// * `conformers` - Vector of valid conformer structures
 /// * `_total_estimated` - Total estimated conformers (unused, for future progress tracking)
-/// 
+///
 /// # Returns
-/// 
+///
 /// `Ok(())` on success, or an error if file operations fail.
-/// 
+///
 /// # Output Files
-/// 
+///
 /// - Individual files: `base_name_001.xyz`, `base_name_002.xyz`, etc.
 /// - Trajectory file: `base_name_traj.xyz`
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```rust
-/// write_all_conformers("ethane", &conformers, 24)?;
-/// // Creates: ethane_01.xyz, ethane_02.xyz, ..., ethane_traj.xyz
+/// write_all_conformers("butane", &conformers, 24)?;
+/// // Creates: butane_01.xyz, butane_02.xyz, ..., butane_traj.xyz
 /// ```
 fn write_all_conformers(
     base_name: &str,
-    conformers: &[Vec< crate::molecule::Atom>],
+    conformers: &[Vec<crate::molecule::Atom>],
     _total_estimated: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if conformers.is_empty() {
@@ -661,26 +685,26 @@ fn write_all_conformers(
 }
 
 /// Generates all combinations of scanning conformers using cartesian product approach.
-/// 
+///
 /// This function handles the combinatorial explosion of scanning conformer generation
 /// by systematically exploring all possible combinations of bond length variations
 /// for multiple scanning bonds.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `molecule` - The molecular structure with atoms and bonds
 /// * `scanning_bonds` - Indices of bonds that will be scanned
 /// * `scanning_params` - Scanning parameters (steps, step_size) for each bond
 /// * `base_name` - Base name for output files
 /// * `total_estimated` - Estimated total number of conformers for progress tracking
 /// * `max_conformers` - Optional limit on number of conformers to generate
-/// 
+///
 /// # Returns
-/// 
+///
 /// A tuple containing (total_combinations_attempted, valid_conformers_generated).
-/// 
+///
 /// # Algorithm
-/// 
+///
 /// Uses recursive generation to explore the full combinatorial space while
 /// maintaining memory efficiency. Each combination is validated immediately
 /// and discarded if invalid, preventing memory overflow for large search spaces.
@@ -691,9 +715,9 @@ fn generate_scanning_combinations(
     base_name: &str,
     total_estimated: usize,
     max_conformers: Option<usize>,
-) -> Result<(usize, usize), Box<dyn std::error::Error>> {
+) -> Result<(usize, usize, usize), Box<dyn std::error::Error>> {
     if scanning_bonds.is_empty() {
-        return Ok((0, 0));
+        return Ok((0, 0, 0));
     }
 
     let mut valid_conformers = Vec::new();
@@ -702,6 +726,8 @@ fn generate_scanning_combinations(
     // Generate all combinations using recursion
     let mut current_steps = vec![0; scanning_bonds.len()];
     let mut processed = 0;
+    let mut min_length_violations = 0;
+    let mut bond_min_violations = vec![None; scanning_bonds.len()]; // Track first violation step for each bond
 
     generate_scanning_recursive(
         0,
@@ -715,27 +741,30 @@ fn generate_scanning_combinations(
         base_name,
         total_estimated,
         max_conformers,
+        &mut min_length_violations,
+        &mut bond_min_violations,
     )?;
 
     // Validate conformer diversity
     if valid_conformers.len() > 1 {
-        let (_identical_pairs, _total_pairs) = validate_conformer_diversity(&valid_conformers, 0.001);
+        let (_identical_pairs, _total_pairs) =
+            validate_conformer_diversity(&valid_conformers, 0.001);
     }
 
     // Write all conformers to files
     write_all_conformers(base_name, &valid_conformers, total_estimated)?;
 
-    Ok((total_combinations, valid_conformers.len()))
+    Ok((total_combinations, valid_conformers.len(), min_length_violations))
 }
 
 /// Recursively generates all scanning combinations for conformer exploration.
-/// 
+///
 /// This is the core recursive function that explores the full combinatorial
 /// space of bond length variations. It applies scanning depth-first, validates
 /// each complete conformer, and collects valid results.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `depth` - Current recursion depth (bond index being processed)
 /// * `molecule` - The molecular structure
 /// * `scanning_bonds` - Indices of bonds being scanned
@@ -747,9 +776,9 @@ fn generate_scanning_combinations(
 /// * `base_name` - Base name for output files
 /// * `total_estimated` - Total estimated conformers for progress
 /// * `max_conformers` - Optional limit on conformers to generate
-/// 
+///
 /// # Algorithm
-/// 
+///
 /// 1. **Base case**: When depth equals number of bonds, apply all scannings
 /// 2. **Recursive case**: Try each step for current bond, recurse deeper
 /// 3. **Validation**: Check each complete conformer for steric clashes
@@ -766,6 +795,8 @@ fn generate_scanning_recursive(
     base_name: &str,
     total_estimated: usize,
     max_conformers: Option<usize>,
+    min_length_violations: &mut usize,
+    bond_min_violations: &mut Vec<Option<usize>>, // Track first violation step for each bond
 ) -> Result<(), Box<dyn std::error::Error>> {
     if depth == scanning_bonds.len() {
         *processed += 1;
@@ -780,35 +811,62 @@ fn generate_scanning_recursive(
             let fragment = &molecule.fragments[i]; // Use scanning-specific fragment index
             let (_steps, step_size) = scanning_params[i];
             let current_step = current_steps[i];
-
+            
             // Calculate target bond length for this step
             let original_length = crate::molecule::calculate_distance(
-                &molecule.atoms[bond.atom1], 
-                &molecule.atoms[bond.atom2]
+                &molecule.atoms[bond.atom1],
+                &molecule.atoms[bond.atom2],
             );
             let target_length = original_length + (current_step as f64 * step_size);
 
             // Apply bond length scanning with enhanced error handling
-            if let Err(_e) = scan_bond_length(
+            if let Err(e) = scan_bond_length(
                 &mut coordinates,
                 fragment,
                 bond.atom1,
                 bond.atom2,
                 target_length,
             ) {
-                // Log the scanning failure for debugging (optional)
-                // eprintln!("Scanning failed for bond {} at step {}: {}", bond_idx + 1, current_step, e);
-                
+                // Check if this is a minimum bond length violation
+                if e.contains("minimum: 0.1 Å") {
+                    *min_length_violations += 1;
+                    
+                    // Check if this is the first time this bond hits the minimum
+                    if bond_min_violations[i].is_none() {
+                        bond_min_violations[i] = Some(current_step);
+                        let (total_steps, _) = scanning_params[i];
+                        let final_step = total_steps - 1; // 0-based indexing
+                        
+                        eprintln!("Bond {} (atoms {}-{}) reached minimum length (0.1 Å) at step {};\n all remaining structures from step {} to the final step {} cannot be generated.", 
+                                 bond_idx + 1, bond.atom1 + 1, bond.atom2 + 1, current_step, current_step, final_step);
+                    }
+                }
+
                 // Skip this conformer if scanning fails - this is expected behavior
                 // for some parameter combinations that create invalid geometry
                 return Ok(());
             }
         }
 
-        // Validate conformer using integrated validation systems
-        // This uses molecule's skip_factor for steric clash detection
-        // and applies scanning-specific validation including forced/forbidden bonds
-        if is_valid_conformer(molecule, &coordinates) {
+        // Build list of scanned bond pairs (convert to 0-based indices)
+        let mut scanned_bonds = Vec::new();
+        for i in 0..scanning_bonds.len() {
+            let bond_idx = scanning_bonds[i];
+            let bond = &molecule.bonds[bond_idx];
+            scanned_bonds.push((bond.atom1, bond.atom2));
+        }
+        
+        // Debug: Print scanned bonds for first few conformers (disabled)
+        // if *processed <= 3 {
+        //     eprintln!("Debug conformer {}: Scanned bonds: {:?}", *processed + 1, scanned_bonds);
+        //     for (i, &(a1, a2)) in scanned_bonds.iter().enumerate() {
+        //         let dist = crate::molecule::calculate_distance(&coordinates[a1], &coordinates[a2]);
+        //         eprintln!("  Bond {}: atoms {}-{} (0-based), distance: {:.3} Å", i+1, a1, a2, dist);
+        //     }
+        // }
+        
+        // Use scanning-aware validation that excludes scanned bonds from skip_factor checking
+        if is_valid_scanning_conformer(molecule, &coordinates, &scanned_bonds) {
             // Check conformer limit before adding (integrates with maxgen parameter)
             if let Some(max_limit) = max_conformers {
                 if valid_conformers.len() >= max_limit {
@@ -839,6 +897,8 @@ fn generate_scanning_recursive(
             base_name,
             total_estimated,
             max_conformers,
+            min_length_violations,
+            bond_min_violations,
         )?;
     }
 
@@ -846,16 +906,16 @@ fn generate_scanning_recursive(
 }
 
 /// Calculates the total number of scanning combinations.
-/// 
+///
 /// Computes the cartesian product size for all scanning bonds
 /// to determine the total search space size.
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `scanning_params` - Scanning parameters (steps, step_size) for each bond
-/// 
+///
 /// # Returns
-/// 
+///
 /// Total number of theoretical scanning combinations.
 fn calculate_scanning_combinations(scanning_params: &[(usize, f64)]) -> usize {
     let mut total = 1;

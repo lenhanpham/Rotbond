@@ -16,6 +16,9 @@
     <img src="https://github.com/lenhanpham/Rotbond/actions/workflows/build.yml/badge.svg" alt="Build Status">
   </a>
 </p>
+<p align="center">
+  <img src="./resources/rotation.gif" alt="Rotbond Animation" width="35%">
+</p>
 
 Rotbond is program for generating molecular conformers through systematic bond rotations. Rotbond takes an XYZ molecular structure file and rotation parameters, then systematically generates all possible conformers, outputting them as individual XYZ files and a trajectory file for further calculations and visualization.
 
@@ -24,35 +27,35 @@ Rotbond is program for generating molecular conformers through systematic bond r
 ### Capabilities
 
 - **Flexible Conformer Generation Methods**
-  
+
   - **Bond Rotation Mode**: Traditional dihedral angle rotation
-    
+
     - Step-based rotations - e.g., `e60` generates 0°, 60°, 120°, 180°, 240°, 300° (6 states); `e30` generates 12 states
     - Explicit angle lists - specify exact angles needed
     - Synchronous rotations - link multiple bonds to rotate together
-  
+
   - **Bond Scanning Mode**: Systematic bond length variation
-    
+
     - Step-based scanning - e.g., `scan 10 0.1` stretches bond in 10 steps of 0.1 Å each
     - Multi-dimensional scanning - scan multiple bonds simultaneously
     - Compression and stretching - positive step sizes stretch, negative compress
-  
+
   - Manual bond definitions - force or remove bonds as needed for both modes
 
 - **Smart Output Generation**
-  
+
   - Trajectory file with all conformers for easy visualization
   - Individual XYZ files with automatic smart padding
   - Progress reporting and statistics
 
 - **Intelligent Validation**
-  
+
   - Steric clash detection and filtering
   - Configurable bond detection parameters
   - Distance-based validation using covalent radii
 
 - **Documentation**
-  
+
   - Built-in help system with 8 comprehensive sections
   - Practical examples and troubleshooting guides
   - Complete reference materials
@@ -88,7 +91,7 @@ cargo build
 
 **A binary file is provided for windows users in Release**
 
-Copy rotbond.exe to a directory and add this directory to your Windows *environment variable*. 
+Copy rotbond.exe to a directory and add this directory to your Windows *environment variable*.
 
 ### Basic Usage
 
@@ -102,40 +105,46 @@ rotbond <molecule_name>
 rotbond <molecule_name>.xyz
 ```
 
-### Example: Ethane Rotation
+### Example: Butane Rotation
 
-**Step 1: Prepare your stucture `ethane.xyz`**
+**Step 1: Prepare your stucture `butane.xyz`**
 
 ```
-8
-Ethane molecule
-C       -2.6972703886      0.5190638733     -0.0000003688                 
-C       -1.1782073026      0.5190641624     -0.0000004138                 
-H       -3.0738517143     -0.1361520096     -0.8135565479                 
-H       -3.0738520178      1.5512320348     -0.1606558009                 
-H       -3.0738517177      0.1421113795      0.9742112740                 
-H       -0.8016259769      0.8960166481     -0.9742120609                 
-H       -0.8016256734     -0.5131039980      0.1606550254                 
-H       -0.8016259735      1.1742800518      0.8135557588         
+14
+Butane molecule
+C    -4.390308655000     -0.632987590700      0.043677475300
+H    -5.330057936000     -0.527510732400     -0.503444569700
+H    -4.389058916600      0.077648432000      0.873491606400
+H    -4.345674372500     -1.643033486700      0.457086407500
+C    -3.188670330900     -0.384837924800     -0.886583891400
+C    -3.226558849100      1.036845318100     -1.485516216000
+H    -2.262792259600     -0.522845611400     -0.322588193200
+H    -3.198108077300     -1.124349892400     -1.691208307400
+H    -3.217121102700      1.776357285700     -0.680891800000
+C    -2.024920525000      1.284994984100     -2.415777582700
+H    -4.152436920400      1.174853004700     -2.049511914300
+H    -1.085171244000      1.179518125700     -1.868655537800
+H    -2.026170263400      0.574358961400     -3.245591713900
+H    -2.069554807400      2.295040880000     -2.829186515000
 ```
 
 **Step 2: Run Rotbond to create template**
 
 ```bash
-rotbond ethane
+rotbond butane
 ```
 
 **Output:**
 
 ```
-Rotation parameters file 'ethane.rp' not found.
+Rotation parameters file 'butane.rp' not found.
 Creating template file with default parameters...
-✓ Template file 'ethane.rp' created successfully!
+✓ Template file 'butane.rp' created successfully!
 
-Please edit 'ethane.rp' to specify your rotation parameters, then run rotbond again.
+Please edit 'butane.rp' to specify your rotation parameters, then run rotbond again.
 ```
 
-**Step 3: Edit the generated `ethane.rp` template**
+**Step 3: Edit the generated `butane.rp` template**
 
 The program creates a comprehensive template with examples. Simply uncomment and modify:
 
@@ -157,13 +166,13 @@ skip_factor = 0.7
 **Step 4: Run Rotbond again**
 
 ```bash
-rotbond ethane
+rotbond butane
 ```
 
 **Step 5: Output Files**
 
-- `ethane_traj.xyz` - Trajectory with all conformers
-- `ethane_01.xyz`, `ethane_02.xyz`, etc. - Individual conformers
+- `butane_traj.xyz` - Trajectory with all conformers
+- `butane_01.xyz`, `butane_02.xyz`, etc. - Individual conformers
 
 ## Automatic Template Creation
 
@@ -186,21 +195,21 @@ The automatically generated template includes:
   - Step-based rotations (`1-2 e60`)
   - Explicit angle lists (`1-2 0 60 120 180`)
   - Synchronous rotations (`3-4 syn 1`)
-- **Real-world examples** for common molecules (ethane, butane, toluene, metal complexes)
+- **Real-world examples** for common molecules (butane, butane, toluene, metal complexes)
 - **Best practices** and tips for parameter selection
 - **Detailed comments** explaining each feature
 
 ### Example Template Output
 
 ```bash
-rotbond ethane
+rotbond butane
 
 # Output:
-# Rotation parameters file 'ethane.rp' not found.
+# Rotation parameters file 'butane.rp' not found.
 # Creating template file with default parameters...
-# ✓ Template file 'ethane.rp' created successfully!
-# 
-# Please edit 'ethane.rp' to specify your rotation parameters, then run rotbond again.
+# ✓ Template file 'butane.rp' created successfully!
+#
+# Please edit 'butane.rp' to specify your rotation parameters, then run rotbond again.
 ```
 
 The generated template is ready to use - just uncomment the rotation specifications you need!
@@ -458,7 +467,7 @@ Controls steric clash validation:
 Controls the maximum number of conformers to generate:
 
 - **Default:** 500
-- **Values:** 
+- **Values:**
   - Integer (e.g., `maxgen = 300`): Limit to specific number
   - `max`, `maximum`, or `full`: Generate all theoretical conformers (no limit)
 - **Safety:** Prevents system crashes from excessive memory usage
@@ -474,7 +483,7 @@ Controls the maximum number of conformers to generate:
 Controls automatic confirmation for large conformer generation jobs:
 
 - **Default:** false
-- **Values:** 
+- **Values:**
   - `true`, `yes`, `1`, `on`: Skip interactive warnings
   - `false`, `no`, `0`, `off`: Show interactive warnings (default)
 - **Use cases:**
@@ -560,9 +569,9 @@ One file per valid conformer with smart padding:
 
 ### Bond Rotation Examples
 
-#### Example 1: Simple Single Bond (Ethane)
+#### Example 1: Simple Single Bond (butane)
 
-**Input:** `ethane.rp`
+**Input:** `butane.rp`
 
 ```
 bond_factor = 1.2
@@ -617,9 +626,9 @@ skip_factor = 0.7
 
 ### Bond Scanning Examples
 
-#### Example 4: Simple Bond Length Scanning (Ethane C-C)
+#### Example 4: Simple Bond Length Scanning (butane C-C)
 
-**Input:** `ethane_scan.rp`
+**Input:** `butane_scan.rp`
 
 ```
 bond_factor = 1.0
@@ -729,7 +738,7 @@ autoconfirm = true   # Skip interactive warnings
 
 # Multiple rotations (would generate 1728 theoretical conformers)
 1-5 e30    # 12 states
-6-10 e30   # 12 states  
+6-10 e30   # 12 states
 12-18 e30  # 12 states
 20-25 330  # 1 state
 ```
@@ -811,7 +820,7 @@ autoconfirm = false  # Show warnings (default)
 **Unlimited Generation:**
 
 ```bash
-# In molecule.rp  
+# In molecule.rp
 maxgen = max         # Generate all conformers (use with caution!)
 autoconfirm = true   # Skip warnings for batch processing
 ```
@@ -829,7 +838,7 @@ autoconfirm = true   # No interactive prompts
 **Recommended Limits by System:**
 
 - **8GB RAM:** maxgen = 200-500
-- **16GB RAM:** maxgen = 500-1000  
+- **16GB RAM:** maxgen = 500-1000
 - **32GB+ RAM:** maxgen = 1000+ or unlimited
 - **Batch jobs:** Always use `autoconfirm = true`
 
@@ -855,7 +864,7 @@ The number of theoretical conformers is calculated as the cartesian product of a
 ```bash
 # Example: 3 independent bonds
 Bond 1: e30 → 12 states
-Bond 2: e60 → 6 states  
+Bond 2: e60 → 6 states
 Bond 3: e90 → 4 states
 Total: 12 × 6 × 4 = 288 theoretical conformers
 ```
@@ -1039,7 +1048,7 @@ Rotbond implements 5 core algorithms:
 **10. "Want to adjust limit during runtime"**
 
 - Use the interactive prompt when it appears
-- Enter a custom number (e.g., 200, 1000) 
+- Enter a custom number (e.g., 200, 1000)
 - Enter 'max' for unlimited generation
 - This overrides the .rp file setting for current run only
 
@@ -1113,7 +1122,7 @@ Based on OpenBabel covalent radii values:
 1. **Use automatic templates** - Run `rotbond molecule` to generate comprehensive .rp template
 2. **Start simple** - Begin with one bond rotation from the template examples
 3. **Verify output** - Check conformers before adding complexity
-4. **Test with known molecule** - Ethane is a good test case
+4. **Test with known molecule** - butane is a good test case
 
 ### Parameter Selection
 
