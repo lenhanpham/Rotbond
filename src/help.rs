@@ -75,26 +75,26 @@ pub fn print_basic_help() {
 /// ```
 pub fn print_version() {
     // Program information banner
-    println!("  ***********************************************************************");
-    println!("                                ROTBOND                                  ");
-    println!("  ***********************************************************************");
-    println!("# -----------------------------------------------------------------------#");
+    println!("  ****************************************************************************");
+    println!("                                  ROTBOND                                     ");
+    println!("  ****************************************************************************");
+    println!("# ----------------------------------------------------------------------------#");
     println!(
-        "# Version {}  Release date: 2025                                      #",
+        "# Version {}  Release date: 2025                                           #",
         env!("CARGO_PKG_VERSION")
     );
-    println!("# Developer: Le Nhan Pham                                                #");
-    println!("# https://github.com/lenhanpham/Rotbond                                  #");
-    println!("# -----------------------------------------------------------------------#");
+    println!("# Developer: Le Nhan Pham                                                     #");
+    println!("# https://github.com/lenhanpham/Rotbond                                       #");
+    println!("# ----------------------------------------------------------------------------#");
     println!();
-    println!("                                                                          ");
-    println!("                                                                          ");
-    println!("Please cite this project if you use Rotbond for your research             ");
-    println!("                                                                          ");
-    println!("# -----------------------------------------------------------------------#");
-    println!("# L.N Pham, \"Rotbond - A Systematic molecular conformer generator\"       #");
-    println!("# https://github.com/lenhanpham/Rotbond                                  #");
-    println!("# -----------------------------------------------------------------------#");
+    println!("                                                                               ");
+    println!("                                                                               ");
+    println!("  Please cite this project if you use Rotbond for your research                ");
+    println!("                                                                               ");
+    println!("# ----------------------------------------------------------------------------#");
+    println!("# L.N Pham, \"Rotbond: Systematic conformer generation via bond rotations      #");
+    println!("# and bond-length scanning\" 2025. https://doi.org/10.13140/RG.2.2.25174.51524 #");
+    println!("# ----------------------------------------------------------------------------#");
 }
 
 /// Lists all available help topics with brief descriptions.
@@ -233,26 +233,26 @@ pub fn print_help_topic(topic: &str) {
 /// Creates a consistent header format with separators and title information
 /// for all help topic displays. Used internally by help functions.
 fn print_header() {
-    println!("  ***********************************************************************");
-    println!("                                ROTBOND");
-    println!("  ***********************************************************************");
-    println!("# -----------------------------------------------------------------------#");
+    println!("  ****************************************************************************");
+    println!("                                  ROTBOND                                     ");
+    println!("  ****************************************************************************");
+    println!("# ----------------------------------------------------------------------------#");
     println!(
-        "# Version {}  Release date: 2025                                      #",
+        "# Version {}  Release date: 2025                                           #",
         env!("CARGO_PKG_VERSION")
     );
-    println!("# Developer: Le Nhan Pham                                                #");
-    println!("# https://github.com/lenhanpham/Rotbond                                  #");
-    println!("# -----------------------------------------------------------------------#");
+    println!("# Developer: Le Nhan Pham                                                     #");
+    println!("# https://github.com/lenhanpham/Rotbond                                       #");
+    println!("# ----------------------------------------------------------------------------#");
     println!();
-    println!();
-    println!("Please cite this project if you use Rotbond for your research");
-    println!();
-    println!("# -----------------------------------------------------------------------#");
-    println!("# L.N Pham, \"Rotbond - A Systematic molecular conformer generator\"       #");
-    println!("# https://github.com/lenhanpham/Rotbond                                  #");
-    println!("# -----------------------------------------------------------------------#");
-    println!();
+    println!("                                                                               ");
+    println!("                                                                               ");
+    println!("  Please cite this project if you use Rotbond for your research                ");
+    println!("                                                                               ");
+    println!("# ----------------------------------------------------------------------------#");
+    println!("# L.N Pham, \"Rotbond: Systematic conformer generation via bond rotations      #");
+    println!("# and bond-length scanning\" 2025. https://doi.org/10.13140/RG.2.2.25174.51524 #");
+    println!("# ----------------------------------------------------------------------------#");
 }
 
 // =======================================================================

@@ -1161,6 +1161,22 @@ Based on OpenBabel covalent radii values:
 - **Unlimited generation** - Only use `maxgen = max` when necessary
 - **Memory planning** - ~100 bytes per atom per conformer
 
+## Cite
+
+Cite this project if you use Rotbond for your research:
+
+```bibtex
+@article{pham_rotboond_2025,
+    title = {Rotbond: Systematic conformer generation via bond rotations and bond-length scanning},
+    url = {https://doi.org/10.13140/RG.2.2.25174.51524},
+    doi = {10.13140/RG.2.2.25174.51524},
+    urldate = {2025},
+    author = {Pham, Le Nhan},
+    year = {2025},
+    note = {Publisher: Preprint},
+}
+```
+
 ## License
 
 Rotbond is licensed under the **MIT License**.
