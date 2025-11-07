@@ -1166,14 +1166,15 @@ Based on OpenBabel covalent radii values:
 Cite this project if you use Rotbond for your research:
 
 ```bibtex
-@article{pham_rotboond_2025,
-    title = {Rotbond: Systematic conformer generation via bond rotations and bond-length scanning},
-    url = {https://doi.org/10.13140/RG.2.2.25174.51524},
-    doi = {10.13140/RG.2.2.25174.51524},
-    urldate = {2025},
-    author = {Pham, Le Nhan},
-    year = {2025},
-    note = {Publisher: Preprint},
+@article{pham_rotbond:_2025,
+	title = {Rotbond: {Systematic} conformer generation via bond rotations and bond-length scanning},
+	shorttitle = {Rotbond},
+	url = {https://doi.org/10.13140/RG.2.2.25174.51524},
+	doi = {10.13140/RG.2.2.25174.51524},
+	language = {en},
+	urldate = {2025-11-07},
+	author = {Pham, Le Nhan},
+	year = {2025},
 }
 ```
 
