@@ -1,7 +1,9 @@
 [package]
 name = "rotbond"
-version = "0.0.3"
+version = "0.1.0"
 edition = "2024"
+# Build script lives in src/ (non-default location)
+build = "src/build.rs"
 
 [dependencies]
 rand = "0.8"

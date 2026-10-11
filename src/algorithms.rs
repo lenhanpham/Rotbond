@@ -1465,7 +1465,201 @@ pub fn identify_fragments(
 /// * `_fragment2` - Second fragment to validate (unused in current implementation)
 fn validate_fragments(_atom1: usize, _atom2: usize, _fragment1: &[usize], _fragment2: &[usize]) {
     // Validate fragments (silent validation)
-    // Fragments are validated but warnings are suppressed for cleaner output
+    // Fragments are validated but warnings are suppressed for cleaner output.
+    // Detailed pre-generation diagnostics are produced by
+    // `check_fragment_separation` in `generate.rs` (warn-and-continue).
+}
+
+/// Checks whether cutting the bond really separates the molecule.
+///
+/// Compares the two BFS fragments against the separation invariant:
+/// disjoint (`frag1 ∩ frag2 = ∅`) and covering (`|frag1 ∪ frag2| = n`).
+/// Returns a [`crate::errors::FragmentDiagnostic`] when the invariant is
+/// violated, or `None` for a clean split. All indices in the diagnostic
+/// are 1-based for user display.
+///
+/// # Arguments
+///
+/// * `bond_num` - Specification order (1-based) for user messages.
+/// * `atom1` - First pivot atom (0-based).
+/// * `atom2` - Second pivot atom (0-based).
+/// * `fragment1` - Atoms reachable from `atom1` without crossing `atom2`.
+/// * `fragment2` - Atoms reachable from `atom2` without crossing `atom1`.
+/// * `adjacency_list` - Bond connectivity graph (for bridge-path search).
+/// * `molecule` - Molecule with atoms and `bond_factor` (for distances/cutoffs).
+///
+/// # Returns
+///
+/// `None` when fragments are disjoint and cover all atoms; otherwise a
+/// diagnostic with `kind` [`crate::errors::FragmentWarningKind::Overlap`]
+/// (shared atoms, hidden bridge) or
+/// [`crate::errors::FragmentWarningKind::IncompleteCoverage`]
+/// (unreachable atoms, missing `bond` definitions).
+///
+/// # Examples
+///
+/// ```rust
+/// use rotbond::algorithms::{build_bond_graph, identify_fragments, check_fragment_separation};
+/// use rotbond::molecule::{Atom, Molecule};
+///
+/// let mut m = Molecule::new(vec![
+///     Atom::new("C".to_string(), 0.0, 0.0, 0.0),
+///     Atom::new("C".to_string(), 1.5, 0.0, 0.0),
+///     Atom::new("C".to_string(), 3.0, 0.0, 0.0),
+/// ]);
+/// m.bonds.clear();
+/// let adj = build_bond_graph(&m);
+/// let (f1, f2) = identify_fragments(0, 1, &adj);
+/// assert!(check_fragment_separation(1, 0, 1, &f1, &f2, &adj, &m).is_none());
+/// ```
+pub fn check_fragment_separation(
+    bond_num: usize,
+    atom1: usize,
+    atom2: usize,
+    fragment1: &[usize],
+    fragment2: &[usize],
+    adjacency_list: &[Vec<usize>],
+    molecule: &Molecule,
+) -> Option<crate::errors::FragmentDiagnostic> {
+    use crate::errors::{FragmentDiagnostic, FragmentWarningKind};
+    use std::collections::HashSet;
+
+    let n = molecule.atoms.len();
+    let set1: HashSet<usize> = fragment1.iter().copied().collect();
+    let set2: HashSet<usize> = fragment2.iter().copied().collect();
+    let overlap_count = set1.intersection(&set2).count();
+    let union_count = set1.union(&set2).count();
+
+    if overlap_count > 0 {
+        let bridge_path = find_bridge_path(atom1, atom2, adjacency_list, molecule);
+        return Some(FragmentDiagnostic {
+            bond_num,
+            atom1: atom1 + 1,
+            atom2: atom2 + 1,
+            kind: FragmentWarningKind::Overlap,
+            overlap_count,
+            frag1_len: fragment1.len(),
+            frag2_len: fragment2.len(),
+            total: n,
+            bridge_path,
+            missing_atoms: Vec::new(),
+            bond_factor: molecule.bond_factor,
+        });
+    }
+
+    if union_count < n {
+        let mut missing: Vec<usize> = (0..n)
+            .filter(|i| !set1.contains(i) && !set2.contains(i))
+            .map(|i| i + 1)
+            .collect();
+        missing.sort_unstable();
+        return Some(FragmentDiagnostic {
+            bond_num,
+            atom1: atom1 + 1,
+            atom2: atom2 + 1,
+            kind: FragmentWarningKind::IncompleteCoverage,
+            overlap_count: 0,
+            frag1_len: fragment1.len(),
+            frag2_len: fragment2.len(),
+            total: n,
+            bridge_path: Vec::new(),
+            missing_atoms: missing,
+            bond_factor: molecule.bond_factor,
+        });
+    }
+
+    None
+}
+
+/// Finds the shortest alternative path between pivots avoiding the direct edge.
+///
+/// Runs BFS from `atom1` to `atom2` while forbidding traversal of the cut
+/// edge in either direction. Each step is annotated with elements, measured
+/// distance and the current `bond_factor` cutoff so users see exactly which
+/// hidden bonds hold the two sides together.
+///
+/// # Arguments
+///
+/// * `atom1` - Start pivot (0-based).
+/// * `atom2` - Target pivot (0-based).
+/// * `adjacency_list` - Bond connectivity graph.
+/// * `molecule` - Molecule with atoms and `bond_factor`.
+///
+/// # Returns
+///
+/// Ordered [`crate::errors::HiddenBond`] steps (1-based indices);
+/// empty when no alternative path exists (clean split or disconnected).
+pub fn find_bridge_path(
+    atom1: usize,
+    atom2: usize,
+    adjacency_list: &[Vec<usize>],
+    molecule: &Molecule,
+) -> Vec<crate::errors::HiddenBond> {
+    use crate::errors::HiddenBond;
+
+    let n = adjacency_list.len();
+    if atom1 >= n || atom2 >= n {
+        return Vec::new();
+    }
+    let mut prev: Vec<Option<usize>> = vec![None; n];
+    let mut visited = vec![false; n];
+    let mut queue = VecDeque::new();
+    visited[atom1] = true;
+    queue.push_back(atom1);
+
+    while let Some(cur) = queue.pop_front() {
+        if cur == atom2 {
+            break;
+        }
+        for &nb in &adjacency_list[cur] {
+            // Forbid the cut edge in both directions.
+            if (cur == atom1 && nb == atom2) || (cur == atom2 && nb == atom1) {
+                continue;
+            }
+            if !visited[nb] {
+                visited[nb] = true;
+                prev[nb] = Some(cur);
+                queue.push_back(nb);
+            }
+        }
+    }
+
+    if !visited[atom2] {
+        return Vec::new();
+    }
+    let mut nodes = Vec::new();
+    let mut cur = atom2;
+    nodes.push(cur);
+    while cur != atom1 {
+        match prev[cur] {
+            Some(p) => {
+                cur = p;
+                nodes.push(cur);
+            }
+            None => return Vec::new(),
+        }
+    }
+    nodes.reverse();
+
+    nodes
+        .windows(2)
+        .map(|w| {
+            let (a, b) = (w[0], w[1]);
+            let dist = calculate_distance(&molecule.atoms[a], &molecule.atoms[b]);
+            let cutoff = (covalent_radius(&molecule.atoms[a].element)
+                + covalent_radius(&molecule.atoms[b].element))
+                * molecule.bond_factor
+                + 0.45;
+            HiddenBond {
+                a1: a + 1,
+                a2: b + 1,
+                elem1: molecule.atoms[a].element.clone(),
+                elem2: molecule.atoms[b].element.clone(),
+                dist,
+                cutoff,
+            }
+        })
+        .collect()
 }
 
 /// Applies rotation transformation to a molecular fragment around a rotatable bond.
@@ -3083,4 +3277,61 @@ fn find_bond_rotation_for_dihedral(
     }
 
     bond_rotation
+}
+
+#[cfg(test)]
+mod fragment_separation_tests {
+    use super::*;
+    use crate::errors::FragmentWarningKind;
+    use crate::molecule::{Atom, Molecule};
+
+    fn chain_molecule() -> Molecule {
+        Molecule::new(vec![
+            Atom::new("C".to_string(), 0.0, 0.0, 0.0),
+            Atom::new("C".to_string(), 1.5, 0.0, 0.0),
+            Atom::new("C".to_string(), 3.0, 0.0, 0.0),
+        ])
+    }
+
+    #[test]
+    fn clean_cut_yields_no_diagnostic() {
+        let m = chain_molecule();
+        let adj = build_bond_graph(&m);
+        let (f1, f2) = identify_fragments(0, 1, &adj);
+        assert!(check_fragment_separation(1, 0, 1, &f1, &f2, &adj, &m).is_none());
+    }
+
+    #[test]
+    fn ring_cut_reports_overlap_with_bridge() {
+        let m = Molecule::new(vec![
+            Atom::new("C".to_string(), 0.0, 0.0, 0.0),
+            Atom::new("C".to_string(), 1.5, 0.0, 0.0),
+            Atom::new("C".to_string(), 0.75, 1.3, 0.0),
+        ]);
+        let adj = build_bond_graph(&m);
+        let (f1, f2) = identify_fragments(0, 1, &adj);
+        let diag = check_fragment_separation(1, 0, 1, &f1, &f2, &adj, &m)
+            .expect("ring cut must warn");
+        assert_eq!(diag.kind, FragmentWarningKind::Overlap);
+        assert!(diag.overlap_count > 0);
+        assert!(!diag.bridge_path.is_empty());
+    }
+
+    #[test]
+    fn disconnected_graph_reports_missing_atoms() {
+        let mut m = Molecule::new(vec![
+            Atom::new("C".to_string(), 0.0, 0.0, 0.0),
+            Atom::new("C".to_string(), 1.5, 0.0, 0.0),
+            Atom::new("C".to_string(), 50.0, 0.0, 0.0),
+        ]);
+        m.forbidden_bonds.push((1, 2));
+        m.forbidden_bonds.push((2, 3));
+        m.forbidden_bonds.push((1, 3));
+        let adj = build_bond_graph(&m);
+        let (f1, f2) = identify_fragments(0, 1, &adj);
+        let diag = check_fragment_separation(1, 0, 1, &f1, &f2, &adj, &m)
+            .expect("disconnected graph must warn");
+        assert_eq!(diag.kind, FragmentWarningKind::IncompleteCoverage);
+        assert_eq!(diag.missing_atoms, vec![3]);
+    }
 }

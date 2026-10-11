@@ -18,7 +18,7 @@
 //! Run `cargo build --release` to build with embedded resources.
 //!
 //! # Notes
-//! - Re-runs if `build.rs` or `resources/icon.ico` changes.
+//! - Re-runs if `src/build.rs` or `resources/icon.ico` changes.
 //! - Fails gracefully if resources can't be compiled, building without them.
 
 use std::path::Path;
@@ -37,7 +37,7 @@ fn main() {
         println!("cargo:warning=Starting Windows resource compilation...");
 
         // Re-run if any of these change
-        println!("cargo:rerun-if-changed=build.rs");
+        println!("cargo:rerun-if-changed=src/build.rs");
         println!("cargo:rerun-if-changed=resources/icon.ico");
 
         // ---- 1. Verify icon exists ----
@@ -81,10 +81,10 @@ fn main() {
             res.set_icon(icon_path);
             println!("cargo:warning=Icon set successfully");
 
-            // ---- 3. Set version info (0.0.2.0) ----
+            // ---- 3. Set version info (0.1.0.0) ----
             // Format: (major << 48) | (minor << 32) | (build << 16) | revision
-            let version = (0u64 << 48) | (0u64 << 32) | (2u64 << 16) | (0u64 << 0);
-            println!("cargo:warning=Setting version to: 0.0.2.0 (0x{:016x})", version);
+            let version = (0u64 << 48) | (1u64 << 32) | (0u64 << 16) | (0u64 << 0);
+            println!("cargo:warning=Setting version to: 0.1.0.0 (0x{:016x})", version);
             res.set_version_info(winresource::VersionInfo::PRODUCTVERSION, version);
             res.set_version_info(winresource::VersionInfo::FILEVERSION, version);
 

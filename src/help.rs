@@ -80,7 +80,7 @@ pub fn print_version() {
     println!("  ****************************************************************************");
     println!("# ----------------------------------------------------------------------------#");
     println!(
-        "# Version {}  Release date: 2025                                           #",
+        "# Version {}  Release date: 2026                                           #",
         env!("CARGO_PKG_VERSION")
     );
     println!("# Developer: Le Nhan Pham                                                     #");
@@ -238,7 +238,7 @@ fn print_header() {
     println!("  ****************************************************************************");
     println!("# ----------------------------------------------------------------------------#");
     println!(
-        "# Version {}  Release date: 2025                                           #",
+        "# Version {}  Release date: 2026                                           #",
         env!("CARGO_PKG_VERSION")
     );
     println!("# Developer: Le Nhan Pham                                                     #");
@@ -263,6 +263,8 @@ pub const CMD_USAGE: &str = r#"
 USAGE:
     rotbond [OPTIONS] <molecule_name>
     rotbond [OPTIONS] <molecule_name>.xyz
+    rotbond [OPTIONS] <molecule_name>.rp
+    rotbond [OPTIONS] <molecule_name>.      (trailing dot from tab-completion)
 
 DESCRIPTION:
     Generate molecular conformers through bond rotations.
@@ -296,7 +298,8 @@ OPTIONS:
 ARGUMENTS:
     <molecule_name>         Base name for input/output files
                             (e.g., 'butane' uses butane.xyz and butane.rp)
-                            Also accepts 'molecule.xyz' format
+                            Also accepts 'molecule.xyz', 'molecule.rp' and
+                            'molecule.' (trailing dot) formats
 "#;
 
 pub const QUICK_START: &str = r#"
@@ -624,7 +627,7 @@ OUTPUT FILE FORMATS
                                 ROTBOND
    ***********************************************************************
    # -----------------------------------------------------------------------#
-   # Version {CARGO_PKG_VERSION}  Release date: 2025                      #
+   # Version {CARGO_PKG_VERSION}  Release date: 2026                      #
    # Developer: Le Nhan Pham                                                #
    # https://github.com/lenhanpham/Rotbond                                  #
    # -----------------------------------------------------------------------#
@@ -1549,6 +1552,31 @@ COMMON ERRORS AND SOLUTIONS
     - If persistent, check molecule geometry
     - Verify fragment identification
     - May indicate structural problems
+
+---
+
+22. "WARNING: Bond N (A-B) does not split molecule" / frozen trajectory
+
+    Cause: Hidden bridging bonds keep the graph connected at the current
+    bond_factor, so cutting A-B does not separate two fragments. All
+    generated conformers are then identical (rotation appears frozen).
+    A related warning ("leaves N atoms unreachable") means the graph is
+    disconnected and some `bond` definitions are missing.
+
+    Solution:
+    - Read the warning: it lists the shortest alternative path A -> ... -> B
+      with per-bond distances, elements and cutoffs, e.g.:
+        24-15  C-C  d=1.991 A  cutoff=1.810 A
+    - Break the bridge by adding one of the listed edges as nobond:
+        15-21 nobond
+      then rerun. Repeat if a second bridge is reported.
+    - If atoms are reported unreachable, add the missing links instead:
+        8-12 bond
+      (typical for metal-ligand / coordinate bonds).
+    - Re-check with the same bond_factor shown in the warning; lowering
+      bond_factor can also remove weak hidden bonds, raising it detects more.
+    - Applies to rotation (e30, explicit, syn) and scanning bonds alike;
+      every specified bond is checked before generation (warn-and-continue).
 
 ---
 

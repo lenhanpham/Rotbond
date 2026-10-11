@@ -26,9 +26,11 @@
 //! rotatable bonds, consider using larger step sizes (e.g., e120 instead of e30).
 
 use crate::algorithms::{
-    build_bond_graph, identify_fragments, is_valid_conformer, is_valid_scanning_conformer,
-    log_fragment_info, log_rotation_application, rotate_fragment, validate_conformer_diversity,
+    build_bond_graph, check_fragment_separation, identify_fragments, is_valid_conformer,
+    is_valid_scanning_conformer, log_fragment_info, log_rotation_application, rotate_fragment,
+    validate_conformer_diversity,
 };
+use crate::errors::format_fragment_warning;
 use crate::io::{format_conformer_filename, write_individual_xyz_file, write_trajectory_file};
 use crate::molecule::{Bond, Molecule, OperationMode, RotationSpec, scan_bond_length};
 
@@ -153,16 +155,39 @@ fn generate_rotation_conformers(
     // Build bond graph
     let adjacency_list = build_bond_graph(molecule);
 
-    // Identify fragments for each bond
+    // Identify fragments for each bond (including synchronous bonds).
+    // Warn-and-continue: inseparable fragments produce frozen conformers,
+    // so report hidden bridges / missing links before generating.
     molecule.fragments.clear();
+    let mut fragment_warnings = 0usize;
     for (i, bond) in molecule.bonds.iter().enumerate() {
         let (frag1, frag2) = identify_fragments(bond.atom1, bond.atom2, &adjacency_list);
 
         // Log fragment information for debugging
         log_fragment_info(i, bond.atom1, bond.atom2, &frag1, &frag2);
 
+        if let Some(diag) = check_fragment_separation(
+            i + 1,
+            bond.atom1,
+            bond.atom2,
+            &frag1,
+            &frag2,
+            &adjacency_list,
+            molecule,
+        ) {
+            fragment_warnings += 1;
+            eprintln!("\n{}", format_fragment_warning(&diag));
+        }
+
         // Use fragment2 (atoms attached to atom2) for rotation
         molecule.fragments.push(frag2);
+    }
+    if fragment_warnings > 0 {
+        eprintln!(
+            "\nWARNING: {}/{} rotation bond(s) have inseparable fragments — trajectory may contain frozen (identical) conformers. See suggestions above.",
+            fragment_warnings,
+            molecule.bonds.len()
+        );
     }
 
     // Separate independent bonds from synchronous bonds
@@ -254,7 +279,8 @@ fn generate_scanning_conformers(
     let mut scanning_bonds = Vec::new();
     let mut scanning_params = Vec::new();
 
-    for (_i, spec) in rotation_specs.iter().enumerate() {
+    let mut fragment_warnings = 0usize;
+    for (i, spec) in rotation_specs.iter().enumerate() {
         if let RotationSpec::Scanning {
             atom1,
             atom2,
@@ -278,6 +304,19 @@ fn generate_scanning_conformers(
             // Log fragment information for debugging
             log_fragment_info(molecule.bonds.len(), bond.atom1, bond.atom2, &frag1, &frag2);
 
+            if let Some(diag) = check_fragment_separation(
+                i + 1,
+                bond.atom1,
+                bond.atom2,
+                &frag1,
+                &frag2,
+                &adjacency_list,
+                molecule,
+            ) {
+                fragment_warnings += 1;
+                eprintln!("\n{}", format_fragment_warning(&diag));
+            }
+
             // Add the bond to the molecule
             molecule.bonds.push(bond);
 
@@ -294,6 +333,14 @@ fn generate_scanning_conformers(
 
     if scanning_bonds.is_empty() {
         return Err("No scanning bonds found for scanning mode".into());
+    }
+
+    if fragment_warnings > 0 {
+        eprintln!(
+            "\nWARNING: {}/{} scanning bond(s) have inseparable fragments — trajectory may contain frozen (identical) conformers. See suggestions above.",
+            fragment_warnings,
+            scanning_bonds.len()
+        );
     }
 
     // Calculate total combinations for multi-dimensional scanning

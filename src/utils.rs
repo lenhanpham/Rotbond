@@ -114,6 +114,7 @@ pub fn print_usage() {
     println!("ARGUMENTS:");
     println!("  <molecule_name>         Base name for input/output files");
     println!("                          (e.g., 'butane' uses butane.xyz and butane.rp)");
+    println!("                          Also accepts 'molecule.xyz', 'molecule.rp', 'molecule.'");
     println!();
     println!("REQUIRED FILES:");
     println!("  <molecule_name>.xyz    - Input molecule structure (XYZ format)");

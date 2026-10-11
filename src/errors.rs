@@ -225,6 +225,161 @@ pub fn validate_forced_forbidden_bonds(
 /// let message = format_user_error(&error);
 /// println!("{}", message);
 /// ```
+/// Kind of fragment-separation problem detected before conformer generation.
+///
+/// Distinguishes the two ways a user-specified bond can fail to split the
+/// molecule: hidden bridging bonds keep the graph connected (overlap), or
+/// undetected links leave atoms unreachable (incomplete coverage).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FragmentWarningKind {
+    /// Cutting the bond does not disconnect the graph (`frag1 ∩ frag2 ≠ ∅`).
+    Overlap,
+    /// The two fragments do not cover all atoms (`|frag1 ∪ frag2| < n`).
+    IncompleteCoverage,
+}
+
+/// A single bond on a hidden bridge path, with geometry for user reporting.
+///
+/// All atom indices are 1-based for user display.
+#[derive(Debug, Clone)]
+pub struct HiddenBond {
+    /// First atom index (1-based).
+    pub a1: usize,
+    /// Second atom index (1-based).
+    pub a2: usize,
+    /// Element symbol of first atom.
+    pub elem1: String,
+    /// Element symbol of second atom.
+    pub elem2: String,
+    /// Measured distance in Angstroms.
+    pub dist: f64,
+    /// Bond-detection cutoff at the current `bond_factor` in Angstroms.
+    pub cutoff: f64,
+}
+
+/// Pre-generation diagnostic for one rotation/scanning bond.
+///
+/// Produced when cutting the bond `(atom1, atom2)` does not yield two clean,
+/// disjoint fragments covering all atoms. All atom indices are 1-based.
+///
+/// # Examples
+///
+/// ```rust
+/// use rotbond::errors::{FragmentDiagnostic, FragmentWarningKind, format_fragment_warning};
+///
+/// let d = FragmentDiagnostic {
+///     bond_num: 1, atom1: 24, atom2: 21,
+///     kind: FragmentWarningKind::Overlap,
+///     overlap_count: 27, frag1_len: 28, frag2_len: 28, total: 29,
+///     bridge_path: Vec::new(), missing_atoms: Vec::new(), bond_factor: 1.0,
+/// };
+/// let msg = format_fragment_warning(&d);
+/// assert!(msg.contains("24-21"));
+/// ```
+#[derive(Debug, Clone)]
+pub struct FragmentDiagnostic {
+    /// Specification order (1-based) of the bond in the `.rp` file.
+    pub bond_num: usize,
+    /// First pivot atom (1-based).
+    pub atom1: usize,
+    /// Second pivot atom (1-based).
+    pub atom2: usize,
+    /// Which separation check failed.
+    pub kind: FragmentWarningKind,
+    /// Number of shared atoms (`|frag1 ∩ frag2|`).
+    pub overlap_count: usize,
+    /// Size of fragment on `atom1` side.
+    pub frag1_len: usize,
+    /// Size of fragment on `atom2` side.
+    pub frag2_len: usize,
+    /// Total atom count of the molecule.
+    pub total: usize,
+    /// Shortest alternative path `atom1 → atom2` avoiding the direct edge.
+    pub bridge_path: Vec<HiddenBond>,
+    /// Atoms reachable from neither side (1-based, only for incomplete coverage).
+    pub missing_atoms: Vec<usize>,
+    /// `bond_factor` used for bond detection.
+    pub bond_factor: f64,
+}
+
+/// Formats a fragment diagnostic as an actionable user warning.
+///
+/// Lists the hidden bridge path with per-bond distances, elements and
+/// cutoffs (full detail), plus the exact `nobond`/`bond` line to try.
+/// The caller decides whether to abort or continue; this only formats.
+///
+/// # Arguments
+///
+/// * `d` - Diagnostic to format (all indices 1-based).
+///
+/// # Returns
+///
+/// Multi-line warning string ending with a `--help input` pointer.
+pub fn format_fragment_warning(d: &FragmentDiagnostic) -> String {
+    match d.kind {
+        FragmentWarningKind::Overlap => {
+            let mut msg = format!(
+                "WARNING: Bond {} ({}-{}) does not split molecule (bond_factor={:.2}).\n  Fragments overlap in {} atoms (frag1={}, frag2={}, total={}).\n  Cutting {}-{} leaves the graph connected, so rotation will appear frozen.",
+                d.bond_num, d.atom1, d.atom2, d.bond_factor,
+                d.overlap_count, d.frag1_len, d.frag2_len, d.total,
+                d.atom1, d.atom2,
+            );
+            if d.bridge_path.is_empty() {
+                msg.push_str("\n  No alternative path found (unexpected).");
+            } else {
+                let path: Vec<String> =
+                    std::iter::once(d.atom1.to_string())
+                        .chain(d.bridge_path.iter().map(|b| b.a2.to_string()))
+                        .collect();
+                msg.push_str(&format!(
+                    "\n  Hidden bridge at current scaling — shortest alternative path {}:",
+                    path.join(" -> ")
+                ));
+                let shown = d.bridge_path.iter().take(8);
+                for b in shown {
+                    msg.push_str(&format!(
+                        "\n    {}-{}  {}-{}  d={:.3} A  cutoff={:.3} A",
+                        b.a1, b.a2, b.elem1, b.elem2, b.dist, b.cutoff
+                    ));
+                }
+                if d.bridge_path.len() > 8 {
+                    msg.push_str(&format!("\n    ... +{} more", d.bridge_path.len() - 8));
+                }
+                if let Some(first) = d.bridge_path.first() {
+                    // Suggest breaking the bridge at its first edge beyond the pivot
+                    // (or the single edge for a length-1 path).
+                    msg.push_str(&format!(
+                        "\n  Suggestion: add e.g. `{}-{} nobond` to the .rp file and rerun.",
+                        first.a1, first.a2
+                    ));
+                }
+            }
+            msg.push_str("\n  For help: --help input / --help troubleshoot");
+            msg
+        }
+        FragmentWarningKind::IncompleteCoverage => {
+            let missing = if d.missing_atoms.is_empty() {
+                "none listed".to_string()
+            } else {
+                let shown: Vec<String> =
+                    d.missing_atoms.iter().take(20).map(|a| a.to_string()).collect();
+                let mut s = shown.join(", ");
+                if d.missing_atoms.len() > 20 {
+                    s.push_str(&format!(" ... +{}", d.missing_atoms.len() - 20));
+                }
+                s
+            };
+            format!(
+                "WARNING: Bond {} ({}-{}) leaves {} atoms unreachable (union {} < total {}).\n  Missing atoms (1-based): {}.\n  The bond graph is disconnected, so some atoms will never move.\n  Suggestion: add `A-B bond` lines for undetected links (e.g. metal-ligand) and rerun.\n  For help: --help input / --help troubleshoot",
+                d.bond_num, d.atom1, d.atom2,
+                d.missing_atoms.len(),
+                d.frag1_len + d.frag2_len - d.overlap_count,
+                d.total, missing,
+            )
+        }
+    }
+}
+
 pub fn format_user_error(error: &ScanningError) -> String {
     match error {
         ScanningError::InvalidParameters { message, suggestion } => {

@@ -66,7 +66,7 @@ Rotbond is program for generating molecular conformers through systematic bond r
 - Manual bond forcing for special cases (metal complexes, coordinate bonds)
 - False bond removal for accurate molecular graphs
 - **Automatic template creation** - generates comprehensive .rp templates with examples
-- **Flexible input formats** - accepts both `molecule` and `molecule.xyz` formats
+- **Flexible input formats** - accepts `molecule`, `molecule.xyz`, `molecule.rp` and `molecule.` (trailing dot from tab-completion) formats
 - **Conformer generation limits** - prevent system crashes from large jobs
 - **Interactive safety warnings** - alerts for memory-intensive generations
 - **Auto-confirmation mode** - batch processing without manual intervention
@@ -100,9 +100,11 @@ Export your the directory where the rotbond binary is located, and then use it.
 ```bash
 export PATH=$PATH:your_dir/target/release
 
-# Run with release build (accepts both formats)
+# Run with release build (all forms below are equivalent)
 rotbond <molecule_name>
 rotbond <molecule_name>.xyz
+rotbond <molecule_name>.rp
+rotbond <molecule_name>.      # trailing dot from tab-completion also works
 ```
 
 ### Example: Butane Rotation
@@ -180,7 +182,7 @@ Rotbond now automatically creates comprehensive template files to make getting s
 
 ### How It Works
 
-1. **Run with just an XYZ file**: `rotbond molecule` or `rotbond molecule.xyz`
+1. **Run with just an XYZ file**: `rotbond molecule`, `rotbond molecule.xyz`, `rotbond molecule.rp`, or `rotbond molecule.` (trailing dot)
 2. **Automatic detection**: If `molecule.rp` doesn't exist, Rotbond creates it automatically
 3. **Comprehensive template**: Generated file includes examples of all features with detailed comments
 4. **Edit and run**: Simply uncomment and modify the examples, then run Rotbond again
@@ -497,12 +499,16 @@ Controls automatic confirmation for large conformer generation jobs:
 ```bash
 rotbond [OPTIONS] <molecule_name>
 rotbond [OPTIONS] <molecule_name>.xyz
+rotbond [OPTIONS] <molecule_name>.rp
+rotbond [OPTIONS] <molecule_name>.
 ```
 
 **Input Formats:**
 
 - `rotbond molecule` - Uses `molecule.xyz` and `molecule.rp` (creates template if .rp missing)
 - `rotbond molecule.xyz` - Same behavior, accepts .xyz extension
+- `rotbond molecule.rp` - Same behavior, accepts .rp extension
+- `rotbond molecule.` - Same behavior, tolerates trailing dot from tab-completion
 
 **Options:**
 

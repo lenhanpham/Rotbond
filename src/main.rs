@@ -451,12 +451,10 @@ fn main() {
     print_version();
     println!();
 
-    // Handle both "molecule" and "molecule.xyz" formats
-    let base_name = if args[1].ends_with(".xyz") {
-        &args[1][..args[1].len() - 4] // Remove .xyz extension
-    } else {
-        &args[1]
-    };
+    // Handle "molecule", "molecule.xyz", "molecule.rp" and "molecule." formats.
+    // The trailing-dot form comes from shell tab-completion when an .xyz
+    // file shares the basename (e.g. `rotbond para<TAB>` → `rotbond para.`).
+    let base_name = normalize_base_name(&args[1]);
 
     let xyz_filename = format!("{}.xyz", base_name);
     let rp_filename = format!("{}.rp", base_name);
@@ -905,6 +903,41 @@ fn main() {
 
     // Display a random book recommendation
     print_random_book();
+}
+
+/// Normalizes a user-supplied molecule argument to its basename.
+///
+/// Accepts `molecule`, `molecule.xyz`, `molecule.rp` and `molecule.` (a
+/// trailing dot left by shell tab-completion when `molecule.xyz` exists).
+/// Stripping order matters: trailing dots first, then a known extension,
+/// so `molecule.xyz.` also resolves correctly. Basenames containing
+/// interior dots (e.g. `mol.v2`) are preserved.
+///
+/// # Arguments
+///
+/// * `arg` - Raw command-line argument.
+///
+/// # Returns
+///
+/// Basename borrowed from `arg`.
+///
+/// # Examples
+///
+/// ```text
+/// assert_eq!(normalize_base_name("butane"), "butane");
+/// assert_eq!(normalize_base_name("butane.xyz"), "butane");
+/// assert_eq!(normalize_base_name("butane.rp"), "butane");
+/// assert_eq!(normalize_base_name("butane."), "butane");
+/// assert_eq!(normalize_base_name("mol.v2"), "mol.v2");
+/// ```
+fn normalize_base_name(arg: &str) -> &str {
+    let no_dot = arg.trim_end_matches('.');
+    for ext in [".xyz", ".rp"] {
+        if no_dot.len() > ext.len() && no_dot.ends_with(ext) {
+            return &no_dot[..no_dot.len() - ext.len()];
+        }
+    }
+    no_dot
 }
 
 /// Extracts atom pairs from rotation parameter file.
