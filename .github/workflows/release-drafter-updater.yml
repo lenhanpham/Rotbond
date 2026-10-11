@@ -5,11 +5,14 @@ name: Release Drafter
 # When cutting a release, publish the draft in the web UI, or copy its
 # Highlights into the release created by "Release (Windows)".
 
+# Note: `pull_request` (not `pull_request_target`) is intentional here — it
+# matches upstream release-drafter docs and avoids "not a known webhook
+# name" annotations. This job never checks out PR code, so it is safe.
 on:
   push:
     branches:
       - main
-  pull_request_target:
+  pull_request:
     types: [opened, reopened, synchronize]
 
 permissions:
@@ -19,8 +22,8 @@ permissions:
 jobs:
   update_release_draft:
     name: Update release draft
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@v7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
