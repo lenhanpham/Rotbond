@@ -1,0 +1,64 @@
+# Release Drafter configuration for Rotbond.
+# Maintains a living draft release from merged PRs (title + labels).
+# When you cut a release, publish the draft (or let release-windows.yml
+# create the release, then copy the Highlights over).
+
+name-template: "Rotbond $RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+template: |
+  ## Highlights
+
+  <!-- Curate the notable changes for this release by hand. -->
+
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
+
+categories:
+  - title: "New Features"
+    labels:
+      - "feature"
+      - "enhancement"
+  - title: "Bug Fixes"
+    labels:
+      - "fix"
+      - "bug"
+  - title: "Documentation"
+    labels:
+      - "docs"
+      - "documentation"
+  - title: "Maintenance"
+    labels:
+      - "chore"
+      - "refactor"
+      - "ci"
+      - "dependencies"
+
+change-template: "- $TITLE by @$AUTHOR in $NUMBER"
+change-title-escapes: '\<*_&'
+
+exclude-labels:
+  - "skip-changelog"
+
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+      - "feature"
+      - "enhancement"
+  patch:
+    labels:
+      - "patch"
+      - "fix"
+      - "bug"
+      - "docs"
+      - "chore"
+  default: patch

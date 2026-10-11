@@ -1,0 +1,26 @@
+name: Release Drafter
+
+# Keeps a draft release up to date from merged PRs (see
+# .github/release-drafter.yml for categories and template).
+# When cutting a release, publish the draft in the web UI, or copy its
+# Highlights into the release created by "Release (Windows)".
+
+on:
+  push:
+    branches:
+      - main
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  update_release_draft:
+    name: Update release draft
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
