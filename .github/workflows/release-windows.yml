@@ -1,0 +1,77 @@
+name: Release (Windows)
+
+# Manual Windows binary release.
+# Run from the Actions tab ("Run workflow"), enter a tag like v0.1.0,
+# and collect rotbond-<tag>-windows-x86_64.zip from the run's artifacts
+# (plus an optional GitHub Release on that tag).
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.0)"
+        required: true
+        default: "v0.1.0"
+      create_release:
+        description: "Create a GitHub Release on this tag"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build-windows:
+    name: Build Windows binary
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Show toolchain versions
+        run: |
+          cargo --version
+          rustc --version
+
+      - name: Build release
+        run: cargo build --release --verbose
+
+      - name: Verify binary exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "target/release/rotbond.exe")) {
+            Write-Error "target/release/rotbond.exe not found after build"
+            exit 1
+          }
+          Get-Item "target/release/rotbond.exe" | Format-List Name, Length, LastWriteTime
+
+      - name: Stage package
+        shell: pwsh
+        run: |
+          $pkg = "rotbond-${{ inputs.tag }}-windows-x86_64"
+          New-Item -ItemType Directory -Force -Path "dist/$pkg" | Out-Null
+          Copy-Item "target/release/rotbond.exe" "dist/$pkg/"
+          Copy-Item "README.md" "dist/$pkg/" -ErrorAction SilentlyContinue
+          Copy-Item "LICENSE" "dist/$pkg/" -ErrorAction SilentlyContinue
+          Compress-Archive -Path "dist/$pkg" -DestinationPath "dist/$pkg.zip" -Force
+          Get-Item "dist/$pkg.zip" | Format-List Name, Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rotbond-${{ inputs.tag }}-windows-x86_64
+          path: dist/rotbond-${{ inputs.tag }}-windows-x86_64.zip
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: ${{ inputs.create_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: Rotbond ${{ inputs.tag }} (Windows x86_64)
+          generate_release_notes: true
+          files: dist/rotbond-${{ inputs.tag }}-windows-x86_64.zip
